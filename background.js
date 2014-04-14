@@ -85,11 +85,6 @@ function utf8_encode (string) {
 /*****************
  *	Chrome events
  *****************/
-chrome.runtime.onInstalled.addListener(function(details) {
-	if (details.reason == "install") {
-		chrome.tabs.create({url: chrome.runtime.getURL("user_cp/installation_welcome.html")});
-	}
-});
 
 //Page action listener
 chrome.pageAction.onClicked.addListener(function(tab) {
