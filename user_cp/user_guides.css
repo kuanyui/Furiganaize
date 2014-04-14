@@ -1,0 +1,50 @@
+body.fi_help_page * {
+	font-family: helvetica;	
+}
+
+body.fi_help_page {
+	padding: 10px 60px;
+}
+
+div#central_content{
+	margin: 60px 60px
+}
+
+h2 {
+	font-size: 24pt;
+}
+
+#start_word {
+	font-size: 18pt;
+}
+
+.forced_rt {
+	font-size: 8pt;
+}
+
+table.ruby_simulation td {
+	padding: 0;
+	margin: 0;
+}
+
+table#kanji_selector_table {
+}
+
+table#kanji_selector_table td#bunron_examples p {
+	text-indent: 20pt;
+}
+
+.fakelink {
+	text-decoration: underline;
+	color: blue;
+}
+
+.fakelink:hover {
+	cursor: pointer;
+}
+
+#userkanjilist_saved_caption {
+	position: relative;	/*Adjustments just to place the text aesthetically next to the user kanji list textarea*/
+	top: -12px;
+	padding-left: 8px;
+}

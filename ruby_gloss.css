@@ -1,0 +1,65 @@
+ruby.ruby_doppleganger rt {
+	color: black;
+	background-color: #ffffff;
+	opacity: 0.9;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+}
+
+ruby.ruby_doppleganger {
+	color: black;
+	z-index: 2;
+	position: absolute;
+	background-color: #ffffff;
+	border-top-left-radius: 4px;
+	-webkit-box-shadow: 3px 3px 2px #A0A0A0, -1px -1px 1px #A0A0A0;
+}
+
+div#fi_gloss_div.hover_gloss {
+	color: #402396;
+	z-index: 2;
+	position: absolute;
+	background-color: #ffffff;
+	background-image: url(chrome-extension://cbahnmcliajmanjkaolemjelphicnein/user_cp/gloss_div_upper_border.png);
+	background-repeat: no-repeat;
+	padding: 1px 1px 1px 5px;
+	border-top-right-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom-left-radius: 4px;
+	-webkit-box-shadow: 3px 3px 2px #a0a0a0, -1px 1px 1px #A0A0A0;
+	text-decoration: none;	/*The Chrome UA stylesheet appears to be overriding this.*/
+	text-align: left;
+}
+div#fi_gloss_div.hover_gloss img {
+	height: auto;
+	width: auto;
+	padding-right: 6px;
+}
+
+div#fi_gloss_div ul.p.q.r,	/*Extra classes added to make these rules more likely to get CSS rule precedence*/
+div#fi_gloss_div ol.p.q.r {
+	padding: 0px 1px 0px 0px;
+	margin: 0px 2px 1px 0px;
+	background: none;
+	border-style: none;
+	position: static;
+	text-indent: 0;
+}
+div#fi_gloss_div  li.s.t.u {	/*Extra classes added to make these rules more likely to get CSS rule precedence*/
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+	display: list-item;
+	float: none;
+	background: none;
+	border-style: none;
+}
+div#fi_gloss_div  li.s.t.u:nth-child(odd) {
+	background-color: #ffffff;
+}
+div#fi_gloss_div  li.s.t.u:nth-child(even) {
+	background-color: #fffded;
+}
+div#fi_gloss_div  li.s.t.u br {	/*I once found a page rule that suppressed <br> elements ...*/
+	display: block;
+}

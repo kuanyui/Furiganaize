@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="Content-Language" content="en" />
+	<title>Welcome to Furigana Injector</title>
+	<link rel="stylesheet" type="text/css" media="all" href="user_guides.css" />
+	<script type="text/javascript" src="../text_to_furigana_dom_parse.js"></script>
+	<script type="text/javascript">
+		//No idea why this, combined with text_to_furigana_dom_parse.js inclusion above, works when
+		//  using a postMessage instead wont.
+		chrome.extension.sendMessage({message: "init_tab_for_fi"});
+	</script>
+</head>
+<body class="fi_help_page">
+	<div id="central_content">
+		<p><span id="start_word">Now</span> your Chrome browser has the function to inject furigana, the small hiragana letters above or beside difficult kanji words. <strong>Try it</strong> - click the <img style="position: relative; top: 3px; border-style: solid; border-width: 1px; border-color: #808080;" src="../img/icons/default_16_16.png"alt="振" /> icon in the URL bar.</p>
+		<q id="che_sample">1952年、医学生だったチェ・ゲバラが友人と二人でオートバイにまたがり、アルゼンチンからペルーまでの南米大陸6,400キロを縦断するというストーリーです。旅先で様々な人に出会い、トラブルにも巻き込まれ失恋もしました。南米大陸の民族、貧困、差別などに向き合い懸命に生きている人々に深い同情と愛を深め、大人に成長していきます。この映画の製作・総監督は、監督作品も多いハリウッドの名優ロバート・レッドフォードで、いわゆる革命や思想を描いた映画にはしたくなかったそうです。</q>
+
+		<h2>What should I do first?</h2>
+
+		<div id="RubyService_KanjiSelector">
+			<h3><a href="simple_kanji_level_selector.html">Select your kanji-reading level</a></h3>
+			<p>Choose the kanji you do and don't want furigana for.</p>
+		</div>
+
+		<br/>
+		<p><span id="start_word">Then</span> use this tool in any web page that has japanese text. <a href="http://www.asahi.com/">www.asahi.com</a> is a good example that shows:</p>
+		<ul>
+		<li>Words composed of simple kanji won't be processed at all.</li>
+		<li>Words in links will be processed, unless you change the preference for that.</li>
+		<li>Images are ignored so text in graphics won't be changed, sorry.</li>
+		</ul>
+
+		<br/>
+		<h3><a href="options.html">Options</a></h3>
+
+		<div id="project_homepage">
+			<h3><a href="http://code.google.com/p/furigana-injector/">Development homepage</a></h3>
+		</div>
+
+	</div>
+</body>
+</html>
