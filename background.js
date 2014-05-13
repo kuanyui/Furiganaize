@@ -3,6 +3,7 @@ var tabPorts = [];	//manually kept list of tabs that connect.
 var tagger = null;
 
 
+//initialize variables
 if (!localStorage) 
 	console.log("Error: localStorage not available to background page. Has local storage been disabled in this instance of Chrome?");
 
@@ -40,9 +41,11 @@ igo.getServerFileToArrayBufffer("res/ipadic.zip", function(buffer) {
 		console.error(e.toString());
 	}
 });
+
 /*****************
  *	Functions
  *****************/
+
 function loadTagger(dicdir) {
 	var files = new Array();
 	for(var i=0;i<dicfiles.length;++i) {
@@ -95,40 +98,22 @@ chrome.commands.onCommand.addListener(function(command) {
 	chrome.tabs.executeScript(null, {code:"toggleFurigana();"});
 });
 
-//Extension requests listener. Used mainly by kanji_content_detect.js, but also by text_to_furigana_dom_parse.js to init config values.
-chrome.extension.onMessage.addListener(
+//Extension requests listener. Handles communication between extension and the content scripts
+chrome.runtime.onMessage.addListener(
 	function(request, sender, sendResponseCallback) {
 		if (request.message == "config_values_request") {
 			sendResponseCallback({userKanjiList: localStorage.getItem("user_kanji_list"), includeLinkText: localStorage.getItem("include_link_text")});
 		} else if (request.message == "init_tab_for_fi") {
 			enableTabForFI(sender.tab);
-		} else {
-			console.log("Programming error: a request with the unexpected \"message\" value \"" + request.message + "\" was received in the background page.");
-		}
-	});
-  
-//Extension connect() listener. Called everytime a new page is loaded ... in either a new tab or existing one.
-//text_to_furigana_dom_parse.js is the only script that has sends messages this way, and which has a listener on the other side.
-chrome.extension.onConnect.addListener(function(port) {
-	//Devnote: there is a bug in the options page according to the open source for AdBlockPlus for Chrome.
-	//  Basically the options page doesn't trigger the onDisconnect. Separate handling for it is necessary 
-	//  if you want to avoid issues there.
-	
-	port.onMessage.addListener(function(data) {
-		if (!data.message) {
-			console.log("Development error: data was sent from the port to tab id = " + port.sender.tab.id + 
-				" that did not have a \"message\" property.");
-		} else if (data.message && data.message == "text_to_furiganize") {
-			delete data["message"];
-			data.port = port;
-			data.keepAllRuby = data.keepAllRuby ? true : false;	//forcing boolean type
+		} else if (request.message == 'text_to_furiganize') {
 			furiganized = {};
-			for (key in data.textToFuriganize) {
-				furiganized[key] = data.textToFuriganize[key];
-				tagged = tagger.parse(data.textToFuriganize[key]);
+			for (key in request.textToFuriganize) {
+				furiganized[key] = request.textToFuriganize[key];
+				tagged = tagger.parse(request.textToFuriganize[key]);
 				numberFlag = false;
 				number = -1;
 				processed = '';
+
 				tagged.forEach(function(t) {
 					if (t.surface.match(/[\u3400-\u9FBF]/)) {
 						kanji = t.surface;
@@ -159,20 +144,20 @@ chrome.extension.onConnect.addListener(function(port) {
 					}
 				});
 			}
-			data.port.postMessage({furiganizedTextNodes: furiganized});
-		} else if (data.message && data.message == "show_page_processed") {
-			chrome.pageAction.setIcon({path: {"19": "img/icons/furigana_active_38.png","38": "img/icons/furigana_active_76.png"}, tabId: port.sender.tab.id});
-			chrome.pageAction.setTitle({title: "Remove furigana", tabId: port.sender.tab.id});
-		} else if (data.message && data.message == "reset_page_action_icon") {
-			chrome.pageAction.setIcon({path: {"19": "img/icons/furigana_inactive_38.png","38": "img/icons/furigana_inactive_76.png"}, tabId: port.sender.tab.id});
-			chrome.pageAction.setTitle({title: "Insert furigana", tabId: port.sender.tab.id});
-		} else if (data.message == "execute_css_fontsize_fix_for_rt") {
-			chrome.tabs.executeScript(port.sender.tab.id, {file: "css_fontsize_fix_for_rt.js"/*, allFrames: false*/});
+			chrome.tabs.sendMessage(sender.tab.id, {furiganizedTextNodes: furiganized});
+		} else if (request.message == "show_page_processed") {
+			chrome.pageAction.setIcon({path: {"19": "img/icons/furigana_active_38.png","38": "img/icons/furigana_active_76.png"}, tabId: sender.tab.id});
+			chrome.pageAction.setTitle({title: "Remove furigana", tabId: sender.tab.id});
+		} else if (request.message == "reset_page_action_icon") {
+			chrome.pageAction.setIcon({path: {"19": "img/icons/furigana_inactive_38.png","38": "img/icons/furigana_inactive_76.png"}, tabId: sender.tab.id});
+			chrome.pageAction.setTitle({title: "Insert furigana", tabId: sender.tab.id});
+		} else if (request.message == "execute_css_fontsize_fix_for_rt") {
+			chrome.tabs.executeScript(sender.tab.id, {file: "css_fontsize_fix_for_rt.js"/*, allFrames: false*/});
 		} else {
-			console.log("Development error: unexpected message \"" + data.message + "\"");
+			console.log("Programming error: a request with the unexpected \"message\" value \"" + request.message + "\" was received in the background page.");
 		}
-	});
-});
+	}
+);
 
 //Storage events
 window.addEventListener("storage",

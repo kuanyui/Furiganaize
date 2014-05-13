@@ -1,11 +1,11 @@
-﻿var extBgPort = chrome.extension.connect();
-extBgPort.onMessage.addListener(onExtBgMsgReceived);
+﻿// var extBgPort = chrome.extension.connect();
+// extBgPort.onMessage.addListener(onExtBgMsgReceived);
 var userKanjiRegexp;
 var includeLinkText;
 var kanjiTextNodes = {};	//This object will be used like a hash
 var submittedKanjiTextNodes = {};
 
-chrome.extension.sendMessage({message: "config_values_request"}, function(response) {
+chrome.runtime.sendMessage({message: "config_values_request"}, function(response) {
 	userKanjiRegexp = new RegExp("[" + response.userKanjiList + "]");
 	includeLinkText = JSON.parse(response.includeLinkText);
 	//Init anything for the page?
@@ -50,7 +50,7 @@ function submitKanjiTextNodes(keepAllRuby) {
 		if (strLength > 3500)	//Stop on length of 3500 chars (apparently ~50kb data in POST form).
 			break;
 	}
-	extBgPort.postMessage(msgData);
+	chrome.runtime.sendMessage(msgData, function(response) {});
 }
 
 function revertRubies() {
@@ -100,44 +100,47 @@ function toggleFurigana() {
 	console.log(document.body.hasAttribute("fiprocessed"));
 	if (document.body.hasAttribute("fiprocessed")) {
 		revertRubies();
-		extBgPort.postMessage({message: "reset_page_action_icon"});	//icon can only be changed by background page
+		chrome.runtime.sendMessage({message: "reset_page_action_icon"}, function(response) {});	//icon can only be changed by background page
 		kanjiTextNodes = {};
 	} else if (document.body.hasAttribute("fiprocessing")) {
 		//alert("Wait a sec, still awaiting a reply from the furigana server.");
 	} else {
-		extBgPort.postMessage({message: "execute_css_fontsize_fix_for_rt"});	//send a request to have "css_fontsize_fix_for_rt.js" executed on this page
+		chrome.runtime.sendMessage({message: "execute_css_fontsize_fix_for_rt"}, function(response) {});	//send a request to have "css_fontsize_fix_for_rt.js" executed on this page
 		kanjiTextNodes = scanForKanjiTextNodes();
 		if (!isEmpty(kanjiTextNodes)) {
-			document.body.setAttribute("fiprocessing", "true");
+			document.body.setAttribute("fiprocessed", "true");
 			submitKanjiTextNodes(false);	//The background page will respond with data including a "furiganizedTextNodes" member, see below.
 		} else {
 			alert("No text with kanji above your level found. Sorry, false alarm!");
 		}
 	}
 }
+
 /*** Events ***/
-function onExtBgMsgReceived(data) {
-	if (data.furiganizedTextNodes) {	//i.e. the response from submitKanjiTextNodes()
-		for (key in data.furiganizedTextNodes) {
-			if (submittedKanjiTextNodes[key]) {	//Todo: check the node still valid?
-				var tempDocFrag = document.createDocumentFragment();
-				var dummyParent = document.createElement("DIV");
-				dummyParent.innerHTML = data.furiganizedTextNodes[key];
-				while(dummyParent.firstChild)
-					tempDocFrag.appendChild(dummyParent.firstChild);
-				submittedKanjiTextNodes[key].parentNode.replaceChild(tempDocFrag, submittedKanjiTextNodes[key]);
-				delete submittedKanjiTextNodes[key];
+chrome.runtime.onMessage.addListener(
+	function(request, sender, sendResponseCallback) {
+		if (request.furiganizedTextNodes) {
+			for (key in request.furiganizedTextNodes) {
+				if (submittedKanjiTextNodes[key]) {
+					var tempDocFrag = document.createDocumentFragment();
+					var dummyParent = document.createElement("DIV");
+					dummyParent.innerHTML = request.furiganizedTextNodes[key];
+					while(dummyParent.firstChild)
+						tempDocFrag.appendChild(dummyParent.firstChild);
+					submittedKanjiTextNodes[key].parentNode.replaceChild(tempDocFrag, submittedKanjiTextNodes[key]);
+					delete submittedKanjiTextNodes[key];
+				}
 			}
-		}
-		if (!isEmpty(kanjiTextNodes)) {
-			submitKanjiTextNodes(false);
+			if (!isEmpty(kanjiTextNodes)) {
+				submitKanjiTextNodes(false);
+			} else {
+				kanjiTextNodes = {};	//clear the entire hash. Delete this logic if requests are processed in multiple batches.
+				document.body.removeAttribute("fiprocessing");
+				document.body.setAttribute("fiprocessed", "true");
+				chrome.runtime.sendMessage({message: "show_page_processed"}, function(response) {});
+			}
 		} else {
-			kanjiTextNodes = {};	//clear the entire hash. Delete this logic if requests are processed in multiple batches.
-			document.body.removeAttribute("fiprocessing");
-			document.body.setAttribute("fiprocessed", "true");
-			extBgPort.postMessage({message: "show_page_processed"});
+			alert("Unexpected msg received from extension script: " + JSON.stringify(data).substr(0,200));
 		}
-	} else {
-		alert("Unexpected msg received in onExtBgMsgReceived()" + JSON.stringify(data).substr(0,200));
 	}
-}
+);
