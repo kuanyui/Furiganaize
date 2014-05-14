@@ -1,5 +1,4 @@
 ﻿// var extBgPort = chrome.extension.connect();
-// extBgPort.onMessage.addListener(onExtBgMsgReceived);
 var userKanjiRegexp;
 var includeLinkText;
 var kanjiTextNodes = {};	//This object will be used like a hash
@@ -105,7 +104,7 @@ function toggleFurigana() {
 	} else if (document.body.hasAttribute("fiprocessing")) {
 		//alert("Wait a sec, still awaiting a reply from the furigana server.");
 	} else {
-		chrome.runtime.sendMessage({message: "execute_css_fontsize_fix_for_rt"}, function(response) {});	//send a request to have "css_fontsize_fix_for_rt.js" executed on this page
+		//chrome.runtime.sendMessage({message: "execute_css_fontsize_fix_for_rt"}, function(response) {});	//send a request to have "css_fontsize_fix_for_rt.js" executed on this page
 		kanjiTextNodes = scanForKanjiTextNodes();
 		if (!isEmpty(kanjiTextNodes)) {
 			document.body.setAttribute("fiprocessed", "true");
