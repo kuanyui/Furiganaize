@@ -1,6 +1,6 @@
 ﻿var dicfiles = ['char.category', 'code2category', 'word2id', 'word.dat', 'word.ary.idx', 'word.inf', 'matrix.bin'];
-var tabPorts = [];	//manually kept list of tabs that connect.
 var tagger = null;
+var furiganized = {};
 
 
 //initialize variables
@@ -130,7 +130,7 @@ chrome.runtime.onMessage.addListener(
 								break;
 						}
 						
-						var ruby_rxp = new RegExp(sprintf('<ruby><rb>%s<\\/rb><rp>\\(<\\/rp><rt>([\u3040-\u3096|\u30A1-\u30FA|\uFF66-\uFF9D|\u31F0-\u31FF]+)<\\/rt><rp>\\)<\\/rp><\\/ruby>', kanji), 'g');
+						ruby_rxp = new RegExp(sprintf('<ruby><rb>%s<\\/rb><rp>\\(<\\/rp><rt>([\u3040-\u3096|\u30A1-\u30FA|\uFF66-\uFF9D|\u31F0-\u31FF]+)<\\/rt><rp>\\)<\\/rp><\\/ruby>', kanji), 'g');
 
 						if (processed.indexOf(kanji) == -1) {
 							processed += kanji;
