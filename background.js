@@ -26,6 +26,10 @@ if (localStorage.getItem("show_translations") === null) {
 	console.log("The localStorage \"show_translations\" value was null. It will be initialised to false.");
 	localStorage.setItem("show_translations", true);	//the default value for showing translations
 }
+if (localStorage.getItem("filter_okurigana") === null) {
+	console.log("The localStorage \"filter_okurigana\" value was null. It will be initialised to Yes.");
+	localStorage.setItem("filter_okurigana", "yes");	//the default value for showing translations
+}
 
 //initialize IGO-JS
 igo.getServerFileToArrayBufffer("res/ipadic.zip", function(buffer) {
@@ -98,6 +102,31 @@ chrome.commands.onCommand.addListener(function(command) {
 	chrome.tabs.executeScript(null, {code:"toggleFurigana();"});
 });
 
+function addRuby(furiganized, kanji, yomi, key, processed) {
+	switch(localStorage.getItem("furigana_display")) {
+		case "hira":
+			yomi = wanakana.toHiragana(yomi);
+			break;
+		case "roma":
+			yomi = wanakana.toRomaji(yomi);
+			break;
+		default:
+			break;
+	}
+						
+	ruby_rxp = new RegExp(sprintf('<ruby><rb>%s<\\/rb><rp>\\(<\\/rp><rt>([\u3040-\u3096|\u30A1-\u30FA|\uFF66-\uFF9D|\u31F0-\u31FF]+)<\\/rt><rp>\\)<\\/rp><\\/ruby>', kanji), 'g');
+
+	if (processed.indexOf(kanji) == -1) {
+		processed += kanji;
+		if (furiganized[key].match(ruby_rxp)) {
+			furiganized[key] = furiganized[key].replace(ruby_rxp, sprintf('<ruby><rb>%s</rb><rp>(</rp><rt>%s</rt><rp>)</rp></ruby>', kanji, yomi));
+		} else {
+			bare_rxp = new RegExp(kanji, 'g');
+			furiganized[key] = furiganized[key].replace(bare_rxp, sprintf('<ruby><rb>%s</rb><rp>(</rp><rt>%s</rt><rp>)</rp></ruby>', kanji, yomi));
+		}
+	}
+}
+
 //Extension requests listener. Handles communication between extension and the content scripts
 chrome.runtime.onMessage.addListener(
 	function(request, sender, sendResponseCallback) {
@@ -119,27 +148,27 @@ chrome.runtime.onMessage.addListener(
 						kanji = t.surface;
 						yomi = t.feature.split(',')[t.feature.split(',').length - 2];
 
-						switch(localStorage.getItem("furigana_display")) {
-							case "hira":
-								yomi = wanakana.toHiragana(yomi);
-								break;
-							case "roma":
-								yomi = wanakana.toRomaji(yomi);
-								break;
-							default:
-								break;
-						}
-						
-						ruby_rxp = new RegExp(sprintf('<ruby><rb>%s<\\/rb><rp>\\(<\\/rp><rt>([\u3040-\u3096|\u30A1-\u30FA|\uFF66-\uFF9D|\u31F0-\u31FF]+)<\\/rt><rp>\\)<\\/rp><\\/ruby>', kanji), 'g');
-
-						if (processed.indexOf(kanji) == -1) {
-							processed += kanji;
-							if (furiganized[key].match(ruby_rxp)) {
-								furiganized[key] = furiganized[key].replace(ruby_rxp, sprintf('<ruby><rb>%s</rb><rp>(</rp><rt>%s</rt><rp>)</rp></ruby>', kanji, yomi));
-							} else {
-								bare_rxp = new RegExp(kanji, 'g');
-								furiganized[key] = furiganized[key].replace(bare_rxp, sprintf('<ruby><rb>%s</rb><rp>(</rp><rt>%s</rt><rp>)</rp></ruby>', kanji, yomi));
-							}
+						if (localStorage.getItem("filter_okurigana") == "yes") {
+							diff = JsDiff.diffChars(kanji, wanakana.toHiragana(yomi));
+							kanjiFound = false;
+							yomiFound = false;
+							diff.forEach(function(part){
+								if (part.added) { 
+									yomi = wanakana.toKatakana(part.value);
+									yomiFound = true;
+								}
+								if (part.removed) { 
+									kanji = part.value;
+									kanjiFound = true;
+								}
+								if (kanjiFound && yomiFound) {
+									addRuby(furiganized, kanji, yomi, key, processed);
+									kanjiFound = false;
+									yomiFound = false;
+								}
+							});
+						} else {
+							addRuby(furiganized, kanji, yomi, key, processed);
 						}
 					}
 				});

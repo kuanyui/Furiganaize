@@ -1,9 +1,9 @@
 {
 	"name": "__MSG_manifestExtName__",
-	"version": "2.0",
+	"version": "1.0",
 	"manifest_version": 2,
 	"background": {
-	  "scripts": ["lib/jquery-2.0.2.js", "lib/sprintf.min.js", "lib/igo.min.js", "lib/zip.min.js", "lib/wanakana.min.js", "background.js"],
+	  "scripts": ["lib/jquery-2.0.2.js", "lib/sprintf.min.js", "lib/igo.min.js", "lib/zip.min.js", "lib/wanakana.min.js", "background.js", "lib/diff.js"],
 	  "persistent": false
 	},
 	"content_scripts": [ {

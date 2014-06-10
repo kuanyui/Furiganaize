@@ -7,6 +7,7 @@ function initControlValues() {
 		//$("#userkanjilist_inp").html(localStorage.getItem("user_kanji_list"));
 		$("#includelinktext_inp")[0].checked = JSON.parse(localStorage.getItem("include_link_text"));
 		$("#furigana_display").val(localStorage.getItem("furigana_display"));
+		$("#filter_okurigana").val(localStorage.getItem("filter_okurigana"));
 		/*$("#show_translations_inp")[0].checked = JSON.parse(localStorage.getItem("show_translations"));
 		alignRubyDplgnrAndGloss();	//This first call will probably be irrelevant. It's the $(window).resize() 
 			//  event handler that will call it at more useful times.
@@ -39,6 +40,10 @@ function initControlValues() {
 		$("#furigana_display").bind("change", function() { 
 			var furiganaDisplay = this.value;
 			localStorage.setItem("furigana_display", furiganaDisplay);
+		});
+		$("#filter_okurigana").bind("change", function() { 
+			var filterOkurigana = this.value;
+			localStorage.setItem("filter_okurigana", filterOkurigana);
 		});
 		/*$("#show_translations_inp").bind("change", function() { 
 			localStorage.setItem("show_translations", this.checked);	//N.B. saves in JSON format, i.e. the _strings_ "true" or "false", so use JSON.parse() when retrieving the value from localStorage.
