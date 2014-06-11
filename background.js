@@ -1,6 +1,7 @@
 ﻿var dicfiles = ['char.category', 'code2category', 'word2id', 'word.dat', 'word.ary.idx', 'word.inf', 'matrix.bin'];
 var tagger = null;
 var furiganized = {};
+var exceptions = null;
 
 
 //initialize variables
@@ -28,7 +29,7 @@ if (localStorage.getItem("show_translations") === null) {
 }
 if (localStorage.getItem("filter_okurigana") === null) {
 	console.log("The localStorage \"filter_okurigana\" value was null. It will be initialised to Yes.");
-	localStorage.setItem("filter_okurigana", "yes");	//the default value for showing translations
+	localStorage.setItem("filter_okurigana", false);	//the default value for showing translations
 }
 
 //initialize IGO-JS
@@ -44,6 +45,10 @@ igo.getServerFileToArrayBufffer("res/ipadic.zip", function(buffer) {
 	} catch(e) {
 		console.error(e.toString());
 	}
+});
+
+$.getJSON( "res/exceptions.json", function(data) {
+	exceptions = data;
 });
 
 /*****************
@@ -139,16 +144,18 @@ chrome.runtime.onMessage.addListener(
 			for (key in request.textToFuriganize) {
 				furiganized[key] = request.textToFuriganize[key];
 				tagged = tagger.parse(request.textToFuriganize[key]);
-				numberFlag = false;
-				number = -1;
+
 				processed = '';
+				var numeric = false;
+				var numeric_yomi = exceptions;
+				var numeric_kanji = '';
 
 				tagged.forEach(function(t) {
 					if (t.surface.match(/[\u3400-\u9FBF]/)) {
 						kanji = t.surface;
 						yomi = t.feature.split(',')[t.feature.split(',').length - 2];
 
-						if (localStorage.getItem("filter_okurigana") == "yes") {
+						if (JSON.parse(localStorage.getItem("filter_okurigana"))) {
 							diff = JsDiff.diffChars(kanji, wanakana.toHiragana(yomi));
 							kanjiFound = false;
 							yomiFound = false;
