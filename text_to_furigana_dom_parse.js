@@ -60,7 +60,7 @@ function revertRubies() {
 		var childNd = rubyElem.firstChild;
 		var parentNd = rubyElem.parentNode;
 		while (childNd) {
-			newText += childNd.nodeType == Node.TEXT_NODE ? childNd.data : (childNd.tagName != "RT" && childNd.tagName != "RP" ? childNd.innerText : "");
+			newText += childNd.nodeType == Node.TEXT_NODE ? childNd.data : (childNd.tagName != "RT" && childNd.tagName != "RP" ? childNd.textContent : "");
 			childNd = childNd.nextSibling;
 		}
 		parentNd.replaceChild(document.createTextNode(newText), rubyElem);
