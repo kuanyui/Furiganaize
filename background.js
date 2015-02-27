@@ -15,21 +15,18 @@ if (localStorage.getItem("user_kanji_list") === null) {
 }
 var userKanjiRegexp = new RegExp("[" + localStorage.getItem("user_kanji_list") + "]");
 
-if (localStorage.getItem("include_link_text") === null) {
-	console.log("The localStorage \"include_link_text\" value was null. It will be initialised to true.");
-	localStorage.setItem("include_link_text", true);	//the default value for including links
+var localStoragePrefDefaults = {
+	"include_link_text": true, 
+	"furigana_display": "hira", 
+	"filter_okurigana": true, 
+	"persistent_mode": false
 }
-if (localStorage.getItem("furigana_display") === null) {
-	console.log("The localStorage \"furigana_display\" value was null. It will be initialised to hiragana.");
-	localStorage.setItem("furigana_display", "hira");	//the default value for including links
-}
-if (localStorage.getItem("show_translations") === null) {
-	console.log("The localStorage \"show_translations\" value was null. It will be initialised to false.");
-	localStorage.setItem("show_translations", true);	//the default value for showing translations
-}
-if (localStorage.getItem("filter_okurigana") === null) {
-	console.log("The localStorage \"filter_okurigana\" value was null. It will be initialised to Yes.");
-	localStorage.setItem("filter_okurigana", false);	//the default value for showing translations
+
+for (var key in localStoragePrefDefaults) {
+	if (localStorage.getItem(key) === null) {
+		console.log("The localStorage \"" + key + "\" value was null. It will be initialised to" + localStoragePrefDefaults[key] + ".");
+		localStorage.setItem(key, localStoragePrefDefaults[key]);
+	}
 }
 
 //initialize IGO-JS
