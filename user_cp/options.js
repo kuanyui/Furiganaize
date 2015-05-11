@@ -4,32 +4,38 @@ $(document).ready(function () {
 
 function initControlValues() {
 	try{
-		//$("#userkanjilist_inp").html(localStorage.getItem("user_kanji_list"));
 		$("#includelinktext_inp")[0].checked = JSON.parse(localStorage.getItem("include_link_text"));
 		$("#furigana_display").val(localStorage.getItem("furigana_display"));
-		$("#filter_okurigana").val(localStorage.getItem("filter_okurigana"));
-		/*$("#show_translations_inp")[0].checked = JSON.parse(localStorage.getItem("show_translations"));
-		alignRubyDplgnrAndGloss();	//This first call will probably be irrelevant. It's the $(window).resize() 
-			//  event handler that will call it at more useful times.
-		if ($("#show_translations_inp")[0].checked) {
-			$("#fi_ruby_doppleganger").fadeIn();
-			$("#fi_gloss_div").fadeIn();
-		}*/
+		$("#filter_okurigana")[0].checked = JSON.parse(localStorage.getItem("filter_okurigana"));
+		$("#persistent_mode")[0].checked = JSON.parse(localStorage.getItem("persistent_mode"));
+		$("#persistent_mode")[0].checked = JSON.parse(localStorage.getItem("persistent_mode"));
+		$("#yomi_size").val(localStorage.getItem("yomi_size"));
+		$("#yomi_color").colpick({
+			layout:'hex',
+			submit:0,
+			onChange:function(hsb, hex, rgb, el, bySetColor) {
+				localStorage.setItem("yomi_color", '#' + hex)
+				if(!bySetColor){
+					for (var item in $(".style_sample")) {
+						if ($(".style_sample")[item].style){
+							$(".style_sample")[item].style.color = '#' + hex;
+						}
+					}
+				}
+			}
+		});
+		$("#yomi_color").colpickSetColor(localStorage.getItem("yomi_color"));
+
+		//update preview with saved style
+		for (var item in $(".style_sample")) {
+			if ($(".style_sample")[item].style){
+				$(".style_sample")[item].style.color = localStorage.getItem("yomi_color");
+				$(".style_sample")[item].style.fontSize = localStorage.getItem("yomi_size");
+			}
+		}
 		$("#link_sample").find("RT").each(function() {
 			$(this).css({visibility: $("#includelinktext_inp")[0].checked ? "visible" : "hidden"});
 		});
-		
-		/*$("#userkanjilist_inp").bind("keyup", function() { 
-			var userKanjListInp = $(this);
-			if (userKanjListInp.val() == localStorage.getItem("user_kanji_list"))
-				return;
-			if (window.userKanjiListSaveTimeout)
-				clearTimeout(window.userKanjiListSaveTimeout);
-			window.userKanjiListSaveTimeout = setTimeout(function() {
-				localStorage.setItem("user_kanji_list", userKanjListInp.val());
-				$("#userkanjilist_saved_caption").fadeIn("fast").delay(3000).fadeOut();
-			}, 1000);
-		});*/
 		$("#includelinktext_inp").bind("change", function() { 
 			var inclLinks = this.checked;
 			localStorage.setItem("include_link_text", inclLinks);	//N.B. saves in JSON format, i.e. the _strings_ "true" or "false", so use JSON.parse() when retrieving the value from localStorage.
@@ -42,20 +48,40 @@ function initControlValues() {
 			localStorage.setItem("furigana_display", furiganaDisplay);
 		});
 		$("#filter_okurigana").bind("change", function() { 
-			var filterOkurigana = this.value;
+			var filterOkurigana = this.checked;
 			localStorage.setItem("filter_okurigana", filterOkurigana);
 		});
-		/*$("#show_translations_inp").bind("change", function() { 
-			localStorage.setItem("show_translations", this.checked);	//N.B. saves in JSON format, i.e. the _strings_ "true" or "false", so use JSON.parse() when retrieving the value from localStorage.
-			if (this.checked) {
-				$("#fi_ruby_doppleganger").fadeIn();
-				$("#fi_gloss_div").fadeIn();
-			} else {
-				$("#fi_ruby_doppleganger").fadeOut();
-				$("#fi_gloss_div").fadeOut();
+		$("#persistent_mode").bind("change", function() { 
+			var persistentMode = this.checked;
+			localStorage.setItem("persistent_mode", persistentMode);
+		});
+		$("#yomi_size").bind("change", function() { 
+			var yomi_size = this.value;
+			for (var item in $(".style_sample")) {
+				if ($(".style_sample")[item].style){
+					$(".style_sample")[item].style.fontSize = yomi_size;
+				}
 			}
-				
-		});*/
+			localStorage.setItem("yomi_size", yomi_size);
+		});
+		$("#yomi_size_reset").bind("click", function() { 
+			localStorage.setItem("yomi_size", '');
+			$("#yomi_size").val($("#yomi_size")[0].defaultValue);
+			for (var item in $(".style_sample")) {
+				if ($(".style_sample")[item].style){
+					$(".style_sample")[item].style.fontSize = null;
+				}
+			}
+		});
+		$("#yomi_color_reset").bind("click", function() { 
+			localStorage.setItem("yomi_color", '');
+			$("#yomi_color").colpickSetColor('');
+			for (var item in $(".style_sample")) {
+				if ($(".style_sample")[item].style){
+					$(".style_sample")[item].style.color = '';
+				}
+			}
+		});
 	} catch (err) { alert(err); }
 	}
 	

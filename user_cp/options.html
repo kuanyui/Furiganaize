@@ -4,6 +4,8 @@
 	<script type="text/javascript" src="options.js"></script>
 	<link rel="stylesheet" type="text/css" media="all" href="user_guides.css" />
 	<link rel="stylesheet" type="text/css" media="all" href="../ruby_gloss.css" />
+	<script src="../lib/colpick.js" type="text/javascript"></script>
+	<link rel="stylesheet" href="../css/colpick.css" type="text/css"/>
 </head>
 <body class="fi_help_page">
 
@@ -17,10 +19,23 @@
 		<p><label>Furigana should be displayed with <select id="furigana_display"><option value="hira">Hiragana</option><option value="kata">Katakana</option><option value="roma">Romaji</option></select></label>
 	</div>
 	<div style="margin-bottom: 14px;">
-		<p><label>Okurigana should be filtered <select id="filter_okurigana"><option value="true">Yes</option><option value="false">No</option></select></label>
+		<p><label>Okurigana filter <input type="checkbox" id="filter_okurigana"/></label>
 	</div>
 	<div style="margin-bottom: 14px;">
-		<p><label>Persistent mode is <select id="persistent_mode"><option value="true">On</option><option value="false">Off</option></select></label>
+		<p><label>Persistent mode <input type="checkbox" id="persistent_mode"/></label>
+	</div>
+	<div style="margin-bottom: 14px;width: 340px">
+		<p><label style="display: block;float: left">Furigana size <input type="range" id="yomi_size" style="margin-left: 10px" min="6" max="18"/></label>
+		<span style="font-style: italic; margin-left: 24px;position: fixed"><div style="float: right;position: absolute;left: 300px;"><ruby><rb>今日</rb><rt class="style_sample" style="">きょう</rt></ruby>の<ruby><rb>天気</rb><rt class="style_sample" sttyle="">てんき</rt></ruby></span></div>
+	</div><br />
+	<div style="margin-bottom: 14px;">
+		<p><label>Furigana size reset <input type="button" value="Reset size to default" id="yomi_size_reset"/></label>
+	</div>
+	<div style="margin-bottom: 14px;">
+		<p><label>Furigana color <input type="button" value="Pick a color" id="yomi_color"/></label>
+	</div>
+	<div style="margin-bottom: 14px;">
+		<p><label>Furigana color reset <input type="button" value="Reset color to default" id="yomi_color_reset"/></label>
 	</div>
 </body>
 </html>

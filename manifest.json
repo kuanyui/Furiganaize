@@ -1,6 +1,6 @@
 {
 	"name": "__MSG_manifestExtName__",
-	"version": "1.0",
+	"version": "1.1",
 	"manifest_version": 2,
 	"background": {
 	  "scripts": ["lib/jquery-2.0.2.js", "lib/sprintf.min.js", "lib/igo.min.js", "lib/zip.min.js", "lib/wanakana.min.js", "background.js", "lib/diff.js"],
@@ -23,12 +23,12 @@
 		"default_icon": {"38": "img/icons/furigana_inactive_76.png"},
 		"default_title": "Toggle furigana"
 	},
-	"permissions": ["http://*/*", "https://*/*", "activeTab"],
+	"permissions": ["http://*/*", "https://*/*", "activeTab", "tabs"],
 	"commands": {
 		"toggle-furigana": {
 			"suggested_key": {
 				"default": "Alt+Shift+F",
-				"mac": "Command+Shift+Y"
+				"mac": "Alt+Shift+F"
 			},
 			"description": "Toggle furigana"
 		}

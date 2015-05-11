@@ -9,7 +9,10 @@ chrome.runtime.sendMessage({
 }, function(response) {
     userKanjiRegexp = new RegExp("[" + response.userKanjiList + "]");
     includeLinkText = JSON.parse(response.includeLinkText);
-    //Init anything for the page?
+    persistentMode = JSON.parse(response.persistentMode);
+    furiganaEnabled = JSON.parse(response.furiganaEnabled);
+    //Parse for kanji and insert furigana immediately if persistent mode is enabled
+    if (persistentMode && furiganaEnabled) enableFurigana();
 });
 
 /*****************
@@ -111,7 +114,7 @@ function toggleFurigana() {
     } else {
         //chrome.runtime.sendMessage({message: "execute_css_fontsize_fix_for_rt"}, function(response) {});	//send a request to have "css_fontsize_fix_for_rt.js" executed on this page
         kanjiTextNodes = scanForKanjiTextNodes();
-        if (!isEmpty(kanjiTextNodes)) {
+        if (!isEmpty(kanjiTextNodes) || persistentMode) {
             document.body.setAttribute("fiprocessed", "true");
             submitKanjiTextNodes(false); //The background page will respond with data including a "furiganizedTextNodes" member, see below.
         } else {
@@ -122,7 +125,7 @@ function toggleFurigana() {
 
 function enableFurigana() {
     kanjiTextNodes = scanForKanjiTextNodes();
-    if (!isEmpty(kanjiTextNodes)) {
+    if (!isEmpty(kanjiTextNodes) || persistentMode) {
         document.body.setAttribute("fiprocessed", "true");
         submitKanjiTextNodes(false); //The background page will respond with data including a "furiganizedTextNodes" member, see below.
     } else {

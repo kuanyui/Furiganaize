@@ -8,9 +8,10 @@ var insertedNodeCheckTimer = null;
 chrome.extension.sendMessage({message: "config_values_request"}, function(response) {
 	userKanjiRegexp = new RegExp("[" + response.userKanjiList + "]");
 	includeLinkText = JSON.parse(response.includeLinkText);
+	persistentMode = JSON.parse(response.persistentMode);
 	//Having received the config data, start searching for relevant kanji
 	//If none find, do nothing for now except start a listener for node insertions
-	if (document.body.innerText.match(/[\u3400-\u9FBF]/))
+	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || persistentMode)
 		chrome.extension.sendMessage({message: "init_tab_for_fi"});
 	else
 		document.addEventListener("DOMNodeInserted", DOMNodeInsertedHandler);
