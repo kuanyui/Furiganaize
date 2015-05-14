@@ -159,7 +159,7 @@ function addRuby(furiganized, kanji, yomi, key, processed) {
             break;
     }
 
-    ruby_rxp = new RegExp(sprintf('<ruby><rb>%s<\\/rb><rp>\\(<\\/rp><rt>([\u3040-\u3096|\u30A1-\u30FA|\uFF66-\uFF9D|\u31F0-\u31FF]+)<\\/rt><rp>\\)<\\/rp><\\/ruby>', kanji), 'g');
+    ruby_rxp = new RegExp(sprintf('<ruby><rb>%s<\\/rb><rp>\\(<\\/rp><rt[ style=]*.*?>([\\u3040-\\u3096|\\u30A1-\\u30FA|\\uFF66-\\uFF9D|\\u31F0-\\u31FF]+)<\\/rt><rp>\\)<\\/rp><\\/ruby>', kanji), 'g');
 
     yomi_size = '';
     yomi_color = '';
@@ -172,7 +172,13 @@ function addRuby(furiganized, kanji, yomi, key, processed) {
     if (processed.indexOf(kanji) == -1) {
         processed += kanji;
         if (furiganized[key].match(ruby_rxp)) {
+            console.log('before')
+            console.log(kanji)
+            console.log(yomi)
+            console.log(furiganized[key])
             furiganized[key] = furiganized[key].replace(ruby_rxp, sprintf('<ruby><rb>%s</rb><rp>(</rp><rt style="%s">%s</rt><rp>)</rp></ruby>', kanji, yomi_style, yomi));
+            console.log('after')
+            console.log(furiganized[key])
         } else {
             bare_rxp = new RegExp(kanji, 'g');
             furiganized[key] = furiganized[key].replace(bare_rxp, sprintf('<ruby><rb>%s</rb><rp>(</rp><rt style="%s">%s</rt><rp>)</rp></ruby>', kanji, yomi_style, yomi));

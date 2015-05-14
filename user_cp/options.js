@@ -14,8 +14,8 @@ function initControlValues() {
 			layout:'hex',
 			submit:0,
 			onChange:function(hsb, hex, rgb, el, bySetColor) {
-				localStorage.setItem("yomi_color", '#' + hex)
 				if(!bySetColor){
+					localStorage.setItem("yomi_color", '#' + hex)
 					for (var item in $(".style_sample")) {
 						if ($(".style_sample")[item].style){
 							$(".style_sample")[item].style.color = '#' + hex;
@@ -73,7 +73,8 @@ function initControlValues() {
 				}
 			}
 		});
-		$("#yomi_color_reset").bind("click", function() { 
+		$("#yomi_color_reset").bind("click", function() {
+			console.log('resetting color')
 			localStorage.setItem("yomi_color", '');
 			$("#yomi_color").colpickSetColor('');
 			for (var item in $(".style_sample")) {
