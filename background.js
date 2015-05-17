@@ -16,6 +16,7 @@ if (localStorage.getItem("user_kanji_list") === null) {
 }
 var userKanjiRegexp = new RegExp("[" + localStorage.getItem("user_kanji_list") + "]");
 
+//initialize local storage
 var localStoragePrefDefaults = {
     "include_link_text": true,
     "furigana_display": "hira",
@@ -54,7 +55,7 @@ $.getJSON("res/exceptions.json", function(data) {
 /*****************
  *  Functions
  *****************/
-
+//load dictionaries
 function loadTagger(dicdir) {
     var files = new Array();
     for (var i = 0; i < dicfiles.length; ++i) {
@@ -67,7 +68,7 @@ function loadTagger(dicdir) {
     var mtx = new igo.Matrix(files['matrix.bin']);
     return new igo.Tagger(wdc, unk, mtx);
 }
-
+//prepare a tab for furigana injection
 function enableTabForFI(tab) {
     chrome.pageAction.setIcon({
         path: {
@@ -124,8 +125,8 @@ chrome.pageAction.onClicked.addListener(function(tab) {
     }
 });
 
+//Keyboard action listener
 chrome.commands.onCommand.addListener(function(command) {
-    console.log('got keyboard command')
     if (localStorage.getItem('persistent_mode')) {
         chrome.tabs.query({} ,function (tabs) {
             for (var i = 0; i < tabs.length; i++) {
@@ -139,15 +140,9 @@ chrome.commands.onCommand.addListener(function(command) {
     }
 });
 
-// chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-//     if (changeInfo.status == 'complete' && tab.active) {
-//         if (localStorage.get('persistent_mode')) {
-
-//         }
-//     }
-// });
-
+//Ruby tag injector
 function addRuby(furiganized, kanji, yomi, key, processed) {
+    //furigana can be displayed in either hiragana, katakana or romaji
     switch (localStorage.getItem("furigana_display")) {
         case "hira":
             yomi = wanakana.toHiragana(yomi);
@@ -161,6 +156,7 @@ function addRuby(furiganized, kanji, yomi, key, processed) {
 
     ruby_rxp = new RegExp(sprintf('<ruby><rb>%s<\\/rb><rp>\\(<\\/rp><rt[ style=]*.*?>([\\u3040-\\u3096|\\u30A1-\\u30FA|\\uFF66-\\uFF9D|\\u31F0-\\u31FF]+)<\\/rt><rp>\\)<\\/rp><\\/ruby>', kanji), 'g');
 
+    //apply user styles to furigana text
     yomi_size = '';
     yomi_color = '';
 
@@ -169,16 +165,12 @@ function addRuby(furiganized, kanji, yomi, key, processed) {
 
     yomi_style = yomi_size + yomi_color;
 
+    //inject furigana into text nodes
+    //a different regex is used for repeat passes to avoid having multiple rubies on the same base
     if (processed.indexOf(kanji) == -1) {
         processed += kanji;
         if (furiganized[key].match(ruby_rxp)) {
-            console.log('before')
-            console.log(kanji)
-            console.log(yomi)
-            console.log(furiganized[key])
             furiganized[key] = furiganized[key].replace(ruby_rxp, sprintf('<ruby><rb>%s</rb><rp>(</rp><rt style="%s">%s</rt><rp>)</rp></ruby>', kanji, yomi_style, yomi));
-            console.log('after')
-            console.log(furiganized[key])
         } else {
             bare_rxp = new RegExp(kanji, 'g');
             furiganized[key] = furiganized[key].replace(bare_rxp, sprintf('<ruby><rb>%s</rb><rp>(</rp><rt style="%s">%s</rt><rp>)</rp></ruby>', kanji, yomi_style, yomi));
@@ -189,6 +181,7 @@ function addRuby(furiganized, kanji, yomi, key, processed) {
 //Extension requests listener. Handles communication between extension and the content scripts
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponseCallback) {
+        //send config variables to content script
         if (request.message == "config_values_request") {
             sendResponseCallback({
                 userKanjiList: localStorage.getItem("user_kanji_list"),
@@ -196,8 +189,10 @@ chrome.runtime.onMessage.addListener(
                 persistentMode: localStorage.getItem("persistent_mode"),
                 furiganaEnabled: furiganaEnabled
             });
+        //prepare tab for injection
         } else if (request.message == "init_tab_for_fi") {
             enableTabForFI(sender.tab);
+        //process DOM nodes containing kanji and insert furigana
         } else if (request.message == 'text_to_furiganize') {
             furiganized = {};
             for (key in request.textToFuriganize) {
@@ -214,10 +209,13 @@ chrome.runtime.onMessage.addListener(
                         kanji = t.surface;
                         yomi = t.feature.split(',')[t.feature.split(',').length - 2];
 
+                        //filter okurigana (word endings)
                         if (JSON.parse(localStorage.getItem("filter_okurigana"))) {
                             diff = JsDiff.diffChars(kanji, wanakana.toHiragana(yomi));
                             kanjiFound = false;
                             yomiFound = false;
+                            //separate kanji and kana characters in the string using diff
+                            //and inject furigana only into kanji part
                             diff.forEach(function(part) {
                                 if (part.added) {
                                     yomi = wanakana.toKatakana(part.value);
@@ -239,10 +237,12 @@ chrome.runtime.onMessage.addListener(
                     }
                 });
             }
+            //send processed DOM nodes back to the tab content script
             chrome.tabs.sendMessage(sender.tab.id, {
                 furiganizedTextNodes: furiganized
             });
             furiganaEnabled = true;
+        //update page icon to 'enabled'
         } else if (request.message == "show_page_processed") {
             chrome.pageAction.setIcon({
                 path: {
@@ -255,6 +255,7 @@ chrome.runtime.onMessage.addListener(
                 title: "Remove furigana",
                 tabId: sender.tab.id
             });
+        //update page icon to 'disabled'
         } else if (request.message == "reset_page_action_icon") {
             chrome.pageAction.setIcon({
                 path: {
@@ -268,10 +269,6 @@ chrome.runtime.onMessage.addListener(
                 tabId: sender.tab.id
             });
             furiganaEnabled = false;
-        } else if (request.message == "execute_css_fontsize_fix_for_rt") {
-            chrome.tabs.executeScript(sender.tab.id, {
-                file: "css_fontsize_fix_for_rt.js" /*, allFrames: false*/
-            });
         } else {
             console.log("Programming error: a request with the unexpected \"message\" value \"" + request.message + "\" was received in the background page.");
         }
