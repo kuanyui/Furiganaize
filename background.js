@@ -94,7 +94,6 @@ function enableTabForFI(tab) {
 //Page action listener
 chrome.pageAction.onClicked.addListener(function(tab) {
     if (JSON.parse(localStorage.getItem('persistent_mode')) == true) {
-        console.log('persistent')
         chrome.tabs.query({} ,function (tabs) {
             for (var i = 0; i < tabs.length; i++) {
                 chrome.tabs.executeScript(tabs[i].id, {code: "toggleFurigana();"});
@@ -110,7 +109,6 @@ chrome.pageAction.onClicked.addListener(function(tab) {
 //Keyboard action listener
 chrome.commands.onCommand.addListener(function(command) {
     if (JSON.parse(localStorage.getItem('persistent_mode')) == true) {
-        console.log('persistent')
         chrome.tabs.query({} ,function (tabs) {
             for (var i = 0; i < tabs.length; i++) {
                 chrome.tabs.executeScript(tabs[i].id, {code: "toggleFurigana();"});
