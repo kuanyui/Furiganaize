@@ -1,6 +1,6 @@
 {
 	"name": "__MSG_manifestExtName__",
-	"version": "1.12",
+	"version": "1.2",
 	"manifest_version": 2,
 	"background": {
 	  "scripts": ["lib/jquery-2.0.2.js", "lib/sprintf.min.js", "lib/igo.min.js", "lib/zip.min.js", "lib/wanakana.min.js", "background.js", "lib/diff.js"],
@@ -8,7 +8,7 @@
 	},
 	"content_scripts": [ {
 		"js": ["kanji_content_detect.js"],
-		"matches": ["http://*/*", "https://*/*"]
+		"matches": ["http://*/*", "https://*/*", "file://*/*"]
 	} ],
 	"default_locale": "en",
 	"description": "__MSG_manifestExtDescription__",
@@ -23,7 +23,7 @@
 		"default_icon": {"38": "img/icons/furigana_inactive_76.png"},
 		"default_title": "Toggle furigana"
 	},
-	"permissions": ["http://*/*", "https://*/*", "activeTab", "tabs"],
+	"permissions": ["http://*/*", "https://*/*", "file://*/*", "activeTab", "tabs"],
 	"commands": {
 		"toggle-furigana": {
 			"suggested_key": {

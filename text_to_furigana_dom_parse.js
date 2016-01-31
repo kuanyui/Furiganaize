@@ -10,8 +10,13 @@ chrome.runtime.sendMessage({
     includeLinkText = JSON.parse(response.includeLinkText);
     persistentMode = JSON.parse(response.persistentMode);
     furiganaEnabled = JSON.parse(response.furiganaEnabled);
+    autoStart = JSON.parse(response.autoStart);
     //Parse for kanji and insert furigana immediately if persistent mode is enabled
     if (persistentMode && furiganaEnabled) enableFurigana();
+    if (persistentMode && autoStart){
+        //waiting for dictionary to load 
+        setTimeout(enableFurigana, 1000);
+    }
 });
 
 /*****************
@@ -59,6 +64,7 @@ function submitKanjiTextNodes(keepAllRuby) {
         if (strLength > 3500) 
             break;
     }
+    console.log(msgData.textToFuriganize);
     chrome.runtime.sendMessage(msgData, function(response) {});
 }
 
@@ -128,8 +134,12 @@ function toggleFurigana() {
 }
 
 function enableFurigana() {
+    console.log('enabling furigana');
     kanjiTextNodes = scanForKanjiTextNodes();
+    console.log(kanjiTextNodes);
+    console.log(persistentMode);
     if (!isEmpty(kanjiTextNodes) || persistentMode) {
+        console.log('furigana now!');
         document.body.setAttribute("fiprocessed", "true");
         //The background page will respond with data including a "furiganizedTextNodes" member, see below.
         submitKanjiTextNodes(false); 

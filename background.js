@@ -23,7 +23,8 @@ var localStoragePrefDefaults = {
     "filter_okurigana": true,
     "persistent_mode": false,
     "yomi_size": "",
-    "yomi_color": ""
+    "yomi_color": "",
+    "auto_start": false
 }
 
 for (var key in localStoragePrefDefaults) {
@@ -168,6 +169,7 @@ chrome.runtime.onMessage.addListener(
                 userKanjiList: localStorage.getItem("user_kanji_list"),
                 includeLinkText: localStorage.getItem("include_link_text"),
                 persistentMode: localStorage.getItem("persistent_mode"),
+                autoStart: localStorage.getItem("auto_start"),
                 furiganaEnabled: furiganaEnabled
             });
         //prepare tab for injection

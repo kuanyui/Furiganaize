@@ -9,6 +9,7 @@ function initControlValues() {
 		$("#filter_okurigana")[0].checked = JSON.parse(localStorage.getItem("filter_okurigana"));
 		$("#persistent_mode")[0].checked = JSON.parse(localStorage.getItem("persistent_mode"));
 		$("#persistent_mode")[0].checked = JSON.parse(localStorage.getItem("persistent_mode"));
+		$("#auto_start")[0].checked = JSON.parse(localStorage.getItem("auto_start"));
 		$("#yomi_size").val(localStorage.getItem("yomi_size"));
 		$("#yomi_color").colpick({
 			layout:'hex',
@@ -54,6 +55,19 @@ function initControlValues() {
 		$("#persistent_mode").bind("change", function() { 
 			var persistentMode = this.checked;
 			localStorage.setItem("persistent_mode", persistentMode);
+
+			if (!persistentMode) {
+				localStorage.setItem("auto_start", false);
+				$("#auto_start").prop('checked', false);
+			}
+		});
+		$("#auto_start").bind("change", function() {
+			var autoStart = this.checked;
+			localStorage.setItem("auto_start", autoStart);
+			if (autoStart) {
+				localStorage.setItem("persistent_mode", autoStart);
+				$("#persistent_mode").prop('checked', autoStart);
+			}
 		});
 		$("#yomi_size").bind("change", function() { 
 			var yomi_size = this.value;
