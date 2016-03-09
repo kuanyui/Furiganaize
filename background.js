@@ -183,6 +183,8 @@ chrome.runtime.onMessage.addListener(
                 tagged = tagger.parse(request.textToFuriganize[key]);
 
                 processed = '';
+                // override numeric term (dates, ages etc) readings
+                // TODO: implement override
                 var numeric = false;
                 var numeric_yomi = exceptions;
                 var numeric_kanji = '';

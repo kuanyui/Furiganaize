@@ -3,9 +3,8 @@ var includeLinkText;
 var kanjiTextNodes = {};
 var submittedKanjiTextNodes = {};
 
-chrome.runtime.sendMessage({
-    message: "config_values_request"
-}, function(response) {
+// fetch stored configuration values from the background script
+chrome.runtime.sendMessage({ message: "config_values_request"}, function(response) {
     userKanjiRegexp = new RegExp("[" + response.userKanjiList + "]");
     includeLinkText = JSON.parse(response.includeLinkText);
     persistentMode = JSON.parse(response.persistentMode);
@@ -25,9 +24,7 @@ chrome.runtime.sendMessage({
 function scanForKanjiTextNodes() {
     //Scan all text for /[\u3400-\u9FBF]/, then add each text node that isn't made up only of kanji only in the user's simple kanji list
     var xPathPattern = '//*[not(ancestor-or-self::head) and not(ancestor::select) and not(ancestor-or-self::script)and not(ancestor-or-self::ruby)' + (includeLinkText ? '' : ' and not(ancestor-or-self::a)') + ']/text()[normalize-space(.) != ""]';
-    console.log(xPathPattern);
     var foundNodes = {};
-    var maxTextLength = 2730;
     try {
         var iterator = document.evaluate(xPathPattern, document.body, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
         var nodeCtr = 100;
@@ -60,11 +57,7 @@ function submitKanjiTextNodes(keepAllRuby) {
         }
         //unset each member as done.
         delete kanjiTextNodes[key];
-        //Stop on length of 3500 chars (apparently ~50kb data in POST form). 
-        if (strLength > 3500) 
-            break;
     }
-    console.log(msgData.textToFuriganize);
     chrome.runtime.sendMessage(msgData, function(response) {});
 }
 
@@ -84,25 +77,6 @@ function revertRubies() {
         parentNd.normalize();
     }
     document.body.removeAttribute("fiprocessed");
-}
-
-function shortTextParts(origTxt, maxLength) {
-    //error
-    if (!maxLength) 
-        return [origTxt];
-    var substrParts = [];
-    var offset = 0;
-    while (offset + maxLength < origTxt.length) {
-        var strTemp = origTxt.substr(offset, maxLength);
-        //characters that end a sentence 
-        var matches = strTemp.match(/^[\s\S]+[。\?\!？！]/);
-        if (matches)
-            strTemp = matches[0];
-        substrParts.push(strTemp);
-        offset += strTemp.length;
-    }
-    substrParts.push(origTxt.substr(offset));
-    return substrParts;
 }
 
 function isEmpty(obj) {
@@ -134,17 +108,13 @@ function toggleFurigana() {
 }
 
 function enableFurigana() {
-    console.log('enabling furigana');
     kanjiTextNodes = scanForKanjiTextNodes();
-    console.log(kanjiTextNodes);
-    console.log(persistentMode);
     if (!isEmpty(kanjiTextNodes) || persistentMode) {
-        console.log('furigana now!');
         document.body.setAttribute("fiprocessed", "true");
         //The background page will respond with data including a "furiganizedTextNodes" member, see below.
         submitKanjiTextNodes(false); 
     } else {
-        alert("No text with kanji above your level found. Sorry, false alarm!");
+        alert("No text with kanji found. Sorry, false alarm!");
     }
 }
 
@@ -177,7 +147,6 @@ chrome.runtime.onMessage.addListener(
             if (!isEmpty(kanjiTextNodes)) {
                 submitKanjiTextNodes(false);
             } else {
-                //clear the entire hash. Delete this logic if requests are processed in multiple batches.
                 kanjiTextNodes = {}; 
                 document.body.setAttribute("fiprocessed", "true");
                 chrome.runtime.sendMessage({
@@ -185,7 +154,7 @@ chrome.runtime.onMessage.addListener(
                 }, function(response) {});
             }
         } else {
-            alert("Unexpected msg received from extension script: " + JSON.stringify(data).substr(0, 200));
+            console.log("Unexpected msg received from extension script: " + JSON.stringify(data).substr(0, 200));
         }
     }
 );
