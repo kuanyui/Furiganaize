@@ -6,11 +6,14 @@
 	<link rel="stylesheet" type="text/css" media="all" href="../ruby_gloss.css" />
 	<script src="../lib/colpick.js" type="text/javascript"></script>
 	<link rel="stylesheet" href="../css/colpick.css" type="text/css"/>
+	<link type="text/css" rel="stylesheet" href="../lib/jsgrid.min.css" />
+	<link type="text/css" rel="stylesheet" href="../lib/jsgrid-theme.min.css" />
+	<script type="text/javascript" src="../lib/jsgrid.min.js"></script>
 </head>
 <body class="fi_help_page">
 
 	<h2><img src="../img/furigana_active_48.png" style="vertical-align: -10%; margin-right: 8px;"/> IPA furigana options</h2>
-	
+
 	<div style="margin-bottom: 14px;">
 		<p><label>Include text inside links <input type="checkbox" id="includelinktext_inp"/></label>
 		<span style="font-style: italic; margin-left: 24px;">E.g. <span id="link_sample" class="fakelink"><ruby><rb>今日</rb><rt>きょう</rt></ruby>の<ruby><rb>天気</rb><rt>てんき</rt></ruby></span></span>
@@ -27,6 +30,9 @@
 	<div style="margin-bottom: 14px;">
 		<p><label>Auto-start <input type="checkbox" id="auto_start"/></label>
 	</div>
+	<div style="margin-bottom: 14px;">
+		<p><label>Unselectable furigana <input type="checkbox" id="unselectable_yomi"/></label>
+	</div>
 	<div style="margin-bottom: 14px;width: 340px">
 		<p><label style="display: block;float: left">Furigana size <input type="range" id="yomi_size" style="margin-left: 10px" min="6" max="18"/></label>
 		<span style="font-style: italic; margin-left: 24px;position: fixed"><div style="float: right;position: absolute;left: 300px;"><ruby><rb>今日</rb><rt class="style_sample" style="">きょう</rt></ruby>の<ruby><rb>天気</rb><rt class="style_sample" sttyle="">てんき</rt></ruby></span></div>
@@ -39,6 +45,10 @@
 	</div>
 	<div style="margin-bottom: 14px;">
 		<p><label>Furigana color reset <input type="button" value="Reset color to default" id="yomi_color_reset"/></label>
+	</div>
+	<div style="margin-bottom: 14px;">
+		<p><label>User reading dictionary</label>
+		<div id="jsGrid"></div>
 	</div>
 </body>
 </html>

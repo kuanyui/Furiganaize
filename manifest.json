@@ -7,7 +7,7 @@
 	  "persistent": false
 	},
 	"content_scripts": [ {
-		"js": ["kanji_content_detect.js"],
+		"js": ["lib/jquery-2.0.2.js", "lib/mutation-summary.js", "kanji_content_detect.js"],
 		"matches": ["http://*/*", "https://*/*", "file://*/*"]
 	} ],
 	"default_locale": "en",

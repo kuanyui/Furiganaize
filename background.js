@@ -24,8 +24,10 @@ var localStoragePrefDefaults = {
     "persistent_mode": false,
     "yomi_size": "",
     "yomi_color": "",
-    "auto_start": false
-}
+    "auto_start": false,
+    "user_reading_dict": "[]",
+    "unselectable_yomi": false,
+};
 
 for (var key in localStoragePrefDefaults) {
     if (localStorage.getItem(key) === null) {
@@ -33,6 +35,14 @@ for (var key in localStoragePrefDefaults) {
         localStorage.setItem(key, localStoragePrefDefaults[key]);
     }
 }
+
+userReadingDict = {};
+
+for (let item of JSON.parse(localStorage.getItem("user_reading_dict"))) {
+    userReadingDict[item['Kanji']] = item['Reading'];
+}
+
+unselectable_yomi = JSON.parse(localStorage.getItem("unselectable_yomi"));
 
 //initialize IGO-JS
 igo.getServerFileToArrayBufffer("res/ipadic.zip", function(buffer) {
@@ -95,9 +105,9 @@ function enableTabForFI(tab) {
 //Page action listener
 chrome.pageAction.onClicked.addListener(function(tab) {
     if (JSON.parse(localStorage.getItem('persistent_mode')) == true) {
-        chrome.tabs.query({} ,function (tabs) {
+        chrome.tabs.query({}, function(tabs) {
             for (var i = 0; i < tabs.length; i++) {
-                chrome.tabs.executeScript(tabs[i].id, {code: "toggleFurigana();"});
+                chrome.tabs.executeScript(tabs[i].id, { code: "toggleFurigana();" });
             }
         });
     } else {
@@ -110,9 +120,9 @@ chrome.pageAction.onClicked.addListener(function(tab) {
 //Keyboard action listener
 chrome.commands.onCommand.addListener(function(command) {
     if (JSON.parse(localStorage.getItem('persistent_mode')) == true) {
-        chrome.tabs.query({} ,function (tabs) {
+        chrome.tabs.query({}, function(tabs) {
             for (var i = 0; i < tabs.length; i++) {
-                chrome.tabs.executeScript(tabs[i].id, {code: "toggleFurigana();"});
+                chrome.tabs.executeScript(tabs[i].id, { code: "toggleFurigana();" });
             }
         });
     } else {
@@ -147,6 +157,11 @@ function addRuby(furiganized, kanji, yomi, key, processed) {
 
     yomi_style = yomi_size + yomi_color;
 
+    //add unselectable css to furigana
+    if (unselectable_yomi) {
+        yomi_style += '-webkit-touch-callout: none;-webkit-user-select: none;-khtml-user-select: none;-moz-user-select: none;-ms-user-select: none;user-select: none;'
+    }
+
     //inject furigana into text nodes
     //a different regex is used for repeat passes to avoid having multiple rubies on the same base
     if (processed.indexOf(kanji) == -1) {
@@ -172,10 +187,10 @@ chrome.runtime.onMessage.addListener(
                 autoStart: localStorage.getItem("auto_start"),
                 furiganaEnabled: furiganaEnabled
             });
-        //prepare tab for injection
+            //prepare tab for injection
         } else if (request.message == "init_tab_for_fi") {
             enableTabForFI(sender.tab);
-        //process DOM nodes containing kanji and insert furigana
+            //process DOM nodes containing kanji and insert furigana
         } else if (request.message == 'text_to_furiganize') {
             furiganized = {};
             for (key in request.textToFuriganize) {
@@ -192,7 +207,13 @@ chrome.runtime.onMessage.addListener(
                 tagged.forEach(function(t) {
                     if (t.surface.match(/[\u3400-\u9FBF]/)) {
                         kanji = t.surface;
-                        yomi = t.feature.split(',')[t.feature.split(',').length - 2];
+
+                        // override default reading with user-defined custom reading if present
+                        if (userReadingDict[kanji] === undefined) {
+                            yomi = t.feature.split(',')[t.feature.split(',').length - 2];
+                        } else {
+                            yomi = userReadingDict[kanji];
+                        }
 
                         //filter okurigana (word endings)
                         if (JSON.parse(localStorage.getItem("filter_okurigana"))) {
@@ -227,7 +248,7 @@ chrome.runtime.onMessage.addListener(
                 furiganizedTextNodes: furiganized
             });
             furiganaEnabled = true;
-        //update page icon to 'enabled'
+            //update page icon to 'enabled'
         } else if (request.message == "show_page_processed") {
             chrome.pageAction.setIcon({
                 path: {
@@ -240,7 +261,7 @@ chrome.runtime.onMessage.addListener(
                 title: "Remove furigana",
                 tabId: sender.tab.id
             });
-        //update page icon to 'disabled'
+            //update page icon to 'disabled'
         } else if (request.message == "reset_page_action_icon") {
             chrome.pageAction.setIcon({
                 path: {
