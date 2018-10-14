@@ -21,7 +21,7 @@
         "page": "user_cp/options.html",
         "browser_style": true
     },
-    "page_action": {
+    "browser_action": {
 	"default_icon": {"38": "img/icons/furigana_inactive_76.png"},
 	"default_title": "Toggle furigana"
     },
