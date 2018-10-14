@@ -7,7 +7,10 @@ Forked from [ilya.lissoboi's FuriganaInjectorPlusPlus](https://github.com/ilyali
 - Ported to WebExtension
 - Compatible with Firefox for Android.
 
-# TODO
+# Install
+You can install latest stable release on [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/furiganaize/)
+
+# Todo list
 - `document.addEventListener("DOMNodeInserted", DOMNodeInsertedHandler);  // FIXME: Mutation Events has been deprecated, use MutationObserve instead.`
 - New icon on SVG
 - Use `browser.browserAction` to make it more convenient to tap on Android?
