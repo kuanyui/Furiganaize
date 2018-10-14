@@ -3,8 +3,7 @@
     "version": "1.21",
     "manifest_version": 2,
     "background": {
-	"scripts": ["lib/jquery-2.0.2.js", "lib/sprintf.min.js", "lib/igo.min.js", "lib/zip.min.js", "lib/wanakana.min.js", "background.js", "lib/diff.js"],
-	"persistent": false
+	"scripts": ["lib/jquery-2.0.2.js", "lib/sprintf.min.js", "lib/igo.min.js", "lib/zip.min.js", "lib/wanakana.min.js", "background.js", "lib/diff.js"]
     },
     "content_scripts": [ {
 	"js": ["kanji_content_detect.js"],
@@ -18,7 +17,10 @@
 	       "96": "img/furigana_active_96.png",
 	       "128": "img/furigana_active.png",
 	       "256": "img/furigana_active.png" },
-    "options_page": "user_cp/options.html",
+    "options_ui": {
+        "page": "user_cp/options.html",
+        "browser_style": true
+    },
     "page_action": {
 	"default_icon": {"38": "img/icons/furigana_inactive_76.png"},
 	"default_title": "Toggle furigana"
