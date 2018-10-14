@@ -1,6 +1,6 @@
 {
 	"name": "__MSG_manifestExtName__",
-	"version": "1.21",
+	"version": "0.1",
 	"manifest_version": 2,
 	"applications": {
 		"gecko": {
