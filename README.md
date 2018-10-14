@@ -2,7 +2,7 @@
 
 A browser extension that can inject phonetic annotations of Japanese text (振り仮名, furigana) on the fly.
 
-Forked from ilya.lissoboi's FuriganaInjectorPlusPlus
+Forked from [ilya.lissoboi's FuriganaInjectorPlusPlus](https://github.com/ilyalissoboi/FuriganaInjectorPlusPlus)
 
 - Ported to WebExtension
 - Compatible with Firefox for Android.
