@@ -48,10 +48,15 @@ igo.getServerFileToArrayBufffer("res/ipadic.zip", function(buffer) {
         console.error(e.toString());
     }
 });
-
-$.getJSON("res/exceptions.json", function(data) {
-    exceptions = data;
-});
+var request = new XMLHttpRequest();
+request.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        exceptions = request.response
+    }
+}
+request.open('GET','res/exceptions.json',true);
+request.responseType = 'json';
+request.send();
 
 /*****************
  *  Functions

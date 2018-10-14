@@ -15,7 +15,7 @@ browser.runtime.sendMessage({message: "config_values_request"}).then(function(re
 	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || persistentMode)
 		browser.runtime.sendMessage({message: "init_tab_for_fi"});
 	else
-		document.addEventListener("DOMNodeInserted", DOMNodeInsertedHandler);
+		document.addEventListener("DOMNodeInserted", DOMNodeInsertedHandler);  // FIXME: Mutation Events has been deprecated, use MutationObserve instead.
 });
 
 function DOMNodeInsertedHandler(e) {
