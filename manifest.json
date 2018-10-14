@@ -31,14 +31,5 @@
 		"default_icon": {"38": "img/icons/furigana_inactive_76.png"},
 		"default_title": "Toggle furigana"
 	},
-	"permissions": ["http://*/*", "https://*/*", "file://*/*", "<all_urls>", "activeTab", "tabs", "storage"],
-	"commands": {
-		"toggle-furigana": {
-			"suggested_key": {
-				"default": "Alt+Shift+F",
-				"mac": "Alt+Shift+F"
-			},
-			"description": "Toggle furigana"
-		}
-	}
+	"permissions": ["http://*/*", "https://*/*", "file://*/*", "<all_urls>", "activeTab", "tabs", "storage"]
 }

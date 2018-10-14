@@ -107,21 +107,6 @@ browser.browserAction.onClicked.addListener(function(tab) {
     }
 });
 
-//Keyboard action listener
-browser.commands.onCommand.addListener(function(command) {
-    if (JSON.parse(localStorage.getItem('persistent_mode')) == true) {
-        browser.tabs.query({} ,function (tabs) {
-            for (var i = 0; i < tabs.length; i++) {
-                browser.tabs.executeScript(tabs[i].id, {code: "toggleFurigana();"});
-            }
-        });
-    } else {
-        browser.tabs.executeScript(tab.id, {
-            code: "toggleFurigana();"
-        });
-    }
-});
-
 //Ruby tag injector
 function addRuby(furiganized, kanji, yomi, key, processed) {
     //furigana can be displayed in either hiragana, katakana or romaji
