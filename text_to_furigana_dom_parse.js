@@ -4,7 +4,7 @@ var kanjiTextNodes = {};
 var submittedKanjiTextNodes = {};
 
 // fetch stored configuration values from the background script
-chrome.runtime.sendMessage({ message: "config_values_request"}, function(response) {
+browser.runtime.sendMessage({ message: "config_values_request"}, function(response) {
     userKanjiRegexp = new RegExp("[" + response.userKanjiList + "]");
     includeLinkText = JSON.parse(response.includeLinkText);
     persistentMode = JSON.parse(response.persistentMode);
@@ -13,7 +13,7 @@ chrome.runtime.sendMessage({ message: "config_values_request"}, function(respons
     //Parse for kanji and insert furigana immediately if persistent mode is enabled
     if (persistentMode && furiganaEnabled) enableFurigana();
     if (persistentMode && autoStart){
-        //waiting for dictionary to load 
+        //waiting for dictionary to load
         setTimeout(enableFurigana, 1000);
     }
 });
@@ -51,21 +51,21 @@ function submitKanjiTextNodes(keepAllRuby) {
     for (key in kanjiTextNodes) {
         if (kanjiTextNodes[key] && kanjiTextNodes[key].data) {
             strLength += kanjiTextNodes[key].data.length;
-            msgData.textToFuriganize[key] = kanjiTextNodes[key].data; 
+            msgData.textToFuriganize[key] = kanjiTextNodes[key].data;
             //reduce the nodes just to strings for passing to the background page.
             submittedKanjiTextNodes[key] = kanjiTextNodes[key];
         }
         //unset each member as done.
         delete kanjiTextNodes[key];
     }
-    chrome.runtime.sendMessage(msgData, function(response) {});
+    browser.runtime.sendMessage(msgData, function(response) {});
 }
 
 function revertRubies() {
     var rubies = document.getElementsByTagName("RUBY");
     while (rubies.length > 0) {
         //this iterates because this item will be removed, shortening the list
-        var rubyElem = rubies.item(0); 
+        var rubyElem = rubies.item(0);
         var newText = "";
         var childNd = rubyElem.firstChild;
         var parentNd = rubyElem.parentNode;
@@ -90,17 +90,17 @@ function isEmpty(obj) {
 function toggleFurigana() {
     if (document.body.hasAttribute("fiprocessed")) {
         revertRubies();
-        chrome.runtime.sendMessage({
+        browser.runtime.sendMessage({
             message: "reset_page_action_icon"
             //icon can only be changed by background page
-        }, function(response) {}); 
+        }, function(response) {});
         kanjiTextNodes = {};
     } else {
         kanjiTextNodes = scanForKanjiTextNodes();
         if (!isEmpty(kanjiTextNodes) || persistentMode) {
             document.body.setAttribute("fiprocessed", "true");
             //The background page will respond with data including a "furiganizedTextNodes" member, see below.
-            submitKanjiTextNodes(false); 
+            submitKanjiTextNodes(false);
         } else {
             alert("No text with kanji above your level found. Sorry, false alarm!");
         }
@@ -112,7 +112,7 @@ function enableFurigana() {
     if (!isEmpty(kanjiTextNodes) || persistentMode) {
         document.body.setAttribute("fiprocessed", "true");
         //The background page will respond with data including a "furiganizedTextNodes" member, see below.
-        submitKanjiTextNodes(false); 
+        submitKanjiTextNodes(false);
     } else {
         alert("No text with kanji found. Sorry, false alarm!");
     }
@@ -121,16 +121,16 @@ function enableFurigana() {
 function disableFurigana() {
     if (document.body.hasAttribute("fiprocessed")) {
         revertRubies();
-        chrome.runtime.sendMessage({
+        browser.runtime.sendMessage({
             message: "reset_page_action_icon"
             //icon can only be changed by background page
-        }, function(response) {}); 
+        }, function(response) {});
         kanjiTextNodes = {};
     }
 }
 
 /*** Events ***/
-chrome.runtime.onMessage.addListener(
+browser.runtime.onMessage.addListener(
     function(request, sender, sendResponseCallback) {
         if (request.furiganizedTextNodes) {
             for (key in request.furiganizedTextNodes) {
@@ -147,9 +147,9 @@ chrome.runtime.onMessage.addListener(
             if (!isEmpty(kanjiTextNodes)) {
                 submitKanjiTextNodes(false);
             } else {
-                kanjiTextNodes = {}; 
+                kanjiTextNodes = {};
                 document.body.setAttribute("fiprocessed", "true");
-                chrome.runtime.sendMessage({
+                browser.runtime.sendMessage({
                     message: "show_page_processed"
                 }, function(response) {});
             }
