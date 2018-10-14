@@ -2,6 +2,11 @@
 	"name": "__MSG_manifestExtName__",
 	"version": "1.21",
 	"manifest_version": 2,
+	"applications": {
+		"gecko": {
+			"id": "{a2503cd4-4083-4c2f-bef2-37767a569867}"
+		}
+	},
 	"background": {
 		"scripts": ["lib/jquery-2.0.2.js", "lib/sprintf.min.js", "lib/igo.min.js", "lib/zip.min.js", "lib/wanakana.min.js", "lib/diff.js","background.js"]
 	},
