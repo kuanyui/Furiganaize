@@ -9,7 +9,7 @@
 	<script type="text/javascript">
 		//No idea why this, combined with text_to_furigana_dom_parse.js inclusion above, works when
 		//  using a postMessage instead wont.
-		chrome.extension.sendMessage({message: "init_tab_for_fi"});
+		browser.tabs.sendMessage({message: "init_tab_for_fi"});
 	</script>
 </head>
 <body class="fi_help_page">

@@ -7,7 +7,7 @@ var furiganaEnabled = false;
 
 //initialize variables
 if (!localStorage)
-    console.log("Error: localStorage not available to background page. Has local storage been disabled in this instance of Chrome?");
+    console.log("Error: localStorage not available to background page. Has local storage been disabled in this instance of browser?");
 
 if (localStorage.getItem("user_kanji_list") === null) {
     console.log("The localStorage \"user_kanji_list\" value was null. It will be initialised to the installation default list.");
@@ -71,52 +71,52 @@ function loadTagger(dicdir) {
 }
 //prepare a tab for furigana injection
 function enableTabForFI(tab) {
-    chrome.pageAction.setIcon({
+    browser.browserAction.setIcon({
         path: {
             "19": "img/icons/furigana_inactive_38.png",
             "38": "img/icons/furigana_inactive_76.png"
         },
         tabId: tab.id
     });
-    chrome.pageAction.setTitle({
+    browser.browserAction.setTitle({
         title: "Insert furigana",
         tabId: tab.id
     });
-    chrome.pageAction.show(tab.id);
-    chrome.tabs.executeScript(tab.id, {
+    // browser.browserAction.show(tab.id);
+    browser.tabs.executeScript(tab.id, {
         file: "text_to_furigana_dom_parse.js"
     });
 }
 
 /*****************
- *  Chrome events
+ *  Browser events
  *****************/
 
 //Page action listener
-chrome.pageAction.onClicked.addListener(function(tab) {
+browser.browserAction.onClicked.addListener(function(tab) {
     if (JSON.parse(localStorage.getItem('persistent_mode')) == true) {
-        chrome.tabs.query({} ,function (tabs) {
+        browser.tabs.query({} ,function (tabs) {
             for (var i = 0; i < tabs.length; i++) {
-                chrome.tabs.executeScript(tabs[i].id, {code: "toggleFurigana();"});
+                browser.tabs.executeScript(tabs[i].id, {code: "toggleFurigana();"});
             }
         });
     } else {
-        chrome.tabs.executeScript(tab.id, {
+        browser.tabs.executeScript(tab.id, {
             code: "toggleFurigana();"
         });
     }
 });
 
 //Keyboard action listener
-chrome.commands.onCommand.addListener(function(command) {
+browser.commands.onCommand.addListener(function(command) {
     if (JSON.parse(localStorage.getItem('persistent_mode')) == true) {
-        chrome.tabs.query({} ,function (tabs) {
+        browser.tabs.query({} ,function (tabs) {
             for (var i = 0; i < tabs.length; i++) {
-                chrome.tabs.executeScript(tabs[i].id, {code: "toggleFurigana();"});
+                browser.tabs.executeScript(tabs[i].id, {code: "toggleFurigana();"});
             }
         });
     } else {
-        chrome.tabs.executeScript(tab.id, {
+        browser.tabs.executeScript(tab.id, {
             code: "toggleFurigana();"
         });
     }
@@ -161,7 +161,7 @@ function addRuby(furiganized, kanji, yomi, key, processed) {
 }
 
 //Extension requests listener. Handles communication between extension and the content scripts
-chrome.runtime.onMessage.addListener(
+browser.runtime.onMessage.addListener(
     function(request, sender, sendResponseCallback) {
         //send config variables to content script
         if (request.message == "config_values_request") {
@@ -223,33 +223,33 @@ chrome.runtime.onMessage.addListener(
                 });
             }
             //send processed DOM nodes back to the tab content script
-            chrome.tabs.sendMessage(sender.tab.id, {
+            browser.tabs.sendMessage(sender.tab.id, {
                 furiganizedTextNodes: furiganized
             });
             furiganaEnabled = true;
         //update page icon to 'enabled'
         } else if (request.message == "show_page_processed") {
-            chrome.pageAction.setIcon({
+            browser.browserAction.setIcon({
                 path: {
                     "19": "img/icons/furigana_active_38.png",
                     "38": "img/icons/furigana_active_76.png"
                 },
                 tabId: sender.tab.id
             });
-            chrome.pageAction.setTitle({
+            browser.browserAction.setTitle({
                 title: "Remove furigana",
                 tabId: sender.tab.id
             });
         //update page icon to 'disabled'
         } else if (request.message == "reset_page_action_icon") {
-            chrome.pageAction.setIcon({
+            browser.browserAction.setIcon({
                 path: {
                     "19": "img/icons/furigana_inactive_38.png",
                     "38": "img/icons/furigana_inactive_76.png"
                 },
                 tabId: sender.tab.id
             });
-            chrome.pageAction.setTitle({
+            browser.browserAction.setTitle({
                 title: "Insert furigana",
                 tabId: sender.tab.id
             });
