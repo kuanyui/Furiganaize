@@ -1,4 +1,13 @@
-FuriganaInjectorPlusPlus
-========================
+# Furiganaize
 
-A browser extension allowing the injection of phonetic annotations for Japanese text (furigana) on the fly.
+A browser extension that can inject phonetic annotations of Japanese text (振り仮名, furigana) on the fly.
+
+Forked from ilya.lissoboi's FuriganaInjectorPlusPlus
+
+- Ported to WebExtension
+- Compatible with Firefox for Android.
+
+# TODO
+- `document.addEventListener("DOMNodeInserted", DOMNodeInsertedHandler);  // FIXME: Mutation Events has been deprecated, use MutationObserve instead.`
+- New icon on SVG
+- Use `browser.browserAction` to make it more convenient to tap on Android?
