@@ -5,7 +5,7 @@ var userKanjiRegexp;
 var includeLinkText = false;
 var insertedNodesToCheck = [];
 var insertedNodeCheckTimer = null;
-browser.runtime.sendMessage({message: "config_values_request"}, function(response) {
+browser.runtime.sendMessage({message: "config_values_request"}).then(function(response) {
 	userKanjiRegexp = new RegExp("[" + response.userKanjiList + "]");
 	includeLinkText = JSON.parse(response.includeLinkText);
 	persistentMode = JSON.parse(response.persistentMode);

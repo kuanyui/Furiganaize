@@ -71,20 +71,22 @@ function loadTagger(dicdir) {
 }
 //prepare a tab for furigana injection
 function enableTabForFI(tab) {
-    browser.browserAction.setIcon({
-        path: {
-            "19": "img/icons/furigana_inactive_38.png",
-            "38": "img/icons/furigana_inactive_76.png"
-        },
-        tabId: tab.id
-    });
+    if (typeof browser.browserAction === 'function') {  // Firefox for Android doesn't support this.
+        browser.browserAction.setIcon({
+            path: {
+                "19": "img/icons/furigana_inactive_38.png",
+                "38": "img/icons/furigana_inactive_76.png"
+            },
+            tabId: tab.id
+        });
+    }
     browser.browserAction.setTitle({
         title: "Insert furigana",
         tabId: tab.id
     });
     // browser.browserAction.show(tab.id);
-    browser.tabs.executeScript(tab.id, {
-        file: "text_to_furigana_dom_parse.js"
+    return browser.tabs.executeScript(tab.id, {
+        file: "/text_to_furigana_dom_parse.js"
     });
 }
 
@@ -159,7 +161,7 @@ browser.runtime.onMessage.addListener(
             });
         //prepare tab for injection
         } else if (request.message == "init_tab_for_fi") {
-            enableTabForFI(sender.tab);
+            enableTabForFI(sender.tab)
         //process DOM nodes containing kanji and insert furigana
         } else if (request.message == 'text_to_furiganize') {
             furiganized = {};
@@ -214,26 +216,30 @@ browser.runtime.onMessage.addListener(
             furiganaEnabled = true;
         //update page icon to 'enabled'
         } else if (request.message == "show_page_processed") {
-            browser.browserAction.setIcon({
-                path: {
-                    "19": "img/icons/furigana_active_38.png",
-                    "38": "img/icons/furigana_active_76.png"
-                },
-                tabId: sender.tab.id
-            });
+            if (typeof browser.browserAction.setIcon === 'function') {
+                browser.browserAction.setIcon({
+                    path: {
+                        "19": "img/icons/furigana_active_38.png",
+                        "38": "img/icons/furigana_active_76.png"
+                    },
+                    tabId: sender.tab.id
+                });
+            }
             browser.browserAction.setTitle({
                 title: "Remove furigana",
                 tabId: sender.tab.id
             });
         //update page icon to 'disabled'
         } else if (request.message == "reset_page_action_icon") {
-            browser.browserAction.setIcon({
-                path: {
-                    "19": "img/icons/furigana_inactive_38.png",
-                    "38": "img/icons/furigana_inactive_76.png"
-                },
-                tabId: sender.tab.id
-            });
+            if (typeof browser.browserAction.setIcon === 'function') {
+                browser.browserAction.setIcon({
+                    path: {
+                        "19": "img/icons/furigana_inactive_38.png",
+                        "38": "img/icons/furigana_inactive_76.png"
+                    },
+                    tabId: sender.tab.id
+                });
+            }
             browser.browserAction.setTitle({
                 title: "Insert furigana",
                 tabId: sender.tab.id

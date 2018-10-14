@@ -4,7 +4,7 @@ var kanjiTextNodes = {};
 var submittedKanjiTextNodes = {};
 
 // fetch stored configuration values from the background script
-browser.runtime.sendMessage({ message: "config_values_request"}, function(response) {
+browser.runtime.sendMessage({ message: "config_values_request"}).then(function(response) {
     userKanjiRegexp = new RegExp("[" + response.userKanjiList + "]");
     includeLinkText = JSON.parse(response.includeLinkText);
     persistentMode = JSON.parse(response.persistentMode);
@@ -158,3 +158,5 @@ browser.runtime.onMessage.addListener(
         }
     }
 );
+
+'dom_parse ends here'
