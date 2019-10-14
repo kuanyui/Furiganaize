@@ -1,6 +1,6 @@
 {
 	"name": "__MSG_manifestExtName__",
-	"version": "0.1",
+	"version": "0.2",
 	"manifest_version": 2,
 	"applications": {
 		"gecko": {
@@ -31,5 +31,15 @@
 		"default_icon": {"38": "img/icons/furigana_inactive_76.png"},
 		"default_title": "Toggle furigana"
 	},
+	"commands": {
+        "toggle-furigana": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+F",
+                "mac": "Command+Shift+F",
+                "android": "Ctrl+Shift+F"
+            },
+            "description": "Toggle furigana"
+        }
+    },
 	"permissions": ["http://*/*", "https://*/*", "file://*/*", "<all_urls>", "activeTab", "tabs", "storage"]
 }
