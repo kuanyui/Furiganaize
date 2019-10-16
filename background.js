@@ -6,17 +6,18 @@ var furiganaEnabled = false;
 
 
 function doInCurrentTab(tabCallback) {
-    chrome.tabs.query(
+    browser.tabs.query(
         { currentWindow: true, active: true },
         function (tabArray) { tabCallback(tabArray[0]); }
     );
 }
-
-browser.commands.onCommand.addListener(function (cmd) {
-    doInCurrentTab(function (curTab) {
-        browser.tabs.executeScript(curTab.id, {code: "toggleFurigana();"});
+if (browser.commands) {  // Android does not support browser.commands
+    browser.commands.onCommand.addListener(function (cmd) {
+        doInCurrentTab(function (curTab) {
+            browser.tabs.executeScript(curTab.id, {code: "toggleFurigana();"});
+        })
     })
-})
+}
 
 //initialize variables
 if (!localStorage)

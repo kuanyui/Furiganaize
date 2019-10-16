@@ -18,7 +18,6 @@ You can install latest stable release on [Firefox Add-ons](https://addons.mozill
 - Customizable shortcuts
 
 # Known Issues
-- **v0.2 doesn't work on Android, I'm trying to find out why. But I have no that much free time, please be patient.**
 - Not works on Google search result page.
 - For overlapped word splitting, for example, 低音域（ていおんいき）, will be splitted into ていおん and おんいき, then it will has an overlapped. However, when disable Furiganaize, this will cause something like (おん)(おん)(おん).
   - Seems some other conditions will result to the above issue.
