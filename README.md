@@ -19,7 +19,7 @@ You can install latest stable release on [Firefox Add-ons](https://addons.mozill
 
 # Known Issues
 - Not works on Google search result page.
-- For overlapped word splitting, for example, 低音域（ていおんいき）, will be splitted into ていおん and おんいき, then it will has an overlapped. However, when disable Furiganaize, this will cause something like (おん)(おん)(おん).
+- For overlapped word splitting, for example, 低音域（ていおんいき）, will be splitted into ていおん and おんいき, then it will has an overlapping. However, when disable Furiganaize, this will cause something like (おん)(おん)(おん).
   - Seems some other conditions will result to the above issue.
 - Don't add furigana in `<input>`, `<textarea>`
 

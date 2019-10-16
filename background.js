@@ -13,9 +13,11 @@ function doInCurrentTab(tabCallback) {
 }
 if (browser.commands) {  // Android does not support browser.commands
     browser.commands.onCommand.addListener(function (cmd) {
-        doInCurrentTab(function (curTab) {
-            browser.tabs.executeScript(curTab.id, {code: "toggleFurigana();"});
-        })
+        if (cmd === 'toggle-furigana') {
+            doInCurrentTab(function (curTab) {
+                browser.tabs.executeScript(curTab.id, {code: "toggleFurigana();"});
+            })
+        }
     })
 }
 
