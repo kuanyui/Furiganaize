@@ -14,7 +14,7 @@ browser.runtime.sendMessage({message: "config_values_request"}).then(function(re
 	// If persistent mode enabled - enable furigana right away
 	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || persistentMode)
 		browser.runtime.sendMessage({message: "init_tab_for_fi"});
-	else {  // FIXME: Mutation Events has been deprecated, use MutationObserve instead.
+	else {  // FIXME: Mutation Events has been deprecated, use MutationObserve instead. [FIXED 3/MAY/2020]
         const observer = new MutationObserver(DOMNodeInsertedHandler);
         mutationObserver.observe(document, DOMNodeInsertedHandler);
 		//document.addEventListener("DOMNodeInserted", DOMNodeInsertedHandler);
