@@ -14,20 +14,29 @@ browser.runtime.sendMessage({message: "config_values_request"}).then(function(re
 	// If persistent mode enabled - enable furigana right away
 	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || persistentMode)
 		browser.runtime.sendMessage({message: "init_tab_for_fi"});
-	else
-		document.addEventListener("DOMNodeInserted", DOMNodeInsertedHandler);  // FIXME: Mutation Events has been deprecated, use MutationObserve instead.
+	else {  // FIXME: Mutation Events has been deprecated, use MutationObserve instead.
+        const observer = new MutationObserver(DOMNodeInsertedHandler);
+        mutationObserver.observe(document, DOMNodeInsertedHandler);
+		//document.addEventListener("DOMNodeInserted", DOMNodeInsertedHandler);
+    }
 });
 
-function DOMNodeInsertedHandler(e) {
-	if ((e.target.nodeType == Node.TEXT_NODE || e.target.nodeType == Node.CDATA_SECTION_NODE) && e.target.parentNode)
-		insertedNodesToCheck.push(e.target.parentNode)
-	else if (e.target.nodeType == Node.ELEMENT_NODE && e.target.tagName != "IMG" &&
-		e.target.tagName != "OBJECT"  && e.target.tagName != "EMBED")
-		insertedNodesToCheck.push(e.target);
-	else
-		return;
-	if (!insertedNodeCheckTimer)
-		insertedNodeCheckTimer = setTimeout(checkInsertedNodes, 1000);
+function DOMNodeInsertedHandler(mutationList, observer) {
+    for (let mutation of mutationList) {
+        if (mutation.type === 'childList') {
+            e = mutation;
+            if ((e.target.nodeType == Node.TEXT_NODE || e.target.nodeType == Node.CDATA_SECTION_NODE) && e.target.parentNode)
+		        insertedNodesToCheck.push(e.target.parentNode)
+	        else if (e.target.nodeType == Node.ELEMENT_NODE && e.target.tagName != "IMG" &&
+		              e.target.tagName != "OBJECT"  && e.target.tagName != "EMBED")
+		                insertedNodesToCheck.push(e.target);
+	        else
+                return;
+	        if (!insertedNodeCheckTimer)
+		        insertedNodeCheckTimer = setTimeout(checkInsertedNodes, 1000);
+         }
+    }
+
 }
 
 function checkInsertedNodes() {
