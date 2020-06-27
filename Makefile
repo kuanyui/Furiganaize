@@ -10,7 +10,7 @@ build-xpi:
 	zip -r -FS ${XPI_DIR}/${NAME}.xpi [^.]*
 
 server: build-xpi
-	ifconfig | grep "inet " | grep --invert-match '127.0.0.1'
+	ip a | grep "inet " | grep --invert-match '127.0.0.1' | sed -E "s/[^0-9]+([^\/]+).+/\1/"
 	cd ${XPI_DIR}; python3 -m http.server 8888
 
 zip-repo:
