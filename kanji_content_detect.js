@@ -17,7 +17,7 @@ browser.runtime.sendMessage({message: "config_values_request"}).then(function(re
 	// Having received the config data, start searching for relevant kanji
 	// If none find, do nothing for now except start a listener for node insertions
 	// If persistent mode enabled - enable furigana right away
-	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || persistentMode) {
+	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || persistentMode || globallyShowMobileFloatingButton) {
 		browser.runtime.sendMessage({message: "init_tab_for_fi"});
     } else {
         const observer = new MutationObserver(DOMNodeInsertedHandler);
@@ -97,7 +97,6 @@ function fiAddFloatingIcon() {
     if (existed) {
         existed.remove()
     }
-    console.log('FLOATING')
     const div = document.createElement('div')
     div.id = 'furiganaize_use_mobile_floating_button'
     div.innerHTML = `<span>ふ</span>`
@@ -106,28 +105,29 @@ function fiAddFloatingIcon() {
     // div.ondrag = function (ev) {
     //     console.log(ev)
     // }
-    div.onclick = function () {
-        toggleFurigana()
-    }
+    div.onclick = function () { toggleFurigana() }
     const styleEl = document.createElement('style')
     styleEl.innerText = `
     #furiganaize_use_mobile_floating_button {
         position: fixed;
-        right: 40px;
-        bottom: 40px;
+        right: 20px;
+        bottom: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
         background : #eeeeee;
         border: 1px solid #aaa;
         border-radius: 2rem;
-        width: 3rem;
-        height: 3rem;
+        width: 4rem;
+        height: 4rem;
         cursor: pointer;
         user-select: none;
+        font-family: sans;
     }
     #furiganaize_use_mobile_floating_button span {
-        font-size: 2rem;
+        font-size: 3rem;
+        user-select: none;
+        margin-top: -0.5rem;
     }
     #furiganaize_use_mobile_floating_button:active {
         background: #cccccc;
