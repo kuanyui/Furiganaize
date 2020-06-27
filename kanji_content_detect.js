@@ -98,8 +98,10 @@ function fiAddFloatingIcon() {
         existed.remove()
     }
     const div = document.createElement('div')
+    const span = document.createElement('span')
     div.id = 'furiganaize_use_mobile_floating_button'
-    div.innerHTML = `<span>ふ</span>`
+    span.innerText = `ふ`
+    div.append(span)
     // TODO: Draggable floating button
     // div.draggable = true
     // div.ondrag = function (ev) {
