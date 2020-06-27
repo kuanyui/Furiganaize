@@ -175,7 +175,7 @@ function enableTabForFI(tab) {
         });
     }
     browser.browserAction.setTitle({
-        title: "Insert furigana",
+        title: "振り仮名を挿入",  // TODO: different title for mobile floating icon
         tabId: tab.id
     });
     // browser.browserAction.show(tab.id);
@@ -302,8 +302,8 @@ browser.runtime.onMessage.addListener(
                     tabId: sender.tab.id
                 });
             }
-            browser.browserAction.setTitle({
-                title: "Remove furigana",
+            browser.browserAction.setTitle({   // TODO: different title for mobile floating icon
+                title: "振り仮名を削除",
                 tabId: sender.tab.id
             });
         //update page icon to 'disabled'
@@ -318,7 +318,7 @@ browser.runtime.onMessage.addListener(
                 });
             }
             browser.browserAction.setTitle({
-                title: "Insert furigana",
+                title: "振り仮名を挿入",   // TODO: different title for mobile floating icon
                 tabId: sender.tab.id
             });
             furiganaEnabled = false;
