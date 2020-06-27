@@ -36,9 +36,17 @@ if (browser.commands) {  // NOTE: Android does not support browser.commands
             doInCurrentTab(function (curTab) {
                 if (lsMan.useMobileFloatingButton) {
                     if (lsMan.globallyShowMobileFloatingButton) {
-                        browser.tabs.executeScript(curTab.id, {code: "fiRemoveFloatingIcon();"});
+                        browser.tabs.query({}, function (tabs) {
+                            for (var i = 0; i < tabs.length; i++) {
+                                browser.tabs.executeScript(tabs[i].id, { code: "fiRemoveFloatingIcon();" });
+                            }
+                        })
                     } else {
-                        browser.tabs.executeScript(curTab.id, {code: "fiAddFloatingIcon();"});
+                        browser.tabs.query({}, function (tabs) {
+                            for (var i = 0; i < tabs.length; i++) {
+                                browser.tabs.executeScript(tabs[i].id, { code: "fiAddFloatingIcon();" });
+                            }
+                        })
                     }
                     lsMan.globallyShowMobileFloatingButton = !lsMan.globallyShowMobileFloatingButton
                 } else {
@@ -48,6 +56,35 @@ if (browser.commands) {  // NOTE: Android does not support browser.commands
         }
     })
 }
+
+// Click on browserAction icon
+browser.browserAction.onClicked.addListener(function(curTab) {
+    if (JSON.parse(localStorage.getItem('persistent_mode')) == true) {
+        browser.tabs.query({} ,function (tabs) {
+            for (var i = 0; i < tabs.length; i++) {
+                browser.tabs.executeScript(tabs[i].id, {code: "toggleFurigana();"});
+            }
+        });
+    }
+    if (lsMan.useMobileFloatingButton) {
+        if (lsMan.globallyShowMobileFloatingButton) {
+            browser.tabs.query({}, function (tabs) {
+                for (var i = 0; i < tabs.length; i++) {
+                    browser.tabs.executeScript(tabs[i].id, { code: "fiRemoveFloatingIcon();" });
+                }
+            })
+        } else {
+            browser.tabs.query({}, function (tabs) {
+                for (var i = 0; i < tabs.length; i++) {
+                    browser.tabs.executeScript(tabs[i].id, { code: "fiAddFloatingIcon();" });
+                }
+            })
+        }
+        lsMan.globallyShowMobileFloatingButton = !lsMan.globallyShowMobileFloatingButton
+    } else {
+        browser.tabs.executeScript(curTab.id, {code: "toggleFurigana();"});
+    }
+});
 
 //initialize variables
 if (!localStorage)
@@ -147,32 +184,6 @@ function enableTabForFI(tab) {
     });
 }
 
-/*****************
- *  Browser events
- *****************/
-
-//Page action listener
-browser.browserAction.onClicked.addListener(function(curTab) {
-    if (JSON.parse(localStorage.getItem('persistent_mode')) == true) {
-        browser.tabs.query({} ,function (tabs) {
-            for (var i = 0; i < tabs.length; i++) {
-                browser.tabs.executeScript(tabs[i].id, {code: "toggleFurigana();"});
-            }
-        });
-    } else {
-        if (lsMan.useMobileFloatingButton) {
-            if (lsMan.globallyShowMobileFloatingButton) {
-                browser.tabs.executeScript(curTab.id, {code: "fiRemoveFloatingIcon();"});
-            } else {
-                browser.tabs.executeScript(curTab.id, {code: "fiAddFloatingIcon();"});
-            }
-            lsMan.globallyShowMobileFloatingButton = !lsMan.globallyShowMobileFloatingButton
-        }else {
-            browser.tabs.executeScript(curTab.id, {code: "toggleFurigana();"});
-        }
-    }
-});
-
 //Ruby tag injector
 function addRuby(furiganized, kanji, yomi, key, processed) {
     //furigana can be displayed in either hiragana, katakana or romaji
@@ -219,7 +230,8 @@ browser.runtime.onMessage.addListener(
             sendResponseCallback({
                 userKanjiList: localStorage.getItem("user_kanji_list"),
                 includeLinkText: localStorage.getItem("include_link_text"),
-                useMobileFloatingButton: localStorage.getItem("use_mobile_floating_button"),
+                useMobileFloatingButton: lsMan.useMobileFloatingButton,
+                globallyShowMobileFloatingButton: lsMan.globallyShowMobileFloatingButton,
                 persistentMode: localStorage.getItem("persistent_mode"),
                 autoStart: localStorage.getItem("auto_start"),
                 furiganaEnabled: furiganaEnabled

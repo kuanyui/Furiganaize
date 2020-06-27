@@ -9,13 +9,17 @@ browser.runtime.sendMessage({message: "config_values_request"}).then(function(re
 	userKanjiRegexp = new RegExp("[" + response.userKanjiList + "]");
 	includeLinkText = JSON.parse(response.includeLinkText);
 	persistentMode = JSON.parse(response.persistentMode);
-	useMobileFloatingButton = JSON.parse(response.useMobileFloatingButton);
+	let useMobileFloatingButton = JSON.parse(response.useMobileFloatingButton);
+    let globallyShowMobileFloatingButton = JSON.parse(response.globallyShowMobileFloatingButton);
+    if (globallyShowMobileFloatingButton) {
+        fiAddFloatingIcon()
+    }
 	// Having received the config data, start searching for relevant kanji
 	// If none find, do nothing for now except start a listener for node insertions
 	// If persistent mode enabled - enable furigana right away
-	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || persistentMode)
+	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || persistentMode) {
 		browser.runtime.sendMessage({message: "init_tab_for_fi"});
-	else {  // FIXME: Mutation Events has been deprecated, use MutationObserve instead. [FIXED 3/MAY/2020]
+    } else {
         const observer = new MutationObserver(DOMNodeInsertedHandler);
         mutationObserver.observe(document, DOMNodeInsertedHandler);
 		//document.addEventListener("DOMNodeInserted", DOMNodeInsertedHandler);

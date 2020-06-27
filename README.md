@@ -11,7 +11,6 @@ Forked from [ilya.lissoboi's FuriganaInjectorPlusPlus](https://github.com/ilyali
 You can install latest stable release on [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/furiganaize/)
 
 # Todo list
-- `document.addEventListener("DOMNodeInserted", DOMNodeInsertedHandler);  // FIXME: Mutation Events has been deprecated, use MutationObserve instead.`
 - New icon on SVG
 - Use `browser.browserAction` to make it more convenient to tap on Android?
 - Check `typeof toggleFurigana` before calling it. (if undefined, load it.)
@@ -22,7 +21,7 @@ You can install latest stable release on [Firefox Add-ons](https://addons.mozill
 - For overlapped word splitting, for example, 低音域（ていおんいき）, will be splitted into ていおん and おんいき, then it will has an overlapping. However, when disable Furiganaize, this will cause something like (おん)(おん)(おん).
   - Seems some other conditions will result to the above issue.
 - Don't add furigana in `<input>`, `<textarea>`
-
+- Considering remove `persistent_mode` because I don't know what it is doing...
 
 # About License
 I originally found this great Chrome extension at [ilya.lissoboi](https://github.com/ilyalissoboi)'s [FuriganaInjectorPlusPlus](https://github.com/ilyalissoboi/FuriganaInjectorPlusPlus), but I want to make it run on my Firefox for Android so I forked it and port it into WebExtension. [It's license is MIT](https://github.com/ilyalissoboi/FuriganaInjectorPlusPlus/blob/master/LICENSE) so I decide to follow it.
