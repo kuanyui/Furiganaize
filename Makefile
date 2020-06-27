@@ -3,7 +3,7 @@ NAME="Furiganaize"
 XPI_DIR=../xpi
 
 dev:
-	web-ext run
+	web-ext --verbose --firefox-profile ${HOME}/.mozilla/firefox/8mjc3gr8.DEV/ run
 
 build-xpi:
 	mkdir -p ${XPI_DIR}
