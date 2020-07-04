@@ -92,6 +92,16 @@ function fiRemoveFloatingIcon() {
     if (el) { el.remove() }
 }
 
+function safeToggleFurigana() {
+    if ((typeof toggleFurigana) !== 'function') {
+        browser.runtime.sendMessage({ message: "force_load_dom_parser" }).then(function (response) {
+            toggleFurigana()  // In `text_to_furigana_dom_parse.js`
+        })
+    } else {
+        toggleFurigana()  // In `text_to_furigana_dom_parse.js`
+    }
+}
+
 function fiAddFloatingIcon() {
     const existed = fiFloatingIconIsExist()
     if (existed) {
@@ -107,7 +117,7 @@ function fiAddFloatingIcon() {
     // div.ondrag = function (ev) {
     //     console.log(ev)
     // }
-    div.onclick = function () { toggleFurigana() }
+    div.onclick = function () { safeToggleFurigana() }
     const styleEl = document.createElement('style')
     styleEl.innerText = `
     #furiganaize_use_mobile_floating_button {

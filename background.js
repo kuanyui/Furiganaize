@@ -19,9 +19,11 @@ class LocalStorageManager {
     set globallyShowMobileFloatingButton(nv) {
         localStorage.setItem('globally_show_mobile_floating_button', nv)
     }
+    // in options
     get useMobileFloatingButton() {
         return JSON.parse(localStorage.getItem('use_mobile_floating_button'))
     }
+    // in options
     set useMobileFloatingButton(nv) {
         localStorage.setItem('use_mobile_floating_button', nv)
     }
@@ -50,7 +52,7 @@ if (browser.commands) {  // NOTE: Android does not support browser.commands
                     }
                     lsMan.globallyShowMobileFloatingButton = !lsMan.globallyShowMobileFloatingButton
                 } else {
-                    browser.tabs.executeScript(curTab.id, {code: "toggleFurigana();"});
+                    browser.tabs.executeScript(curTab.id, {code: "safeToggleFurigana();"});
                 }
             })
         }
@@ -62,7 +64,7 @@ browser.browserAction.onClicked.addListener(function(curTab) {
     if (JSON.parse(localStorage.getItem('persistent_mode')) == true) {
         browser.tabs.query({} ,function (tabs) {
             for (var i = 0; i < tabs.length; i++) {
-                browser.tabs.executeScript(tabs[i].id, {code: "toggleFurigana();"});
+                browser.tabs.executeScript(tabs[i].id, {code: "safeToggleFurigana();"});
             }
         });
     }
@@ -82,7 +84,7 @@ browser.browserAction.onClicked.addListener(function(curTab) {
         }
         lsMan.globallyShowMobileFloatingButton = !lsMan.globallyShowMobileFloatingButton
     } else {
-        browser.tabs.executeScript(curTab.id, {code: "toggleFurigana();"});
+        browser.tabs.executeScript(curTab.id, {code: "safeToggleFurigana();"});
     }
 });
 
@@ -105,15 +107,9 @@ var localStoragePrefDefaults = {
     "persistent_mode": false,
     "yomi_size": "",
     "yomi_color": "",
+    "use_mobile_floating_button": false,
     "auto_start": false
 }
-browser.runtime.getPlatformInfo().then(info => {
-    if (info.os === "android") {
-        if (JSON.parse(localStorage.getItem("use_mobile_floating_button")) === null) {
-            localStorage.setItem("use_mobile_floating_button", true);
-        }
-    }
-})
 
 for (var key in localStoragePrefDefaults) {
     if (localStorage.getItem(key) === null) {
@@ -239,6 +235,11 @@ browser.runtime.onMessage.addListener(
         //prepare tab for injection
         } else if (request.message == "init_tab_for_fi") {
             enableTabForFI(sender.tab)
+        } else if (request.message == 'force_load_dom_parser') {
+        //sometime loaded `text_to_furigana_dom_parse` unloaded by unknown reason (ex: Idle for too long on Android?), reload it.
+            return browser.tabs.executeScript(sender.tab.id, {
+                file: "/text_to_furigana_dom_parse.js"
+            });
         //process DOM nodes containing kanji and insert furigana
         } else if (request.message == 'text_to_furiganize') {
             furiganized = {};
@@ -335,4 +336,3 @@ window.addEventListener("storage",
             userKanjiRegexp = new RegExp("[" + localStorage.getItem("user_kanji_list") + "]");
         }
     }, false);
-
