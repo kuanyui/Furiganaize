@@ -20,7 +20,7 @@ browser.runtime.sendMessage({message: "config_values_request"}).then(function(re
 	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || persistentMode || globallyShowMobileFloatingButton) {
 		browser.runtime.sendMessage({message: "init_tab_for_fi"});
     } else {
-        const observer = new MutationObserver(DOMNodeInsertedHandler);
+        const mutationObserver = new MutationObserver(DOMNodeInsertedHandler);
         mutationObserver.observe(document, DOMNodeInsertedHandler);
 		//document.addEventListener("DOMNodeInserted", DOMNodeInsertedHandler);
     }
@@ -92,14 +92,12 @@ function fiRemoveFloatingIcon() {
     if (el) { el.remove() }
 }
 
-function safeToggleFurigana() {
+async function safeToggleFurigana() {
     if ((typeof toggleFurigana) !== 'function') {
-        browser.runtime.sendMessage({ message: "force_load_dom_parser" }).then(function (response) {
-            toggleFurigana()  // In `text_to_furigana_dom_parse.js`
-        })
-    } else {
-        toggleFurigana()  // In `text_to_furigana_dom_parse.js`
+        await browser.runtime.sendMessage({ message: "force_load_dom_parser" })
     }
+    toggleFurigana()  // In `text_to_furigana_dom_parse.js`
+    fiAddWorkaroundStyleTag()
 }
 
 function fiAddFloatingIcon() {
@@ -147,4 +145,19 @@ function fiAddFloatingIcon() {
     `
     document.body.append(div)
     document.body.append(styleEl)
+}
+
+function fiAddWorkaroundStyleTag() {
+    window.setTimeout(() => {
+        if (document.querySelector('#fiWorkaround')) { return }
+        const styleEl = document.createElement('style')
+        styleEl.id = 'fiWorkaround'
+        if (location.hostname.endsWith('twitter.com')) {
+            styleEl.innerText = `
+            #placeholder, #react-root { display: unset !important; }
+            body { background-color: unset !important; }
+            `
+        }
+        document.body.append(styleEl)
+    })
 }
