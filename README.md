@@ -6,6 +6,9 @@ Forked from [ilya.lissoboi's FuriganaInjectorPlusPlus](https://github.com/ilyali
 
 - Ported to WebExtension
 - Compatible with Firefox for Android.
+- Add floating button for mobile, which let you able to trigger it quickly. (Experimental option)
+- Fix compatibility for our dear hypocritical SNS service Twitter. (CSS Workaround)
+- Fix bugs that some Furiganas may unable to be removed correctly. (For overlapped word splitting, for example, 低音域（ていおんいき）, will be splitted into ていおん and おんいき, then it will has an overlapping. However, when disable Furiganaize, this will cause something like (おん)(おん)(おん).)
 
 # Install
 You can install latest stable release on [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/furiganaize/)
@@ -18,7 +21,6 @@ You can install latest stable release on [Firefox Add-ons](https://addons.mozill
 
 # Known Issues
 - Not works on Google search result page.
-- For overlapped word splitting, for example, 低音域（ていおんいき）, will be splitted into ていおん and おんいき, then it will has an overlapping. However, when disable Furiganaize, this will cause something like (おん)(おん)(おん).
   - Seems some other conditions will result to the above issue.
 - Don't add furigana in `<input>`, `<textarea>`
 - Considering remove `persistent_mode` because I don't know what it is doing...
