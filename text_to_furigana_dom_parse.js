@@ -62,6 +62,7 @@ function submitKanjiTextNodes(keepAllRuby) {
 }
 
 function revertRubies() {
+    document.querySelectorAll("rp,rt").forEach(x=>x.remove())
     var rubies = document.getElementsByTagName("RUBY");
     while (rubies.length > 0) {
         //this iterates because this item will be removed, shortening the list
@@ -70,7 +71,8 @@ function revertRubies() {
         var childNd = rubyElem.firstChild;
         var parentNd = rubyElem.parentNode;
         while (childNd) {
-            newText += childNd.nodeType == Node.TEXT_NODE ? childNd.data : (childNd.tagName != "RT" && childNd.tagName != "RP" ? childNd.textContent : "");
+            // newText += childNd.nodeType == Node.TEXT_NODE ? childNd.data : (childNd.tagName != "RT" && childNd.tagName != "RP" ? childNd.textContent : "");
+            newText += childNd.nodeType == Node.TEXT_NODE ? childNd.data : childNd.textContent;
             childNd = childNd.nextSibling;
         }
         parentNd.replaceChild(document.createTextNode(newText), rubyElem);
