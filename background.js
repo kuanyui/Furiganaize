@@ -146,6 +146,7 @@ request.send();
  *  Functions
  *****************/
 //load dictionaries
+
 function loadTagger(dicdir) {
     var files = new Array();
     for (var i = 0; i < dicfiles.length; ++i) {
@@ -158,22 +159,43 @@ function loadTagger(dicdir) {
     var mtx = new igo.Matrix(files['matrix.bin']);
     return new igo.Tagger(wdc, unk, mtx);
 }
+
+setupBrowserActionIcon(false)
+
+function setupBrowserActionIcon(bool, tabId) {
+    if (bool) {
+        // NOTE: check this, because elder Firefox for Android doesn't support this.
+        if (typeof browser.browserAction.setIcon === 'function') {
+            browser.browserAction.setIcon({ tabId: tabId,
+                path: {
+                    "19": "img/icons/furigana_active_38.png",
+                    "38": "img/icons/furigana_active_76.png"
+                },
+            });
+        }
+        // TODO: different title for mobile floating icon
+        browser.browserAction.setTitle({ tabId: tabId, title: "振り仮名を削除", });
+        browser.browserAction.setBadgeBackgroundColor({ tabId: tabId, color: "#99dd22", });
+        browser.browserAction.setBadgeText({ tabId: tabId, text: "ｵﾝ", });
+    } else {
+        if (typeof browser.browserAction.setIcon === 'function') {
+            browser.browserAction.setIcon({
+                tabId: tabId,
+                path: {
+                    "19": "img/icons/furigana_inactive_38.png",
+                    "38": "img/icons/furigana_inactive_76.png"
+                },
+            });
+        }
+        browser.browserAction.setTitle({ tabId: tabId, title: "振り仮名を挿入", });
+        browser.browserAction.setBadgeBackgroundColor({ tabId: tabId, color: "#ff4444", });
+        browser.browserAction.setBadgeText({ tabId: tabId, text: "ｵﾌ", });
+    }
+}
+
 //prepare a tab for furigana injection
 function enableTabForFI(tab) {
-    if (typeof browser.browserAction === 'function') {
-        // NOTE: Firefox for Android doesn't support this.
-        browser.browserAction.setIcon({
-            path: {
-                "19": "img/icons/furigana_inactive_38.png",
-                "38": "img/icons/furigana_inactive_76.png"
-            },
-            tabId: tab.id
-        });
-    }
-    browser.browserAction.setTitle({
-        title: "振り仮名を挿入",  // TODO: different title for mobile floating icon
-        tabId: tab.id
-    });
+    setupBrowserActionIcon(false, tab.id)
     // browser.browserAction.show(tab.id);
     return browser.tabs.executeScript(tab.id, {
         file: "/text_to_furigana_dom_parse.js"
@@ -294,34 +316,10 @@ browser.runtime.onMessage.addListener(
             furiganaEnabled = true;
         //update page icon to 'enabled'
         } else if (request.message == "show_page_processed") {
-            if (typeof browser.browserAction.setIcon === 'function') {
-                browser.browserAction.setIcon({
-                    path: {
-                        "19": "img/icons/furigana_active_38.png",
-                        "38": "img/icons/furigana_active_76.png"
-                    },
-                    tabId: sender.tab.id
-                });
-            }
-            browser.browserAction.setTitle({   // TODO: different title for mobile floating icon
-                title: "振り仮名を削除",
-                tabId: sender.tab.id
-            });
+            setupBrowserActionIcon(true, sender.tab.id)
         //update page icon to 'disabled'
         } else if (request.message == "reset_page_action_icon") {
-            if (typeof browser.browserAction.setIcon === 'function') {
-                browser.browserAction.setIcon({
-                    path: {
-                        "19": "img/icons/furigana_inactive_38.png",
-                        "38": "img/icons/furigana_inactive_76.png"
-                    },
-                    tabId: sender.tab.id
-                });
-            }
-            browser.browserAction.setTitle({
-                title: "振り仮名を挿入",   // TODO: different title for mobile floating icon
-                tabId: sender.tab.id
-            });
+            setupBrowserActionIcon(false, sender.tab.id)
             furiganaEnabled = false;
         } else {
             console.log("Programming error: a request with the unexpected \"message\" value \"" + request.message + "\" was received in the background page.");

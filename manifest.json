@@ -1,6 +1,6 @@
 {
 	"name": "__MSG_manifestExtName__",
-	"version": "0.4",
+	"version": "0.4.2",
 	"manifest_version": 2,
 	"applications": {
 		"gecko": {
@@ -28,8 +28,8 @@
 		"browser_style": true
 	},
 	"browser_action": {
-		"default_icon": {"38": "img/icons/furigana_inactive_76.png"},
-		"default_title": "Toggle furigana"
+		"default_title": "Toggle furigana",
+		"default_icon": {"38": "img/icons/furigana_inactive_76.png"}
 	},
 	"commands": {
         "toggle-furigana": {
