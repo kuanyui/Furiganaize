@@ -1,6 +1,6 @@
 {
 	"name": "__MSG_manifestExtName__",
-	"version": "0.4.2",
+	"version": "0.5.0",
 	"manifest_version": 2,
 	"applications": {
 		"gecko": {
@@ -17,12 +17,7 @@
 	} ],
 	"default_locale": "en",
 	"description": "__MSG_manifestExtDescription__",
-	"icons": { "16": "img/furigana_active.png",
-		   "32": "img/furigana_active.png",
-		   "48": "img/furigana_active_48.png",
-		   "96": "img/furigana_active_96.png",
-		   "128": "img/furigana_active.png",
-		   "256": "img/furigana_active.png" },
+	"icons": { "16": "img/icon_black.svg"  },
 	"options_ui": {
 		"page": "user_cp/options.html",
 		"browser_style": true
@@ -30,13 +25,13 @@
 	"browser_action": {
 		"default_title": "Toggle furigana",
 		"default_icon": {
-            "48": "img/icon_mobile.svg"  // For Android only, because Android doens't support `theme_icons`
+            "16": "img/icon_mobile.svg"  // For Android only, because Android doens't support`theme_icons
 		},
         "theme_icons": [
             {
                 "light": "img/icon_light.svg",
                 "dark":  "img/icon_dark.svg",
-                "size": 32
+                "size": 48
             }
         ]
 	},

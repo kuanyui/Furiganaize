@@ -164,29 +164,24 @@ setupBrowserActionIcon(false)
 
 function setupBrowserActionIcon(bool, tabId) {
     if (bool) {
-        // NOTE: check this, because elder Firefox for Android doesn't support this.
+        // FIXME: Want to restore icon to theme_icons but USELESS. This shit API : https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/browserAction/setIcon
+        // NOTE: check thias, because elder Firefox for Android doesn't support this.
         // if (typeof browser.browserAction.setIcon === 'function') {
-        //     browser.browserAction.setIcon({ tabId: tabId,
-        //         path: {
-        //             "19": "img/icons/furigana_active_38.png",
-        //             "38": "img/icons/furigana_active_76.png"
-        //         },
-        //     });
+        //     browser.browserAction.setIcon({ tabId: tabId, path: null, imageData: null });  // reset to default theme icons
         // }
         // TODO: different title for mobile floating icon
         browser.browserAction.setTitle({ tabId: tabId, title: "振り仮名を削除", });
         browser.browserAction.setBadgeBackgroundColor({ tabId: tabId, color: "#99dd22", });
         browser.browserAction.setBadgeText({ tabId: tabId, text: "ｵﾝ", });
     } else {
-        // if (typeof browser.browserAction.setIcon === 'function') {
-        //     browser.browserAction.setIcon({
-        //         tabId: tabId,
-        //         path: {
-        //             "19": "img/icons/furigana_inactive_38.png",
-        //             "38": "img/icons/furigana_inactive_76.png"
-        //         },
-        //     });
-        // }
+        if (typeof browser.browserAction.setIcon === 'function') {
+            // browser.browserAction.setIcon({
+            //     tabId: tabId,
+            //     path: {
+            //         "48": "img/icon_inactive.svg"
+            //     },
+            // });
+        }
         browser.browserAction.setTitle({ tabId: tabId, title: "振り仮名を挿入", });
         browser.browserAction.setBadgeBackgroundColor({ tabId: tabId, color: "#ff4444", });
         browser.browserAction.setBadgeText({ tabId: tabId, text: "ｵﾌ", });
