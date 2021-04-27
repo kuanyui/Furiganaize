@@ -5,10 +5,11 @@ A browser extension that can inject phonetic annotations of Japanese text (振�
 Forked from [ilya.lissoboi's FuriganaInjectorPlusPlus](https://github.com/ilyalissoboi/FuriganaInjectorPlusPlus)
 
 - Ported to WebExtension
-- Compatible with Firefox for Android.
+- Compatible with Firefox for Android / Fenix.
 - Add floating button for mobile, which let you able to trigger it quickly. (Experimental option)
 - Fix compatibility for our dear hypocritical SNS service Twitter. (CSS Workaround)
 - Fix bugs that some Furiganas may unable to be removed correctly. (For overlapped word splitting, for example, 低音域（ていおんいき）, will be splitted into ていおん and おんいき, then it will has an overlapping. However, when disable Furiganaize, this will cause something like (おん)(おん)(おん).)
+- Show enable / disable status via badge. (Because WebExtension API doesn't provide any way to detect dark/light status of browser theme)
 
 # Install
 You can install latest stable release on [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/furiganaize/)
