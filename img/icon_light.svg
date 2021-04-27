@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="48"
+   height="48"
+   viewBox="0 0 12.7 12.7"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15, custom)"
+   sodipodi:docname="icon_light.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="7.9195959"
+     inkscape:cx="24.540066"
+     inkscape:cy="21.356783"
+     inkscape:document-units="mm"
+     inkscape:current-layer="text28"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="3840"
+     inkscape:window-height="2065"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       aria-label="ふ"
+       id="text28"
+       style="font-style:normal;font-weight:normal;font-size:12.3545px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;opacity:0.995;fill:#BEBEBE;fill-opacity:1;stroke:none;stroke-width:0.308863">
+      <path
+         d="M 6.3535811,4.1484673 6.9445752,4.7600547 C 7.3819108,4.4217298 8.055644,3.8491799 8.3275013,3.5889299 L 8.1147434,2.9122801 C 7.4055506,2.3397302 6.0935437,1.6240428 5.1952328,1.2076428 L 4.6515182,1.9623677 C 5.5498292,2.3657551 6.660898,3.0293925 7.1691529,3.48483 7.0036746,3.6409799 6.660898,3.9272549 6.3535811,4.1484673 Z m -2.281237,6.2199757 0.1300186,1.067025 c 0.5318947,0.117112 1.1819882,0.2082 1.9266407,0.2082 0.8628513,0 2.0330196,-0.36435 2.0330196,-1.9518767 0,-1.1841373 -0.7801122,-2.3292371 -1.8793612,-3.6044618 C 5.9989847,5.7490046 5.7034877,5.3976671 5.4079906,5.0723547 l -0.697373,0.6766499 c 0.3309567,0.2992874 0.6855531,0.6766498 0.9455905,0.9759372 0.6619134,0.7937624 1.5129448,1.9648872 1.5129448,2.849737 0,0.8458142 -0.6500934,1.0800392 -1.193808,1.0800392 -0.7328326,0 -1.3120068,-0.104104 -1.9030008,-0.286275 z m 6.8200729,0.481462 0.874671,-0.533512 C 11.388852,9.1712914 10.50236,7.3105042 9.6867874,6.256492 L 8.9184953,6.7379543 c 0.8155721,1.0149748 1.6311437,2.875762 1.9739217,4.1119507 z M 4.4624001,8.3124665 3.9186856,7.5317167 C 3.2449524,8.351504 1.8620264,9.5096163 0.8927959,10.082167 l 0.5555346,0.871838 C 2.6066788,10.19928 3.776847,9.0932164 4.4624001,8.3124665 Z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Serif Malayalam';-inkscape-font-specification:'Noto Serif Malayalam';stroke-width:0.310047"
+         id="path9" />
+    </g>
+  </g>
+</svg>
