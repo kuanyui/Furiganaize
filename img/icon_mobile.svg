@@ -23,9 +23,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="7.9195959"
-     inkscape:cx="24.540066"
-     inkscape:cy="21.356783"
+     inkscape:zoom="5.6"
+     inkscape:cx="23.456306"
+     inkscape:cy="24.407192"
      inkscape:document-units="mm"
      inkscape:current-layer="text28"
      inkscape:document-rotation="0"
@@ -44,7 +44,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -56,10 +56,16 @@
        aria-label="ふ"
        id="text28"
        style="font-style:normal;font-weight:normal;font-size:12.3545px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;opacity:0.995;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.308863">
-      <path
-         d="M 6.4203985,4.1484673 7.0113926,4.7600547 C 7.4487282,4.4217298 8.1224614,3.8491799 8.3943187,3.5889299 L 8.1815608,2.9122801 C 7.472368,2.3397302 6.1603611,1.6240428 5.2620502,1.2076428 L 4.7183356,1.9623677 C 5.6166466,2.3657551 6.7277154,3.0293925 7.2359703,3.48483 7.070492,3.6409799 6.7277154,3.9272549 6.4203985,4.1484673 Z m -2.281237,6.2199757 0.1300186,1.067025 c 0.5318947,0.117112 1.1819882,0.2082 1.9266407,0.2082 0.8628513,0 2.0330196,-0.36435 2.0330196,-1.9518767 0,-1.1841373 -0.7801122,-2.3292371 -1.8793612,-3.6044618 C 6.0658021,5.7490046 5.7703051,5.3976671 5.474808,5.0723547 L 4.777435,5.7490046 c 0.3309567,0.2992874 0.6855531,0.6766498 0.9455905,0.9759372 0.6619134,0.7937624 1.5129448,1.9648872 1.5129448,2.849737 0,0.8458142 -0.6500934,1.0800392 -1.193808,1.0800392 -0.7328326,0 -1.3120068,-0.104104 -1.9030008,-0.286275 z m 6.8200735,0.481462 0.874671,-0.533512 C 11.45567,9.1712914 10.569178,7.3105042 9.7536048,6.256492 L 8.9853127,6.7379543 c 0.8155721,1.0149748 1.6311443,2.875762 1.9739223,4.1119507 z M 4.5292175,8.3124665 3.985503,7.5317167 C 3.3117698,8.351504 1.9288438,9.5096163 0.95961328,10.082167 L 1.5151479,10.954005 C 2.6734962,10.19928 3.8436644,9.0932164 4.5292175,8.3124665 Z"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Noto Serif Malayalam';-inkscape-font-specification:'Noto Serif Malayalam';fill:#000000;stroke:#ffffff;stroke-width:0.81;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke fill markers"
-         id="path9" />
+      <g
+         aria-label="ふ"
+         transform="scale(0.94785183,1.0550172)"
+         id="text834"
+         style="font-style:normal;font-weight:normal;font-size:12.6569px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:0.798;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke fill markers">
+        <path
+           d="M 6.5884765,3.8295066 7.3985182,4.5636068 C 7.8794804,4.2345274 8.7148358,3.5637117 9.0312583,3.3105737 L 8.7274927,2.5005321 C 7.930108,1.9562854 6.5505058,1.3107834 5.5379538,0.91841953 L 4.8038536,1.8423733 C 5.765778,2.2094234 6.8922421,2.8042977 7.4364889,3.2093185 7.2592923,3.3612013 6.9175559,3.6143393 6.5884765,3.8295066 Z M 4.2722638,9.7782498 4.4621173,11.094567 c 0.5822174,0.113913 1.2910038,0.202511 2.0504178,0.202511 1.0884935,0 2.3288697,-0.417678 2.3288697,-2.0377611 0,-1.1517779 -0.7973847,-2.2782421 -2.0504179,-3.5692459 C 6.4745644,5.3483347 6.1581419,5.0319122 5.8164056,4.6901758 L 4.8544812,5.5002175 c 0.379707,0.3037656 0.7847278,0.6708157 1.0758365,0.9745813 0.6581588,0.6834726 1.5441419,1.8225937 1.5441419,2.6452922 0,0.7214433 -0.5822175,0.949268 -1.2024056,0.949268 -0.7087864,0 -1.3289745,-0.1012557 -1.9997902,-0.2911092 z M 11.448726,10.474379 12.651132,9.8288774 C 12.258768,8.6770995 11.296843,6.8165351 10.461488,5.81664 L 9.3856515,6.3988574 C 10.258978,7.4114094 11.119647,9.24666 11.448726,10.474379 Z M 4.8544812,8.0315976 4.0950672,7.0696731 C 3.3609669,7.8670578 1.9307372,8.9682082 0.86755755,9.5504256 L 1.6269716,10.613605 C 2.9053185,9.8415343 4.1330379,8.7910116 4.8544812,8.0315976 Z"
+           style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-family:'Noto Sans CJK JP';-inkscape-font-specification:'Noto Sans CJK JP Medium';fill:#000000;stroke:#ffffff;stroke-width:0.798;stroke-miterlimit:4;stroke-dasharray:none;paint-order:stroke fill markers"
+           id="path833" />
+      </g>
     </g>
   </g>
 </svg>
