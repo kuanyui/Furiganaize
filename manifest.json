@@ -17,7 +17,7 @@
 	} ],
 	"default_locale": "en",
 	"description": "__MSG_manifestExtDescription__",
-	"icons": { "16": "img/icon_black.svg"  },
+	"icons": { "512": "img/icon_black.svg"  },
 	"options_ui": {
 		"page": "user_cp/options.html",
 		"browser_style": true
@@ -25,7 +25,7 @@
 	"browser_action": {
 		"default_title": "Toggle furigana",
 		"default_icon": {
-            "16": "img/icon_mobile.svg"  // For Android only, because Android doens't support`theme_icons
+            "512": "img/icon_mobile.svg"  // For Android only, because Android doens't support`theme_icons
 		},
         "theme_icons": [
             {

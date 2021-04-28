@@ -6,41 +6,51 @@
 	<link rel="stylesheet" type="text/css" media="all" href="../ruby_gloss.css" />
 	<script src="../lib/colpick.js" type="text/javascript"></script>
 	<link rel="stylesheet" href="../css/colpick.css" type="text/css"/>
+	<style>
+		.row {
+			margin-bottom: 0px;
+		}
+	</style>
 </head>
 <body class="fi_help_page">
 
-	<h2><img src="../img/furigana_active_48.png" style="vertical-align: -10%; margin-right: 8px;"/> Furiganaize options</h2>
+	<h2><img src="../img/icon_black.svg" style="vertical-align: -10%; margin-right: 8px;"/> Furiganaize 設定</h2>
 
-	<div style="margin-bottom: 14px;">
-		<p><label>Include text inside links <input type="checkbox" id="includelinktext_inp"/></label>
+	<div class="row">
+		<p><label><input type="checkbox" id="includelinktext_inp"/> Include text inside links</label>
 		<span style="font-style: italic; margin-left: 24px;">E.g. <span id="link_sample" class="fakelink"><ruby><rb>今日</rb><rt>きょう</rt></ruby>の<ruby><rb>天気</rb><rt>てんき</rt></ruby></span></span>
 	</div>
-	<div style="margin-bottom: 14px;">
+
+	<div class="row">
+		<p><label><input type="checkbox" id="filter_okurigana"/> Okurigana filter</label>
+	</div>
+	<div class="row">
+		<p><label><input type="checkbox" id="use_mobile_floating_button"/> Use mobile floating icon (beta)</label>
+	</div>
+	<div class="row">
+		<p><label><input type="checkbox" id="persistent_mode"/> Persistent mode </label>
+	</div>
+	<div class="row">
+		<p><label><input type="checkbox" id="auto_start"/> Auto-start</label>
+	</div>
+	<div class="row">
 		<p><label>Furigana should be displayed with <select id="furigana_display"><option value="hira">Hiragana</option><option value="kata">Katakana</option><option value="roma">Romaji</option></select></label>
 	</div>
-	<div style="margin-bottom: 14px;">
-		<p><label>Okurigana filter <input type="checkbox" id="filter_okurigana"/></label>
+	<div style="margin-bottom: 14px">
+		<p style="display:flex;align-items:center;">
+			<label style="display:flex;align-items:center;">Furigana size <input type="range" id="yomi_size" style="margin-left: 10px" min="6" max="18"/></label>
+			<span>
+				<ruby><rb>今日</rb><rt class="style_sample"></rt>きょう</rt></ruby>の<ruby><rb>天気</rb><rt class="style_sample" sttyle="">てんき</rt></ruby>
+			</span>
+		</p>
 	</div>
-	<div style="margin-bottom: 14px;">
-		<p><label>Use mobile floating button (beta) <input type="checkbox" id="use_mobile_floating_button"/></label>
-	</div>
-	<div style="margin-bottom: 14px;">
-		<p><label>Persistent mode <input type="checkbox" id="persistent_mode"/></label>
-	</div>
-	<div style="margin-bottom: 14px;">
-		<p><label>Auto-start <input type="checkbox" id="auto_start"/></label>
-	</div>
-	<div style="margin-bottom: 14px;width: 340px">
-		<p><label style="display: block;float: left">Furigana size <input type="range" id="yomi_size" style="margin-left: 10px" min="6" max="18"/></label>
-		<span style="font-style: italic; margin-left: 24px;position: fixed"><div style="float: right;position: absolute;left: 300px;"><ruby><rb>今日</rb><rt class="style_sample"></rt>きょう</rt></ruby>の<ruby><rb>天気</rb><rt class="style_sample" sttyle="">てんき</rt></ruby></span></div>
-	</div><br />
-	<div style="margin-bottom: 14px;">
+	<div class="row">
 		<p><label>Furigana size reset <input type="button" value="Reset size to default" id="yomi_size_reset"/></label>
 	</div>
-	<div style="margin-bottom: 14px;">
+	<div class="row">
 		<p><label>Furigana color <input type="button" value="Pick a color" id="yomi_color"/></label>
 	</div>
-	<div style="margin-bottom: 14px;">
+	<div class="row">
 		<p><label>Furigana color reset <input type="button" value="Reset color to default" id="yomi_color_reset"/></label>
 	</div>
 </body>
