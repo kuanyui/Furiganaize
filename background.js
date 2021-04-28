@@ -19,11 +19,11 @@ class LocalStorageManager {
     set globallyShowMobileFloatingButton(nv) {
         localStorage.setItem('globally_show_mobile_floating_button', nv)
     }
-    // in options
+    /** in options */
     get useMobileFloatingButton() {
         return JSON.parse(localStorage.getItem('use_mobile_floating_button'))
     }
-    // in options
+    /** in options */
     set useMobileFloatingButton(nv) {
         localStorage.setItem('use_mobile_floating_button', nv)
     }
@@ -33,7 +33,7 @@ const lsMan = new LocalStorageManager()
 // For keyboard shortcut only
 if (browser.commands) {  // NOTE: Android does not support browser.commands
     browser.commands.onCommand.addListener(function (cmd) {
-        console.log('ag')
+        console.log('trigger via browser commands (keyboard shortcuts)')
         if (cmd === 'toggle-furigana') {
             doInCurrentTab(function (curTab) {
                 if (lsMan.useMobileFloatingButton) {
@@ -51,6 +51,7 @@ if (browser.commands) {  // NOTE: Android does not support browser.commands
                         })
                     }
                     lsMan.globallyShowMobileFloatingButton = !lsMan.globallyShowMobileFloatingButton
+                    setupBrowserActionIcon()
                 } else {
                     browser.tabs.executeScript(curTab.id, {code: "safeToggleFurigana();"});
                 }
@@ -72,17 +73,20 @@ browser.browserAction.onClicked.addListener(function(curTab) {
         if (lsMan.globallyShowMobileFloatingButton) {
             browser.tabs.query({}, function (tabs) {
                 for (var i = 0; i < tabs.length; i++) {
-                    browser.tabs.executeScript(tabs[i].id, { code: "fiRemoveFloatingIcon();" });
+                    browser.tabs.executeScript(tabs[i].id, { code: "fiRemoveFloatingIcon();" })
+                        .catch(err => console.log('[Error] This exception may be due to you opened some special domains such as https://addons.mozilla.org/, which Firefox forbids you from do this', err, tabs[i]));
                 }
             })
         } else {
             browser.tabs.query({}, function (tabs) {
                 for (var i = 0; i < tabs.length; i++) {
-                    browser.tabs.executeScript(tabs[i].id, { code: "fiAddFloatingIcon();" });
+                    browser.tabs.executeScript(tabs[i].id, { code: "fiAddFloatingIcon();" })
+                        .catch(err => console.log('[Error] This exception may be due to you opened some special domains such as https://addons.mozilla.org/, which Firefox forbids you from do this', err, tabs[i]));
                 }
             })
         }
         lsMan.globallyShowMobileFloatingButton = !lsMan.globallyShowMobileFloatingButton
+        setupBrowserActionIcon()
     } else {
         browser.tabs.executeScript(curTab.id, {code: "safeToggleFurigana();"});
     }
@@ -162,14 +166,26 @@ function loadTagger(dicdir) {
 
 setupBrowserActionIcon(false)
 
-function setupBrowserActionIcon(bool, tabId) {
-    if (bool) {
+function setupBrowserActionIcon(furiInserted, tabId) {
+    if (lsMan.useMobileFloatingButton) {
+        // TODO: Set different title or color for mobile floating icon
+        if (lsMan.globallyShowMobileFloatingButton) {
+            browser.browserAction.setTitle({ tabId: null, title: "フローティングアイコンを隠す", });
+            browser.browserAction.setBadgeBackgroundColor({ tabId: null, color: "#2fafff", });
+            browser.browserAction.setBadgeText({ tabId: null, text: "ｱｲｺﾝｵﾝ", });
+        } else {
+            browser.browserAction.setTitle({ tabId: null, title: "フローティングアイコンを表す", });
+            browser.browserAction.setBadgeBackgroundColor({ tabId: null, color: "#aaaaaa", });
+            browser.browserAction.setBadgeText({ tabId: null, text: "ｱｲｺﾝｵﾌ", });
+        }
+        return
+    }
+    if (furiInserted) {
         // FIXME: Want to restore icon to theme_icons but USELESS. This shit API : https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/browserAction/setIcon
         // NOTE: check thias, because elder Firefox for Android doesn't support this.
         // if (typeof browser.browserAction.setIcon === 'function') {
         //     browser.browserAction.setIcon({ tabId: tabId, path: null, imageData: null });  // reset to default theme icons
         // }
-        // TODO: different title for mobile floating icon
         browser.browserAction.setTitle({ tabId: tabId, title: "振り仮名を削除", });
         browser.browserAction.setBadgeBackgroundColor({ tabId: tabId, color: "#99dd22", });
         browser.browserAction.setBadgeText({ tabId: tabId, text: "ｵﾝ", });
