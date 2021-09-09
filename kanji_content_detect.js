@@ -97,7 +97,7 @@ async function safeToggleFurigana() {
         await browser.runtime.sendMessage({ message: "force_load_dom_parser" })
     }
     toggleFurigana()  // In `text_to_furigana_dom_parse.js`
-    fiAddWorkaroundStyleTag()
+    fiDoWorkaroundForStyle()
 }
 
 function fiAddFloatingIcon() {
@@ -146,17 +146,21 @@ function fiAddFloatingIcon() {
     document.body.append(div)
     document.body.append(styleEl)
 }
-
-function fiAddWorkaroundStyleTag() {
+/** Workaround to fix wrong style for special website like Twitter & Google. */
+function fiDoWorkaroundForStyle() {
     window.setTimeout(() => {
         if (document.querySelector('#fiWorkaround')) { return }
         const styleEl = document.createElement('style')
         styleEl.id = 'fiWorkaround'
-        if (location.hostname.endsWith('twitter.com')) {
-            styleEl.innerText = `
-            #placeholder, #react-root { display: unset !important; }
-            body { background-color: unset !important; }
-            `
+        if (location.hostname.endsWith('google.com')) {
+            // Clue: 1. Use window.beforeunload to avoid reload, then insert furigana. 2. A suspicious style tag is found: <style>table,div,span,p{display:none}</style> 3. This tag is in <noscript>
+            document.querySelectorAll('noscript').forEach(el => el.remove())
+        } else if (location.hostname.endsWith('twitter.com')) {
+            Array.from(window.document.querySelectorAll('style')).forEach(el => {
+                if (el.innerText.match(/body.*{\n.*background-color: #fff(fff)? !important;/i)) {
+                    el.remove()
+                }
+            })
         }
         document.body.append(styleEl)
     })
