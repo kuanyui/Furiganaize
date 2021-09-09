@@ -7,7 +7,7 @@ Forked from [ilya.lissoboi's FuriganaInjectorPlusPlus](https://github.com/ilyali
 - Ported to WebExtension
 - Compatible with Firefox for Android / Fenix.
 - Add floating button for mobile, which let you able to trigger it quickly. (Experimental option)
-- Fix compatibility for our dear hypocritical SNS service Twitter. (CSS Workaround)
+- Improved compatibility for website with `<noscript>`, like Google, Twitter.
 - Fix bugs that some Furiganas may unable to be removed correctly. (For overlapped word splitting, for example, 低音域（ていおんいき）, will be splitted into ていおん and おんいき, then it will has an overlapping. However, when disable Furiganaize, this will cause something like (おん)(おん)(おん).)
 - Show enable / disable status via badge. (Because WebExtension API doesn't provide any way to detect dark/light status of browser theme)
 - Add support for light / dark theme.
@@ -22,9 +22,7 @@ You can install latest stable release on [Firefox Add-ons](https://addons.mozill
 - Customizable shortcuts
 
 # Known Issues
-- Not works on Google search result page.
-  - Seems some other conditions will result to the above issue.
-- Don't add furigana in `<input>`, `<textarea>`
+- Some kanjis are annotated with wrong furigana. This is a known issue, and not the responsibility of this package (instead, this is implemented via 3rd-party library `igo.js`). **PLEASE DO NOT OPEN ISSUE ABOUT THIS ANYMORE.**
 - Considering remove `persistent_mode` because I don't know what it is doing...
 
 # About License

@@ -96,8 +96,8 @@ async function safeToggleFurigana() {
     if ((typeof toggleFurigana) !== 'function') {
         await browser.runtime.sendMessage({ message: "force_load_dom_parser" })
     }
+    fiRemoveNoScriptTags()
     toggleFurigana()  // In `text_to_furigana_dom_parse.js`
-    fiDoWorkaroundForStyle()
 }
 
 function fiAddFloatingIcon() {
@@ -146,22 +146,11 @@ function fiAddFloatingIcon() {
     document.body.append(div)
     document.body.append(styleEl)
 }
-/** Workaround to fix wrong style for special website like Twitter & Google. */
-function fiDoWorkaroundForStyle() {
-    window.setTimeout(() => {
-        if (document.querySelector('#fiWorkaround')) { return }
-        const styleEl = document.createElement('style')
-        styleEl.id = 'fiWorkaround'
-        if (location.hostname.endsWith('google.com')) {
-            // Clue: 1. Use window.beforeunload to avoid reload, then insert furigana. 2. A suspicious style tag is found: <style>table,div,span,p{display:none}</style> 3. This tag is in <noscript>
-            document.querySelectorAll('noscript').forEach(el => el.remove())
-        } else if (location.hostname.endsWith('twitter.com')) {
-            Array.from(window.document.querySelectorAll('style')).forEach(el => {
-                if (el.innerText.match(/body.*{\n.*background-color: #fff(fff)? !important;/i)) {
-                    el.remove()
-                }
-            })
-        }
-        document.body.append(styleEl)
-    })
+/** <noscript> tag will cause many issues to Furiganaize, for example:
+ *   - Google: force reload / redirect page. (Clue: 1. Use window.beforeunload to avoid reload, then insert furigana. 2. A suspicious style tag is found: <style>table,div,span,p{display:none}</style> 3. This tag is in <noscript>)
+ *   - Twitter: the whole page becomes blank.
+ * so remove it before inserting furigana.
+ **/
+function fiRemoveNoScriptTags() {
+    document.querySelectorAll('noscript').forEach(el => el.remove())
 }
