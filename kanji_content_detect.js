@@ -21,8 +21,7 @@ browser.runtime.sendMessage({message: "config_values_request"}).then(function(re
 		browser.runtime.sendMessage({message: "init_tab_for_fi"});
     } else {
         const mutationObserver = new MutationObserver(DOMNodeInsertedHandler);
-        mutationObserver.observe(document, DOMNodeInsertedHandler);
-		//document.addEventListener("DOMNodeInserted", DOMNodeInsertedHandler);
+        mutationObserver.observe(document, { childList: true, subtree: true });
     }
 });
 
