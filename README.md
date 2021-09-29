@@ -26,6 +26,7 @@ web-ext --verbose --firefox-profile ${HOME}/.mozilla/firefox/PROFILE_DIR/ run
 - Customizable shortcuts
 
 # Known Issues
+- It's **IMPOSSIBLE** to use this add-on under some special pages or domains like https://addons.mozilla.org/ . This is the restriction of Firefox browser itself.
 - Some kanjis are annotated with wrong furigana. This is a known issue, and not the responsibility of this package (instead, this is implemented via 3rd-party library `igo.js`). **PLEASE DO NOT OPEN ISSUE ABOUT THIS ANYMORE.**
 - Considering remove `persistent_mode` because I don't know what it is doing...
 
