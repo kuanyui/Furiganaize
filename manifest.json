@@ -8,7 +8,7 @@
 		}
 	},
 	"background": {
-		"scripts": ["lib/jquery-3.3.1.min.js", "lib/sprintf.min.js", "lib/igo.min.js", "lib/zip.min.js", "lib/wanakana.min.js", "lib/diff.js","background.js"]
+		"scripts": ["lib/jquery-3.3.1.min.js", "lib/sprintf.js", "lib/igo.js", "lib/zipjs/jsinflate.js", "lib/zipjs/sjis.js", "lib/zipjs/zip.js", "lib/wanakana.js", "lib/diff.js", "background.js"]
 	},
 	"content_scripts": [ {
 		"js": ["kanji_content_detect.js"],

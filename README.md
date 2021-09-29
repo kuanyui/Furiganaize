@@ -15,6 +15,10 @@ Forked from [ilya.lissoboi's FuriganaInjectorPlusPlus](https://github.com/ilyali
 # Install
 You can install latest stable release on [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/furiganaize/)
 
+# Dev
+```bash
+web-ext --verbose --firefox-profile ${HOME}/.mozilla/firefox/PROFILE_DIR/ run
+```
 # Todo list
 - New icon on SVG
 - Use `browser.browserAction` to make it more convenient to tap on Android?
@@ -38,3 +42,4 @@ I have to say this made me so sad. The developers spending their free time and v
 For those who has no license declaration in `lib/`:
 - [igo.js](https://github.com/shogo82148/igo-javascript) - MIT
 - [zip.js](https://github.com/shogo82148/zipjs) - Unknown
+- [sprintf.js]() - BSD-3-Clause
