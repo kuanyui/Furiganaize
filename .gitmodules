@@ -1,0 +1,12 @@
+[submodule "WanaKana"]
+	path = submodules/WanaKana
+	url = git@github.com:WaniKani/WanaKana.git
+[submodule "zipjs"]
+	path = submodules/zipjs
+	url = git@github.com:shogo82148/zipjs.git
+[submodule "igo-javascript"]
+	path = submodules/igo-javascript
+	url = git@github.com:shogo82148/igo-javascript.git
+[submodule "sprintf.js"]
+	path = submodules/sprintf.js
+	url = git@github.com:alexei/sprintf.js.git
