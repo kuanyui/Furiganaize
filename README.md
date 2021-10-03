@@ -43,4 +43,5 @@ I have to say this made me so sad. The developers spending their free time and v
 For those who has no license declaration in `lib/`:
 - [igo.js](https://github.com/shogo82148/igo-javascript) - MIT
 - [zip.js](https://github.com/shogo82148/zipjs) - Unknown
-- [sprintf.js]() - BSD-3-Clause
+- [sprintf.js](https://github.com/alexei/sprintf.js) - BSD-3-Clause
+- [WanaKana](https://github.com/WaniKani/WanaKana) - MIT
