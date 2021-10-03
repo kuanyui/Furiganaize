@@ -11,4 +11,4 @@ server: build-xpi
 	cd ${XPI_DIR}; python3 -m http.server 8888
 
 zip-repo:
-	zip -r "../${NAME}-upload.zip" .    -x node_modules/\* submodules/\*
+	zip -r "../${NAME}-upload.zip" .    -x node_modules/\*
