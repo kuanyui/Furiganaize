@@ -63,3 +63,10 @@ div#fi_gloss_div  li.s.t.u:nth-child(even) {
 div#fi_gloss_div  li.s.t.u br {	/*I once found a page rule that suppressed <br> elements ...*/
 	display: block;
 }
+
+table#kanji_selector_table {
+}
+
+table#kanji_selector_table td#bunron_examples p {
+	text-indent: 20pt;
+}

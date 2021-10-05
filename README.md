@@ -19,6 +19,10 @@ You can install latest stable release on [Firefox Add-ons](https://addons.mozill
 ```bash
 web-ext --verbose --firefox-profile ${HOME}/.mozilla/firefox/PROFILE_DIR/ run
 ```
+# Build to *.xpi
+```bash
+make xpi
+```
 # Todo list
 - New icon on SVG
 - Use `browser.browserAction` to make it more convenient to tap on Android?

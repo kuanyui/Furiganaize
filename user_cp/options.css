@@ -1,5 +1,5 @@
 body.fi_help_page * {
-	font-family: helvetica;	
+	font-family: helvetica;
 }
 
 body.fi_help_page {
@@ -27,12 +27,6 @@ table.ruby_simulation td {
 	margin: 0;
 }
 
-table#kanji_selector_table {
-}
-
-table#kanji_selector_table td#bunron_examples p {
-	text-indent: 20pt;
-}
 
 .fakelink {
 	text-decoration: underline;

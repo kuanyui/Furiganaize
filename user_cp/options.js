@@ -102,17 +102,5 @@ function initControlValues() {
 			}
 		});
 	} catch (err) { alert(err); }
-	}
+}
 
-	function alignRubyDplgnrAndGloss() {
-		var or = $("#orig_ruby");	//I think I should only need the ruby's position to set the doppleganger
-        var ort = $("#orig_ruby rt");	//  ruby's position top, but it seems I have to use the <rt> elem instead.
-        if (ort.position()) {
-            $("#fi_ruby_doppleganger").css({top: ort.position().top, left: or.position().left});
-        }
-        if (or.position()) {
-            $("#fi_gloss_div").css({ top: or.position().top + or.height(), left: or.position().left });
-        }
-	}
-
-	$(window).resize(function() { alignRubyDplgnrAndGloss(); });
