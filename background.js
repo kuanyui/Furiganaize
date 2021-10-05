@@ -101,7 +101,7 @@ if (localStorage.getItem("user_kanji_list") === null) {
     var defaultUserKanjiList = "日一国会人年大十二本中長出三同時政事自行社見月分議後前民生連五発間対上部東者党地合市業内相方四定今回新場金員九入選立開手米力学問高代明実円関決子動京全目表戦経通外最言氏現理調体化田当八六約主題下首意法不来作性的要用制治度務強気小七成期公持野協取都和統以機平総加山思家話世受区領多県続進正安設保改数記院女初北午指権心界支第産結百派点教報済書府活原先共得解名交資予川向際査勝面委告軍文反元重近千考判認画海参売利組知案道信策集在件団別物側任引使求所次水半品昨論計死官増係感特情投示変打男基私各始島直両朝革価式確村提運終挙果西勢減台広容必応演電歳住争談能無再位置企真流格有疑口過局少放税検藤町常校料沢裁状工建語球営空職証土与急止送援供可役構木割聞身費付施切由説転食比難防補車優夫研収断井何南石足違消境神番規術護展態導鮮備宅害配副算視条幹独警宮究育席輸訪楽起万着乗店述残想線率病農州武声質念待試族象銀域助労例衛然早張映限親額監環験追審商葉義伝働形景落欧担好退準賞訴辺造英被株頭技低毎医復仕去姿味負閣韓渡失移差衆個門写評課末守若脳極種美岡影命含福蔵量望松非撃佐核観察整段横融型白深字答夜製票況音申様財港識注呼渉達";
     localStorage.setItem("user_kanji_list", defaultUserKanjiList);
 }
-var userKanjiRegexp = new RegExp("[" + localStorage.getItem("user_kanji_list") + "]");
+var USER_KANJI_REGEXP = new RegExp("[" + localStorage.getItem("user_kanji_list") + "]");
 
 //initialize local storage
 var localStoragePrefDefaults = {
@@ -342,6 +342,6 @@ browser.runtime.onMessage.addListener(
 window.addEventListener("storage",
     function(e) {
         if (e.key == "user_kanji_list") { //re-initialize the data in each tab (when they reload or they move to a new page)
-            userKanjiRegexp = new RegExp("[" + localStorage.getItem("user_kanji_list") + "]");
+            USER_KANJI_REGEXP = new RegExp("[" + localStorage.getItem("user_kanji_list") + "]");
         }
     }, false);

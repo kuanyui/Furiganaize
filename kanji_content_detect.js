@@ -1,15 +1,14 @@
 ﻿/***************************************************************
  *	This script set to run_at document load. See manifest.json.
  ***************************************************************/
-var userKanjiRegexp;
-var includeLinkText = false;
-var insertedNodesToCheck = [];
-var insertedNodeCheckTimeoutId = null;
-let mutationObserver = null
-
+var USER_KANJI_REGEXP;
+var INCLUDE_LINK_TEXT = false;
+var INSERTED_NODES_TO_CHECK = [];
+var INSERTED_NODE_CHECK_TIMEOUT_ID = null;
+let MUTATION_OBSERVER = null
 browser.runtime.sendMessage({message: "config_values_request"}).then(function(response) {
-	userKanjiRegexp = new RegExp("[" + response.userKanjiList + "]");
-	includeLinkText = JSON.parse(response.includeLinkText);
+	USER_KANJI_REGEXP = new RegExp("[" + response.userKanjiList + "]");
+	INCLUDE_LINK_TEXT = JSON.parse(response.includeLinkText);
 	persistentMode = JSON.parse(response.persistentMode);
 	let useMobileFloatingButton = JSON.parse(response.useMobileFloatingButton);
     let globallyShowMobileFloatingButton = JSON.parse(response.globallyShowMobileFloatingButton);
@@ -22,8 +21,8 @@ browser.runtime.sendMessage({message: "config_values_request"}).then(function(re
 	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || persistentMode || globallyShowMobileFloatingButton) {
 		browser.runtime.sendMessage({message: "init_tab_for_fi"});
     } else {
-        mutationObserver = new MutationObserver(DOMNodeInsertedHandler);
-        mutationObserver.observe(document, { childList: true, subtree: true });
+        MUTATION_OBSERVER = new MutationObserver(DOMNodeInsertedHandler);
+        MUTATION_OBSERVER.observe(document, { childList: true, subtree: true });
     }
 });
 
@@ -31,14 +30,14 @@ function DOMNodeInsertedHandler(mutationList, observer) {
     for (let mutation of mutationList) {
         if (mutation.type === 'childList') {
             e = mutation;
-            if (insertedNodesToCheck.includes(e.target)) { continue }
-            if (insertedNodesToCheck.includes(e.target.parentNode)) { continue }
+            if (INSERTED_NODES_TO_CHECK.includes(e.target)) { continue }
+            if (INSERTED_NODES_TO_CHECK.includes(e.target.parentNode)) { continue }
             if ((e.target.nodeType == Node.TEXT_NODE || e.target.nodeType == Node.CDATA_SECTION_NODE) &&
                 e.target.innerText !== undefined &&
                 e.target.innerText !== '' &&
                 e.target.parentNode) {
                 // console.log('type 1', e.target)
-                insertedNodesToCheck.push(e.target.parentNode)
+                INSERTED_NODES_TO_CHECK.push(e.target.parentNode)
             } else if (
                 e.target.nodeType === Node.ELEMENT_NODE &&
                 e.target.tagName !== "IMG" &&
@@ -52,40 +51,35 @@ function DOMNodeInsertedHandler(mutationList, observer) {
                 e.target.innerText !== ''
             ) {
                 // console.log('type 2', e.target)
-                insertedNodesToCheck.push(e.target);
+                INSERTED_NODES_TO_CHECK.push(e.target);
             } else {
                 return;
             }
-            window.clearTimeout(insertedNodeCheckTimeoutId)
-            insertedNodeCheckTimeoutId = window.setTimeout(checkInsertedNodes, 1000);
+            window.clearTimeout(INSERTED_NODE_CHECK_TIMEOUT_ID)
+            INSERTED_NODE_CHECK_TIMEOUT_ID = window.setTimeout(checkInsertedNodes, 1000);
          }
     }
 
 }
 
 function checkInsertedNodes() {
-	var a = [];
-    for (const node of insertedNodesToCheck) {
+    for (const node of INSERTED_NODES_TO_CHECK) {
         if (node.innerText.length === 0) { continue }
-        a.push(node.innerText);
+        if (node.innerText.match(/[\u3400-\u9FBF]/)) {
+            browser.runtime.sendMessage({message: "init_tab_for_fi"});
+            MUTATION_OBSERVER.disconnect()
+            break
+        }
     }
-	insertedNodesToCheck = [];
-	insertedNodeCheckTimeoutId = null;
-	// doing a join-concatenation then one RegExp.match() because I assume it will be quicker
-	// than running RegExp.match() N times.
-	var s = a.join("");
-    if (s.match(/[\u3400-\u9FBF]/)) {
-        mutationObserver.disconnect()
-		browser.runtime.sendMessage({message: "init_tab_for_fi"});
-		return;
-	}
+	INSERTED_NODES_TO_CHECK = [];
+	INSERTED_NODE_CHECK_TIMEOUT_ID = null;
 }
 
 function hasOnlySimpleKanji(rubySubstr) {
 	var foundKanji = rubySubstr.match(/[\u3400-\u9FBF]/g);
 	if (foundKanji) {
 		for (var x = 0; x < foundKanji.length; x++) {
-			if (!userKanjiRegexp.exec(foundKanji[x]))
+			if (!USER_KANJI_REGEXP.exec(foundKanji[x]))
 				return false;
 		}
 	} else {
