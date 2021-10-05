@@ -4,7 +4,9 @@
 var userKanjiRegexp;
 var includeLinkText = false;
 var insertedNodesToCheck = [];
-var insertedNodeCheckTimer = null;
+var insertedNodeCheckTimeoutId = null;
+let mutationObserver = null
+
 browser.runtime.sendMessage({message: "config_values_request"}).then(function(response) {
 	userKanjiRegexp = new RegExp("[" + response.userKanjiList + "]");
 	includeLinkText = JSON.parse(response.includeLinkText);
@@ -20,7 +22,7 @@ browser.runtime.sendMessage({message: "config_values_request"}).then(function(re
 	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || persistentMode || globallyShowMobileFloatingButton) {
 		browser.runtime.sendMessage({message: "init_tab_for_fi"});
     } else {
-        const mutationObserver = new MutationObserver(DOMNodeInsertedHandler);
+        mutationObserver = new MutationObserver(DOMNodeInsertedHandler);
         mutationObserver.observe(document, { childList: true, subtree: true });
     }
 });
@@ -29,15 +31,33 @@ function DOMNodeInsertedHandler(mutationList, observer) {
     for (let mutation of mutationList) {
         if (mutation.type === 'childList') {
             e = mutation;
-            if ((e.target.nodeType == Node.TEXT_NODE || e.target.nodeType == Node.CDATA_SECTION_NODE) && e.target.parentNode)
-		        insertedNodesToCheck.push(e.target.parentNode)
-	        else if (e.target.nodeType == Node.ELEMENT_NODE && e.target.tagName != "IMG" &&
-		              e.target.tagName != "OBJECT"  && e.target.tagName != "EMBED")
-		                insertedNodesToCheck.push(e.target);
-	        else
+            if (insertedNodesToCheck.includes(e.target)) { continue }
+            if (insertedNodesToCheck.includes(e.target.parentNode)) { continue }
+            if ((e.target.nodeType == Node.TEXT_NODE || e.target.nodeType == Node.CDATA_SECTION_NODE) &&
+                e.target.innerText !== undefined &&
+                e.target.innerText !== '' &&
+                e.target.parentNode) {
+                // console.log('type 1', e.target)
+                insertedNodesToCheck.push(e.target.parentNode)
+            } else if (
+                e.target.nodeType === Node.ELEMENT_NODE &&
+                e.target.tagName !== "IMG" &&
+                e.target.tagName !== "SVG" &&
+                e.target.tagName !== "CANVAS" &&
+                e.target.tagName !== "OBJECT" &&
+                e.target.tagName !== "EMBED" &&
+                e.target.tagName !== "BODY" &&
+                e.target.tagName !== "HEAD" &&
+                e.target.innerText !== undefined &&
+                e.target.innerText !== ''
+            ) {
+                // console.log('type 2', e.target)
+                insertedNodesToCheck.push(e.target);
+            } else {
                 return;
-	        if (!insertedNodeCheckTimer)
-		        insertedNodeCheckTimer = setTimeout(checkInsertedNodes, 1000);
+            }
+            window.clearTimeout(insertedNodeCheckTimeoutId)
+            insertedNodeCheckTimeoutId = window.setTimeout(checkInsertedNodes, 1000);
          }
     }
 
@@ -45,15 +65,17 @@ function DOMNodeInsertedHandler(mutationList, observer) {
 
 function checkInsertedNodes() {
 	var a = [];
-	for (x = 0; x < insertedNodesToCheck.length; x++)
-		a.push(insertedNodesToCheck[x].innerText);
+    for (const node of insertedNodesToCheck) {
+        if (node.innerText.length === 0) { continue }
+        a.push(node.innerText);
+    }
 	insertedNodesToCheck = [];
-	insertedNodeCheckTimer = null;
+	insertedNodeCheckTimeoutId = null;
 	// doing a join-concatenation then one RegExp.match() because I assume it will be quicker
 	// than running RegExp.match() N times.
 	var s = a.join("");
-	if (s.match(/[\u3400-\u9FBF]/)) {
-		document.removeEventListener("DOMNodeInserted", DOMNodeInsertedHandler);
+    if (s.match(/[\u3400-\u9FBF]/)) {
+        mutationObserver.disconnect()
 		browser.runtime.sendMessage({message: "init_tab_for_fi"});
 		return;
 	}
