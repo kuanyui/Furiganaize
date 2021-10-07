@@ -7,6 +7,15 @@ var MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = null
 var PERSISTENT_MODE = false
 var FURIGANA_ENABLED = false
 var AUTO_START = false
+var __LAST_UID = 0
+
+function getNextUid() {
+    if (__LAST_UID === Number.MAX_SAFE_INTEGER - 1) {
+        __LAST_UID = 0
+    }
+    __LAST_UID += 1
+    return __LAST_UID
+}
 
 // fetch stored configuration values from the background script
 browser.runtime.sendMessage({ message: "config_values_request"}).then(function(response) {
@@ -36,13 +45,12 @@ function scanForKanjiTextNodes() {
     var foundNodes = {};
     try {
         var iterator = document.evaluate(xPathPattern, document.body, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
-        var nodeCtr = 100;
         var thisNode;
         while (thisNode = iterator.iterateNext()) {
             if (thisNode.textContent.match(/[\u3400-\u9FBF]/)) {
-                foundNodes[nodeCtr] = thisNode;
+                var uid = getNextUid()
+                foundNodes[uid] = thisNode;
             }
-            nodeCtr++;
         }
     } catch (e) {
         alert('Error during XPath document iteration: ' + e);
