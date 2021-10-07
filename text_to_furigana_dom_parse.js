@@ -151,7 +151,7 @@ function toggleFurigana() {
 
 function enableFurigana() {
     console.log('enableFurigana()')
-    if (document.body.hasAttribute("fiprocessed")) {  // If already enabled (this may happened when using back/next of browser)  // TODO: May needn't because never happened after adding document.onunload ...?
+    if (document.body.hasAttribute("fiprocessed")) {  // If already enabled (this may happened when using back/next of browser)  // REFACTORING: May needn't because never happened after adding document.onunload ...?
         console.log('============ has already processed before, skip.')
         if (WATCH_PAGE_CHANGE) {
             startWatcher()

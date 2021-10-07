@@ -113,7 +113,7 @@ var DEFAULT_LOCAL_STORAGE_PREFERENCE = {
     "yomi_color": "",
     "use_mobile_floating_button": false,
     "watch_page_change": false,
-    "persistent_mode": true,
+    "persistent_mode": false,
     "auto_start": false
 }
 
