@@ -3,7 +3,7 @@ var TAGGER = null;
 var FURIGANAIZED = {};
 var EXCEPTIONS = null;
 /** Cross-tab keep on/off status. For PERSISTENT_MODE only. Not for settings. */
-var FURIGANA_ENABLED = false;
+var CROSS_TABS_FURIGANA_ENABLED = false;
 
 
 function doInCurrentTab(tabCallback) {
@@ -62,14 +62,14 @@ if (browser.commands) {  // NOTE: Android does not support browser.commands
 }
 
 // Click on browserAction icon
-browser.browserAction.onClicked.addListener(function(curTab) {
-    if (JSON.parse(localStorage.getItem('persistent_mode')) == true) {
-        browser.tabs.query({} ,function (tabs) {
-            for (var i = 0; i < tabs.length; i++) {
-                browser.tabs.executeScript(tabs[i].id, {code: "safeToggleFurigana();"});
-            }
-        });
-    }
+browser.browserAction.onClicked.addListener(function (curTab) {
+    // if (JSON.parse(localStorage.getItem('persistent_mode')) == true) {
+    //     browser.tabs.query({} ,function (tabs) {
+    //         for (var i = 0; i < tabs.length; i++) {
+    //             browser.tabs.executeScript(tabs[i].id, {code: "safeToggleFurigana();"});
+    //         }
+    //     });
+    // }
     if (lsMan.useMobileFloatingButton) {
         if (lsMan.globallyShowMobileFloatingButton) {
             browser.tabs.query({}, function (tabs) {
@@ -109,11 +109,11 @@ var DEFAULT_LOCAL_STORAGE_PREFERENCE = {
     "include_link_text": true,
     "furigana_display": "hira",
     "filter_okurigana": true,
-    "persistent_mode": true,
     "yomi_size": "",
     "yomi_color": "",
     "use_mobile_floating_button": false,
     "watch_page_change": false,
+    "persistent_mode": true,
     "auto_start": false
 }
 
@@ -272,7 +272,7 @@ browser.runtime.onMessage.addListener(
                 watchPageChange: localStorage.getItem("watch_page_change"),
                 persistentMode: localStorage.getItem("persistent_mode"),
                 autoStart: localStorage.getItem("auto_start"),
-                furiganaEnabled: FURIGANA_ENABLED
+                crossTabsFuriganaEnabled: CROSS_TABS_FURIGANA_ENABLED
             });
         //prepare tab for injection
         } else if (request.message == "init_dom_parser_for_tab") {
@@ -334,11 +334,12 @@ browser.runtime.onMessage.addListener(
             browser.tabs.sendMessage(sender.tab.id, {
                 furiganizedTextNodes: FURIGANAIZED
             });
-            FURIGANA_ENABLED = true;
-        } else if (request.message == "set_page_action_icon_status") {
+        } else if (request.message === "set_page_action_icon_status") {
             const newValue = request.value
             setupBrowserActionIcon(newValue, sender.tab.id)
-            FURIGANA_ENABLED = newValue;
+        } else if (request.message === 'set_cross_tabs_furigana_enabled') {
+            console.log('set CROSS_TABS_FURIGANA_ENABLED', request.value)
+            CROSS_TABS_FURIGANA_ENABLED = request.value
         } else {
             console.log("Programming error: a request with the unexpected \"message\" value \"" + request.message + "\" was received in the background page.");
         }

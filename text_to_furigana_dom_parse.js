@@ -5,7 +5,7 @@ var SUBMITTED_KANJI_TEXT_NODES = {};
 // May re-declare
 var PERSISTENT_MODE;
 /** Cross-tab keep on/off status. For PERSISTENT_MODE.  Not for settings. */
-var FURIGANA_ENABLED;
+var CROSS_TABS_FURIGANA_ENABLED;
 var AUTO_START;
 // For dynamic Nodes (dynamically inserted / changed Nodes)
 var WATCH_PAGE_CHANGE;
@@ -23,15 +23,16 @@ function getNextUid() {
 
 // fetch stored configuration values from the background script
 browser.runtime.sendMessage({ message: "config_values_request" }).then(function (response) {
+    console.log('bg.crossTabsFuriganaEnabled', JSON.parse(response.crossTabsFuriganaEnabled))
     USER_KANJI_REGEXP = new RegExp("[" + response.userKanjiList + "]");
     INCLUDE_LINK_TEXT = JSON.parse(response.includeLinkText);
     WATCH_PAGE_CHANGE = JSON.parse(response.watchPageChange);
 
     PERSISTENT_MODE = JSON.parse(response.persistentMode);
-    FURIGANA_ENABLED = JSON.parse(response.furiganaEnabled);
+    CROSS_TABS_FURIGANA_ENABLED = JSON.parse(response.crossTabsFuriganaEnabled);
     AUTO_START = JSON.parse(response.autoStart);
     //Parse for kanji and insert furigana immediately if persistent mode is enabled
-    if (PERSISTENT_MODE && FURIGANA_ENABLED) {
+    if (PERSISTENT_MODE && CROSS_TABS_FURIGANA_ENABLED) {
         enableFurigana();
     }
     if (PERSISTENT_MODE && AUTO_START){   // FIXME: Remove AUTO_START?
@@ -127,9 +128,9 @@ console.log('dom_parse executed!')
 function toggleFurigana() {
     const pageIsProcessed = document.body.hasAttribute("fiprocessed")
     console.log('PERSISTENT_MODE  ==', PERSISTENT_MODE)
-    console.log('FURIGANA_ENABLED ==', FURIGANA_ENABLED)
+    console.log('Original CROSS_TABS_FURIGANA_ENABLED ==', CROSS_TABS_FURIGANA_ENABLED)
     if (PERSISTENT_MODE) {
-        if (FURIGANA_ENABLED) {
+        if (CROSS_TABS_FURIGANA_ENABLED) {
             if (pageIsProcessed) {
                 disableFurigana()
             }
@@ -153,6 +154,7 @@ function setFuriganaEnabled(nv) {
 }
 
 function enableFurigana() {
+    console.log('enableFurigana()')
     KANJI_TEXT_NODES = scanForKanjiTextNodes();
     if (!isEmpty(KANJI_TEXT_NODES) || PERSISTENT_MODE) {
         document.body.setAttribute("fiprocessed", "true");
@@ -164,10 +166,14 @@ function enableFurigana() {
     if (WATCH_PAGE_CHANGE) {
         startWatcher()
     }
-    FURIGANA_ENABLED = true
+    if (PERSISTENT_MODE) {
+        browser.runtime.sendMessage({ message: 'set_cross_tabs_furigana_enabled', value: true })
+    }
+    CROSS_TABS_FURIGANA_ENABLED = true
 }
 
 function disableFurigana() {
+    console.log('disableFurigana()')
     if (!document.body.hasAttribute("fiprocessed")) {
         return
     }
@@ -178,7 +184,10 @@ function disableFurigana() {
     }
     KANJI_TEXT_NODES = {};
     document.body.removeAttribute("fiprocessed");
-    FURIGANA_ENABLED = false
+    if (PERSISTENT_MODE) {
+        browser.runtime.sendMessage({ message: 'set_cross_tabs_furigana_enabled', value: false })
+    }
+    CROSS_TABS_FURIGANA_ENABLED = false
 }
 
 /*** Events ***/
