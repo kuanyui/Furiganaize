@@ -6,7 +6,7 @@ var INCLUDE_LINK_TEXT = false;
 var INSERTED_NODES_TO_CHECK = [];
 var INSERTED_NODE_CHECK_TIMEOUT_ID = null;
 var MUTATION_OBSERVER = null
-var PERSISTENT_MODE = false
+var PERSISTENT_MODE
 
 browser.runtime.sendMessage({message: "config_values_request"}).then(function(response) {
 	USER_KANJI_REGEXP = new RegExp("[" + response.userKanjiList + "]");
@@ -65,7 +65,7 @@ function DOMNodeInsertedHandler(mutationList, observer) {
 }
 // Add an empty onunload function to force run this content_script even when back/forward
 // https://stackoverflow.com/questions/2638292/after-travelling-back-in-firefox-history-javascript-wont-run
-window.addEventListener('unload', function () { })
+// window.addEventListener('unload', function () { })
 
 console.log('kanji_content_detect.js executed!')
 autoSetBrowserActionIcon()  // TODO: Use MutationObserver to auto call this function.

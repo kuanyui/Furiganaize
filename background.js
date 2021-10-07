@@ -109,7 +109,7 @@ var DEFAULT_LOCAL_STORAGE_PREFERENCE = {
     "include_link_text": true,
     "furigana_display": "hira",
     "filter_okurigana": true,
-    "persistent_mode": false,
+    "persistent_mode": true,
     "yomi_size": "",
     "yomi_color": "",
     "use_mobile_floating_button": false,

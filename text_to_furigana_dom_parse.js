@@ -114,11 +114,11 @@ function isEmpty(obj) {
 }
 
 console.log('dom_parse executed!')
-function autoSetBrowserActionIcon() {
-    const enabled = document.body.hasAttribute("fiprocessed")
-    browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: enabled });
-}
-autoSetBrowserActionIcon()
+// function autoSetBrowserActionIcon() {
+//     const enabled = document.body.hasAttribute("fiprocessed")
+//     browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: enabled });
+// }
+// autoSetBrowserActionIcon()
 
 /**
  * Called by kanji_content_detect.
@@ -126,14 +126,16 @@ autoSetBrowserActionIcon()
  */
 function toggleFurigana() {
     const pageIsProcessed = document.body.hasAttribute("fiprocessed")
+    console.log('PERSISTENT_MODE  ==', PERSISTENT_MODE)
+    console.log('FURIGANA_ENABLED ==', FURIGANA_ENABLED)
     if (PERSISTENT_MODE) {
         if (FURIGANA_ENABLED) {
-            if (!pageIsProcessed) {
-                enableFurigana()
-            }
-        } else {
             if (pageIsProcessed) {
                 disableFurigana()
+            }
+        } else {
+            if (!pageIsProcessed) {
+                enableFurigana()
             }
         }
         autoSetBrowserActionIcon()
