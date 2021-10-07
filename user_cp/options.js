@@ -8,7 +8,7 @@ function initControlValues() {
 		$("#furigana_display").val(localStorage.getItem("furigana_display"));
 		$("#filter_okurigana")[0].checked = JSON.parse(localStorage.getItem("filter_okurigana"));
 		$("#persistent_mode")[0].checked = JSON.parse(localStorage.getItem("persistent_mode"));
-        $("#persistent_mode")[0].checked = JSON.parse(localStorage.getItem("persistent_mode"));
+        $("#watch_page_change")[0].checked = JSON.parse(localStorage.getItem("watch_page_change"));
         $("#use_mobile_floating_button")[0].checked = JSON.parse(localStorage.getItem("use_mobile_floating_button"));
 		// $("#auto_start")[0].checked = JSON.parse(localStorage.getItem("auto_start"));
 		$("#yomi_size").val(localStorage.getItem("yomi_size"));

@@ -1,14 +1,16 @@
 ﻿var USER_KANJI_REGEXP;
 var INCLUDE_LINK_TEXT;
-var WATCH_PAGE_CHANGE;
 var KANJI_TEXT_NODES = {};
 var SUBMITTED_KANJI_TEXT_NODES = {};
-var MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = null
 var PERSISTENT_MODE = false
 var FURIGANA_ENABLED = false
 var AUTO_START = false
-var __LAST_UID = 0
+// For dynamic Nodes (dynamically inserted / changed Nodes)
+var WATCH_PAGE_CHANGE;
+var MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = null
+var DYNAMICALLY_CHANGED_NODES = []
 
+var __LAST_UID = 0
 function getNextUid() {
     if (__LAST_UID === Number.MAX_SAFE_INTEGER - 1) {
         __LAST_UID = 0
@@ -18,7 +20,7 @@ function getNextUid() {
 }
 
 // fetch stored configuration values from the background script
-browser.runtime.sendMessage({ message: "config_values_request"}).then(function(response) {
+browser.runtime.sendMessage({ message: "config_values_request" }).then(function (response) {
     USER_KANJI_REGEXP = new RegExp("[" + response.userKanjiList + "]");
     INCLUDE_LINK_TEXT = JSON.parse(response.includeLinkText);
     WATCH_PAGE_CHANGE = JSON.parse(response.watchPageChange);
@@ -114,6 +116,9 @@ function toggleFurigana() {
             //icon can only be changed by background page
         }, function(response) {});
         KANJI_TEXT_NODES = {};
+        if (WATCH_PAGE_CHANGE) {
+            stopWatcher()
+        }
     } else {
         KANJI_TEXT_NODES = scanForKanjiTextNodes();
         if (!isEmpty(KANJI_TEXT_NODES) || PERSISTENT_MODE) {
@@ -123,15 +128,20 @@ function toggleFurigana() {
         } else {
             alert("No text with kanji above your level found. Sorry, false alarm!");
         }
+        if (WATCH_PAGE_CHANGE) {
+            startWatcher()
+        }
     }
 }
 
 function enableFurigana() {
+    console.log('==> enableFurigana(), WATCH_PAGE_CHANGE===', WATCH_PAGE_CHANGE)
     KANJI_TEXT_NODES = scanForKanjiTextNodes();
     if (!isEmpty(KANJI_TEXT_NODES) || PERSISTENT_MODE) {
         document.body.setAttribute("fiprocessed", "true");
         //The background page will respond with data including a "furiganizedTextNodes" member, see below.
         submitKanjiTextNodes(false);
+        console.log('==> enableFurigana(), WATCH_PAGE_CHANGE===', WATCH_PAGE_CHANGE)
         if (WATCH_PAGE_CHANGE) {
             startWatcher()
         }
@@ -185,57 +195,63 @@ browser.runtime.onMessage.addListener(
 );
 
 function startWatcher() {
+    console.log(' ===============> start watcher')
     if (!MUTATION_OBSERVER_FOR_INSERTING_FURIGANA) {
         MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = new MutationObserver(nodeWatcherFn);
     }
-    MUTATION_OBSERVER_FOR_INSERTING_FURIGANA.observe(document, { childList: true, subtree: true });
+    MUTATION_OBSERVER_FOR_INSERTING_FURIGANA.disconnect()
+    MUTATION_OBSERVER_FOR_INSERTING_FURIGANA.observe(document, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+    });
 }
 function stopWatcher() {
     MUTATION_OBSERVER_FOR_INSERTING_FURIGANA.disconnect()
 }
-let NODE_WATCHER_TIMEOUT_ID = null
+let NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = null
 function nodeWatcherFn(mutationList, observer) {
+    console.log('=========================> mutated!', mutationList)
     for (let mutation of mutationList) {
         if (mutation.type === 'childList') {
-            e = mutation;
-            if (INSERTED_NODES_TO_CHECK.includes(e.target)) { continue }
-            if (INSERTED_NODES_TO_CHECK.includes(e.target.parentNode)) { continue }
-            if ((e.target.nodeType == Node.TEXT_NODE || e.target.nodeType == Node.CDATA_SECTION_NODE) &&
-                e.target.innerText !== undefined &&
-                e.target.innerText !== '' &&
-                e.target.parentNode) {
-                INSERTED_NODES_TO_CHECK.push(e.target.parentNode)
+            const e = mutation;
+            const node = e.target
+            if (DYNAMICALLY_CHANGED_NODES.includes(node)) { continue }
+            if (DYNAMICALLY_CHANGED_NODES.includes(node.parentNode)) { continue }
+            if ((node.nodeType == Node.TEXT_NODE || node.nodeType == Node.CDATA_SECTION_NODE) &&
+                node.innerText !== undefined &&
+                node.innerText !== '' &&
+                node.parentNode) {
+                DYNAMICALLY_CHANGED_NODES.push(node.parentNode)
             } else if (
-                e.target.nodeType === Node.ELEMENT_NODE &&
-                e.target.tagName !== "IMG" &&
-                e.target.tagName !== "SVG" &&
-                e.target.tagName !== "CANVAS" &&
-                e.target.tagName !== "OBJECT" &&
-                e.target.tagName !== "EMBED" &&
-                e.target.tagName !== "BODY" &&
-                e.target.tagName !== "HEAD" &&
-                e.target.innerText !== undefined &&
-                e.target.innerText !== ''
+                node.nodeType === Node.ELEMENT_NODE &&
+                node.tagName !== "IMG" &&
+                node.tagName !== "SVG" &&
+                node.tagName !== "CANVAS" &&
+                node.tagName !== "OBJECT" &&
+                node.tagName !== "EMBED" &&
+                node.tagName !== "BODY" &&
+                node.tagName !== "HEAD" &&
+                node.innerText !== undefined &&
+                node.innerText !== '' &&
+                node.innerText.match(/[\u3400-\u9FBF]/)
             ) {
-                INSERTED_NODES_TO_CHECK.push(e.target);
+                DYNAMICALLY_CHANGED_NODES.push(e.target);
             } else {
                 return;
             }
-            window.clearTimeout(NODE_WATCHER_TIMEOUT_ID)
-            NODE_WATCHER_TIMEOUT_ID = window.setTimeout(checkInsertedNodes, 1000);
+            window.clearTimeout(NODE_WATCHER_DEBOUNCE_TIMEOUT_ID)
+            NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = window.setTimeout(processDynamicallyChangedNodes, 1000);
          }
     }
 }
 
-function checkInsertedNodes() {
-    for (const node of INSERTED_NODES_TO_CHECK) {
-        if (node.innerText.length === 0) { continue }
-        if (node.innerText.match(/[\u3400-\u9FBF]/)) {
-            browser.runtime.sendMessage({message: "init_tab_for_fi"});
-            MUTATION_OBSERVER.disconnect()
-            break
-        }
+function processDynamicallyChangedNodes() {
+    console.log('==================================================> Process dynamic changed nodes!', DYNAMICALLY_CHANGED_NODES)
+    NODE_WATCHER_TIMEOUT_ID = null;
+    while (DYNAMICALLY_CHANGED_NODES.length) {
+        const node = DYNAMICALLY_CHANGED_NODES.pop()
+        KANJI_TEXT_NODES[getNextUid()] = node
     }
-	INSERTED_NODES_TO_CHECK = [];
-	NODE_WATCHER_TIMEOUT_ID = null;
+    submitKanjiTextNodes()
 }

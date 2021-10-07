@@ -112,7 +112,7 @@ var localStoragePrefDefaults = {
     "yomi_size": "",
     "yomi_color": "",
     "use_mobile_floating_button": false,
-    "watch_page_change": false,
+    "watch_page_change": true,
     "auto_start": false
 }
 
