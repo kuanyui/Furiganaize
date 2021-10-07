@@ -228,14 +228,14 @@ function addRuby(furiganized, kanji, yomi, key, processed) {
             break;
     }
 
-    ruby_rxp = new RegExp(sprintf('<ruby><rb>%s<\\/rb><rp>\\(<\\/rp><rt[ style=]*.*?>([\\u3040-\\u3096|\\u30A1-\\u30FA|\\uFF66-\\uFF9D|\\u31F0-\\u31FF]+)<\\/rt><rp>\\)<\\/rp><\\/ruby>', kanji), 'g');
+    ruby_rxp = new RegExp(`<ruby><rb>${kanji}<\\/rb><rp>\\(<\\/rp><rt[ style=]*.*?>([\\u3040-\\u3096|\\u30A1-\\u30FA|\\uFF66-\\uFF9D|\\u31F0-\\u31FF]+)<\\/rt><rp>\\)<\\/rp><\\/ruby>`, 'g');
 
     //apply user styles to furigana text
     yomi_size = '';
     yomi_color = '';
 
-    localStorage.getItem('yomi_size').length > 0 ? yomi_size = sprintf('font-size:%spt', localStorage.getItem('yomi_size')) : yomi_size = '';
-    localStorage.getItem('yomi_color').length > 0 ? yomi_color = sprintf(';color:%s', localStorage.getItem('yomi_color')) : yomi_color = '';
+    localStorage.getItem('yomi_size').length > 0 ? yomi_size = `font-size:${localStorage.getItem('yomi_size')}pt` : yomi_size = '';
+    localStorage.getItem('yomi_color').length > 0 ? yomi_color = `;color:${localStorage.getItem('yomi_color')}`  : yomi_color = '';
 
     yomi_style = yomi_size + yomi_color;
 
@@ -244,10 +244,10 @@ function addRuby(furiganized, kanji, yomi, key, processed) {
     if (processed.indexOf(kanji) == -1) {
         processed += kanji;
         if (furiganized[key].match(ruby_rxp)) {
-            furiganized[key] = furiganized[key].replace(ruby_rxp, sprintf('<ruby><rb>%s</rb><rp>(</rp><rt style="%s">%s</rt><rp>)</rp></ruby>', kanji, yomi_style, yomi));
+            furiganized[key] = furiganized[key].replace(ruby_rxp, `<ruby><rb>${kanji}</rb><rp>(</rp><rt style="${yomi_style}">${yomi}</rt><rp>)</rp></ruby>`);
         } else {
             bare_rxp = new RegExp(kanji, 'g');
-            furiganized[key] = furiganized[key].replace(bare_rxp, sprintf('<ruby><rb>%s</rb><rp>(</rp><rt style="%s">%s</rt><rp>)</rp></ruby>', kanji, yomi_style, yomi));
+            furiganized[key] = furiganized[key].replace(bare_rxp, `<ruby><rb>${kanji}</rb><rp>(</rp><rt style="${yomi_style}">${yomi}</rt><rp>)</rp></ruby>`);
         }
     }
 }

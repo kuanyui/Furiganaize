@@ -7,6 +7,3 @@
 [submodule "igo-javascript"]
 	path = submodules/igo-javascript
 	url = git@github.com:shogo82148/igo-javascript.git
-[submodule "sprintf.js"]
-	path = submodules/sprintf.js
-	url = git@github.com:alexei/sprintf.js.git
