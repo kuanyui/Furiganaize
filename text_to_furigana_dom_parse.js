@@ -138,13 +138,11 @@ function toggleFurigana() {
 }
 
 function enableFurigana() {
-    console.log('==> enableFurigana(), WATCH_PAGE_CHANGE===', WATCH_PAGE_CHANGE)
     KANJI_TEXT_NODES = scanForKanjiTextNodes();
     if (!isEmpty(KANJI_TEXT_NODES) || PERSISTENT_MODE) {
         document.body.setAttribute("fiprocessed", "true");
         //The background page will respond with data including a "furiganizedTextNodes" member, see below.
         submitKanjiTextNodes(false);
-        console.log('==> enableFurigana(), WATCH_PAGE_CHANGE===', WATCH_PAGE_CHANGE)
         if (WATCH_PAGE_CHANGE) {
             startWatcher()
         }
@@ -171,6 +169,7 @@ function disableFurigana() {
 browser.runtime.onMessage.addListener(
     function(request, sender, sendResponseCallback) {
         if (request.furiganizedTextNodes) {
+            if (WATCH_PAGE_CHANGE) { stopWatcher() }  // pause watcher when inserting <ruby>
             for (key in request.furiganizedTextNodes) {
                 if (SUBMITTED_KANJI_TEXT_NODES[key]) {
                     var tempDocFrag = document.createDocumentFragment();
@@ -184,6 +183,7 @@ browser.runtime.onMessage.addListener(
                     }
                     delete SUBMITTED_KANJI_TEXT_NODES[key];
                 }
+                if (WATCH_PAGE_CHANGE) { startWatcher() }
             }
             if (!isEmpty(KANJI_TEXT_NODES)) {
                 submitKanjiTextNodes(false);
@@ -201,7 +201,7 @@ browser.runtime.onMessage.addListener(
 );
 
 function startWatcher() {
-    console.log(' ===============> start watcher')
+    // console.log(' ===============> start watcher')
     if (!MUTATION_OBSERVER_FOR_INSERTING_FURIGANA) {
         MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = new MutationObserver(nodeWatcherFn);
     }
@@ -217,7 +217,6 @@ function stopWatcher() {
 }
 var NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = null
 function nodeWatcherFn(mutationList, observer) {
-    console.log('=========================> mutated!', mutationList)
     for (let mutation of mutationList) {
         if (mutation.type === 'childList') {
             const e = mutation;
@@ -229,8 +228,8 @@ function nodeWatcherFn(mutationList, observer) {
         }
     }
     window.clearTimeout(NODE_WATCHER_DEBOUNCE_TIMEOUT_ID)
-    NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = window.setTimeout(processDynamicallyChangedNodes, 500);
-    console.log('setTimout...', NODE_WATCHER_DEBOUNCE_TIMEOUT_ID)
+    NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = window.setTimeout(processDynamicallyChangedNodes, 1000);
+    // console.log('setTimout...', NODE_WATCHER_DEBOUNCE_TIMEOUT_ID)
 }
 function pushDynamicallyChangedNodes(node) {
     if (DYNAMICALLY_CHANGED_NODES.includes(node)) {
@@ -253,6 +252,7 @@ function pushDynamicallyChangedNodes(node) {
         node.tagName !== "CANVAS" &&
         node.tagName !== "OBJECT" &&
         node.tagName !== "EMBED" &&
+        node.tagName !== "HTML" &&
         node.tagName !== "BODY" &&
         node.tagName !== "HEAD" &&
         node.innerText !== undefined &&
@@ -264,7 +264,7 @@ function pushDynamicallyChangedNodes(node) {
     }
 }
 function processDynamicallyChangedNodes() {
-    console.log('==================================================> Process dynamic changed nodes!', DYNAMICALLY_CHANGED_NODES)
+    // console.log('==================================================> Process dynamic changed nodes!', DYNAMICALLY_CHANGED_NODES)
     NODE_WATCHER_TIMEOUT_ID = null;
     while (DYNAMICALLY_CHANGED_NODES.length) {
         const node = DYNAMICALLY_CHANGED_NODES.pop()
