@@ -42,3 +42,8 @@ table.ruby_simulation td {
 	top: -12px;
 	padding-left: 8px;
 }
+code {
+	background: #eeeeee;
+	border: 1px solid #aaaaaa;
+	padding: 1px 3px;
+}
