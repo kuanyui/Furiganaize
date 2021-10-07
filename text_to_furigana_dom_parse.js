@@ -41,12 +41,15 @@ browser.runtime.sendMessage({ message: "config_values_request" }).then(function 
 /*****************
  *	Functions
  *****************/
-function scanForKanjiTextNodes() {
+function scanForKanjiTextNodes(contextNode) {
+    if (!contextNode) {
+        contextNode = document.body
+    }
     //Scan all text for /[\u3400-\u9FBF]/, then add each text node that isn't made up only of kanji only in the user's simple kanji list
     var xPathPattern = '//*[not(ancestor-or-self::head) and not(ancestor::select) and not(ancestor-or-self::script)and not(ancestor-or-self::ruby)' + (INCLUDE_LINK_TEXT ? '' : ' and not(ancestor-or-self::a)') + ']/text()[normalize-space(.) != ""]';
     var foundNodes = {};
     try {
-        var iterator = document.evaluate(xPathPattern, document.body, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
+        var iterator = document.evaluate(xPathPattern, contextNode, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
         var thisNode;
         while (thisNode = iterator.iterateNext()) {
             if (thisNode.textContent.match(/[\u3400-\u9FBF]/)) {
@@ -173,9 +176,12 @@ browser.runtime.onMessage.addListener(
                     var tempDocFrag = document.createDocumentFragment();
                     var dummyParent = document.createElement("DIV");
                     dummyParent.innerHTML = request.furiganizedTextNodes[key];
-                    while (dummyParent.firstChild)
+                    while (dummyParent.firstChild) {
                         tempDocFrag.appendChild(dummyParent.firstChild);
-                    SUBMITTED_KANJI_TEXT_NODES[key].parentNode.replaceChild(tempDocFrag, SUBMITTED_KANJI_TEXT_NODES[key]);
+                    }
+                    if (SUBMITTED_KANJI_TEXT_NODES[key].parentNode) {
+                        SUBMITTED_KANJI_TEXT_NODES[key].parentNode.replaceChild(tempDocFrag, SUBMITTED_KANJI_TEXT_NODES[key]);
+                    }
                     delete SUBMITTED_KANJI_TEXT_NODES[key];
                 }
             }
@@ -209,49 +215,61 @@ function startWatcher() {
 function stopWatcher() {
     MUTATION_OBSERVER_FOR_INSERTING_FURIGANA.disconnect()
 }
-let NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = null
+var NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = null
 function nodeWatcherFn(mutationList, observer) {
     console.log('=========================> mutated!', mutationList)
     for (let mutation of mutationList) {
         if (mutation.type === 'childList') {
             const e = mutation;
-            const node = e.target
-            if (DYNAMICALLY_CHANGED_NODES.includes(node)) { continue }
-            if (DYNAMICALLY_CHANGED_NODES.includes(node.parentNode)) { continue }
-            if ((node.nodeType == Node.TEXT_NODE || node.nodeType == Node.CDATA_SECTION_NODE) &&
-                node.innerText !== undefined &&
-                node.innerText !== '' &&
-                node.parentNode) {
-                DYNAMICALLY_CHANGED_NODES.push(node.parentNode)
-            } else if (
-                node.nodeType === Node.ELEMENT_NODE &&
-                node.tagName !== "IMG" &&
-                node.tagName !== "SVG" &&
-                node.tagName !== "CANVAS" &&
-                node.tagName !== "OBJECT" &&
-                node.tagName !== "EMBED" &&
-                node.tagName !== "BODY" &&
-                node.tagName !== "HEAD" &&
-                node.innerText !== undefined &&
-                node.innerText !== '' &&
-                node.innerText.match(/[\u3400-\u9FBF]/)
-            ) {
-                DYNAMICALLY_CHANGED_NODES.push(e.target);
-            } else {
-                return;
-            }
-            window.clearTimeout(NODE_WATCHER_DEBOUNCE_TIMEOUT_ID)
-            NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = window.setTimeout(processDynamicallyChangedNodes, 1000);
-         }
+            pushDynamicallyChangedNodes(e.target)
+            // Seems unnecessary
+            // for (const node of e.addedNodes) {
+            //     pushDynamicallyChangedNodes(node)
+            // }
+        }
+    }
+    window.clearTimeout(NODE_WATCHER_DEBOUNCE_TIMEOUT_ID)
+    NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = window.setTimeout(processDynamicallyChangedNodes, 500);
+    console.log('setTimout...', NODE_WATCHER_DEBOUNCE_TIMEOUT_ID)
+}
+function pushDynamicallyChangedNodes(node) {
+    if (DYNAMICALLY_CHANGED_NODES.includes(node)) {
+        return
+    }
+    if (DYNAMICALLY_CHANGED_NODES.includes(node.parentNode)) {
+        return
+    }
+    if ((node.nodeType == Node.TEXT_NODE || node.nodeType == Node.CDATA_SECTION_NODE) &&
+        node.innerText !== undefined &&
+        node.innerText !== '' &&
+        node.parentNode) {
+        DYNAMICALLY_CHANGED_NODES.push(node.parentNode)
+        return
+    }
+    if (
+        node.nodeType === Node.ELEMENT_NODE &&
+        node.tagName !== "IMG" &&
+        node.tagName !== "SVG" &&
+        node.tagName !== "CANVAS" &&
+        node.tagName !== "OBJECT" &&
+        node.tagName !== "EMBED" &&
+        node.tagName !== "BODY" &&
+        node.tagName !== "HEAD" &&
+        node.innerText !== undefined &&
+        node.innerText !== '' &&
+        node.innerText.match(/[\u3400-\u9FBF]/)
+    ) {
+        DYNAMICALLY_CHANGED_NODES.push(node);
+        return
     }
 }
-
 function processDynamicallyChangedNodes() {
     console.log('==================================================> Process dynamic changed nodes!', DYNAMICALLY_CHANGED_NODES)
     NODE_WATCHER_TIMEOUT_ID = null;
     while (DYNAMICALLY_CHANGED_NODES.length) {
         const node = DYNAMICALLY_CHANGED_NODES.pop()
-        KANJI_TEXT_NODES[getNextUid()] = node
+        const textNodesObj = scanForKanjiTextNodes(node)
+        Object.assign(KANJI_TEXT_NODES, textNodesObj)
     }
     submitKanjiTextNodes()
 }
