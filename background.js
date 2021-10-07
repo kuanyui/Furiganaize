@@ -2,6 +2,7 @@ var DICT_FILES = ['char.category', 'code2category', 'word2id', 'word.dat', 'word
 var TAGGER = null;
 var FURIGANAIZED = {};
 var EXCEPTIONS = null;
+/** Cross-tab keep on/off status. For PERSISTENT_MODE only. Not for settings. */
 var FURIGANA_ENABLED = false;
 
 
@@ -274,7 +275,7 @@ browser.runtime.onMessage.addListener(
                 furiganaEnabled: FURIGANA_ENABLED
             });
         //prepare tab for injection
-        } else if (request.message == "init_tab_for_fi") {
+        } else if (request.message == "init_dom_parser_for_tab") {
             enableTabForFI(sender.tab)
         } else if (request.message == 'force_load_dom_parser') {
         //sometime loaded `text_to_furigana_dom_parse` unloaded by unknown reason (ex: Idle for too long on Android?), reload it.
@@ -334,13 +335,10 @@ browser.runtime.onMessage.addListener(
                 furiganizedTextNodes: FURIGANAIZED
             });
             FURIGANA_ENABLED = true;
-        //update page icon to 'enabled'
-        } else if (request.message == "show_page_processed") {
-            setupBrowserActionIcon(true, sender.tab.id)
-            //update page icon to 'disabled'
-        } else if (request.message == "reset_page_action_icon") {
-            setupBrowserActionIcon(false, sender.tab.id)
-            FURIGANA_ENABLED = false;
+        } else if (request.message == "set_page_action_icon_status") {
+            const newValue = request.value
+            setupBrowserActionIcon(newValue, sender.tab.id)
+            FURIGANA_ENABLED = newValue;
         } else {
             console.log("Programming error: a request with the unexpected \"message\" value \"" + request.message + "\" was received in the background page.");
         }

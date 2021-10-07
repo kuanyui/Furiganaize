@@ -21,7 +21,7 @@ browser.runtime.sendMessage({message: "config_values_request"}).then(function(re
 	// If none find, do nothing for now except start a listener for node insertions
 	// If persistent mode enabled - enable furigana right away
 	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || PERSISTENT_MODE || globallyShowMobileFloatingButton) {
-		browser.runtime.sendMessage({message: "init_tab_for_fi"});
+		browser.runtime.sendMessage({message: "init_dom_parser_for_tab"});
     } else {
         MUTATION_OBSERVER = new MutationObserver(DOMNodeInsertedHandler);
         MUTATION_OBSERVER.observe(document, { childList: true, subtree: true });
@@ -63,12 +63,23 @@ function DOMNodeInsertedHandler(mutationList, observer) {
     }
 
 }
+// Add an empty onunload function to force run this content_script even when back/forward
+// https://stackoverflow.com/questions/2638292/after-travelling-back-in-firefox-history-javascript-wont-run
+window.addEventListener('unload', function () { })
+
+console.log('kanji_content_detect.js executed!')
+autoSetBrowserActionIcon()  // TODO: Use MutationObserver to auto call this function.
+function autoSetBrowserActionIcon() {
+    const enabled = document.body.hasAttribute("fiprocessed")
+    browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: enabled });
+}
+
 
 function processChangedNodes() {
     for (const node of INSERTED_NODES_TO_CHECK) {
         if (node.innerText.length === 0) { continue }
         if (node.innerText.match(/[\u3400-\u9FBF]/)) {
-            browser.runtime.sendMessage({message: "init_tab_for_fi"});
+            browser.runtime.sendMessage({message: "init_dom_parser_for_tab"});
             MUTATION_OBSERVER.disconnect()
             break
         }
