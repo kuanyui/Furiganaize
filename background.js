@@ -208,8 +208,7 @@ function setupBrowserActionIcon(furiInserted, tabId) {
 
 //prepare a tab for furigana injection
 function enableTabForFI(tab) {
-    setupBrowserActionIcon(false, tab.id)
-    // browser.browserAction.show(tab.id);
+    // setupBrowserActionIcon(false, tab.id)
     return browser.tabs.executeScript(tab.id, {
         file: "/text_to_furigana_dom_parse.js"
     });

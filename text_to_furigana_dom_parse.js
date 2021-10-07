@@ -149,12 +149,15 @@ function toggleFurigana() {
     }
 }
 
-function setFuriganaEnabled(nv) {
-
-}
-
 function enableFurigana() {
     console.log('enableFurigana()')
+    if (document.body.hasAttribute("fiprocessed")) {  // If already enabled (this may happened when using back/next of browser)  // TODO: May needn't because never happened after adding document.onunload ...?
+        console.log('============ has already processed before, skip.')
+        if (WATCH_PAGE_CHANGE) {
+            startWatcher()
+        }
+        return
+    }
     KANJI_TEXT_NODES = scanForKanjiTextNodes();
     if (!isEmpty(KANJI_TEXT_NODES) || PERSISTENT_MODE) {
         document.body.setAttribute("fiprocessed", "true");

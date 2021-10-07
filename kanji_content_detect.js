@@ -8,7 +8,26 @@ var INSERTED_NODE_CHECK_TIMEOUT_ID = null;
 var MUTATION_OBSERVER = null
 var PERSISTENT_MODE
 
-browser.runtime.sendMessage({message: "config_values_request"}).then(function(response) {
+console.log('kanji_content_detect.js executed!')
+// Add an empty onunload function to force run this content_script even when back/forward
+// https://stackoverflow.com/questions/2638292/after-travelling-back-in-firefox-history-javascript-wont-run
+window.addEventListener('unload', function () { })
+
+function autoSetBrowserActionIcon() {
+    const enabled = document.body.hasAttribute("fiprocessed")
+    browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: enabled });
+    return enabled
+}
+
+browser.runtime.sendMessage({ message: "config_values_request" }).then(function (response) {
+    const alreadyEnabled = autoSetBrowserActionIcon() // TODO: Use MutationObserver to auto call this function?
+    if (alreadyEnabled) {
+        // REFACTORING: May needn't because never happened after adding document.onunload ...?
+        // If already enabled, just init dom_parser directly without detecting kanji again.
+        // This situation may happened when using back/next of browser
+        browser.runtime.sendMessage({ message: "init_dom_parser_for_tab" });
+        return
+    }
 	USER_KANJI_REGEXP = new RegExp("[" + response.userKanjiList + "]");
 	INCLUDE_LINK_TEXT = JSON.parse(response.includeLinkText);
 	PERSISTENT_MODE = JSON.parse(response.persistentMode);
@@ -63,7 +82,7 @@ function DOMNodeInsertedHandler(mutationList, observer) {
     }
 
 }
-console.log('kanji_content_detect.js executed!')
+
 
 function processChangedNodes() {
     for (const node of INSERTED_NODES_TO_CHECK) {
