@@ -51,7 +51,7 @@ if (browser.commands) {  // NOTE: Android does not support browser.commands
                         })
                     }
                     lsMan.globallyShowMobileFloatingButton = !lsMan.globallyShowMobileFloatingButton
-                    setupBrowserActionIcon()
+                    setupBrowserActionIcon(false, undefined)
                 } else {
                     browser.tabs.executeScript(curTab.id, {code: "safeToggleFurigana();"});
                 }
@@ -86,7 +86,7 @@ browser.browserAction.onClicked.addListener(function(curTab) {
             })
         }
         lsMan.globallyShowMobileFloatingButton = !lsMan.globallyShowMobileFloatingButton
-        setupBrowserActionIcon()
+        setupBrowserActionIcon(false, undefined)
     } else {
         browser.tabs.executeScript(curTab.id, {code: "safeToggleFurigana();"});
     }
@@ -104,7 +104,7 @@ if (localStorage.getItem("user_kanji_list") === null) {
 var USER_KANJI_REGEXP = new RegExp("[" + localStorage.getItem("user_kanji_list") + "]");
 
 //initialize local storage
-var localStoragePrefDefaults = {
+var DEFAULT_LOCAL_STORAGE_PREFERENCE = {
     "include_link_text": true,
     "furigana_display": "hira",
     "filter_okurigana": true,
@@ -116,10 +116,10 @@ var localStoragePrefDefaults = {
     "auto_start": false
 }
 
-for (var key in localStoragePrefDefaults) {
+for (var key in DEFAULT_LOCAL_STORAGE_PREFERENCE) {
     if (localStorage.getItem(key) === null) {
-        console.log("The localStorage \"" + key + "\" value was null. It will be initialised to" + localStoragePrefDefaults[key] + ".");
-        localStorage.setItem(key, localStoragePrefDefaults[key]);
+        console.log("The localStorage \"" + key + "\" value was null. It will be initialised to" + DEFAULT_LOCAL_STORAGE_PREFERENCE[key] + ".");
+        localStorage.setItem(key, DEFAULT_LOCAL_STORAGE_PREFERENCE[key]);
     }
 }
 
@@ -165,7 +165,7 @@ function loadTagger(dicdir) {
     return new igo.Tagger(wdc, unk, mtx);
 }
 
-setupBrowserActionIcon(false)
+setupBrowserActionIcon(false, undefined)
 
 function setupBrowserActionIcon(furiInserted, tabId) {
     if (lsMan.useMobileFloatingButton) {
@@ -261,6 +261,7 @@ function getYomiStyle() {
 browser.runtime.onMessage.addListener(
     function(request, sender, sendResponseCallback) {
         //send config variables to content script
+        console.log('message from tab =>', request.message)
         if (request.message == "config_values_request") {
             sendResponseCallback({
                 userKanjiList: localStorage.getItem("user_kanji_list"),
@@ -336,7 +337,7 @@ browser.runtime.onMessage.addListener(
         //update page icon to 'enabled'
         } else if (request.message == "show_page_processed") {
             setupBrowserActionIcon(true, sender.tab.id)
-        //update page icon to 'disabled'
+            //update page icon to 'disabled'
         } else if (request.message == "reset_page_action_icon") {
             setupBrowserActionIcon(false, sender.tab.id)
             FURIGANA_ENABLED = false;

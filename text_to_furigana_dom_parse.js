@@ -2,9 +2,10 @@
 var INCLUDE_LINK_TEXT;
 var KANJI_TEXT_NODES = {};
 var SUBMITTED_KANJI_TEXT_NODES = {};
-var PERSISTENT_MODE = false
-var FURIGANA_ENABLED = false
-var AUTO_START = false
+// May re-declare
+var PERSISTENT_MODE;
+var FURIGANA_ENABLED;
+var AUTO_START;
 // For dynamic Nodes (dynamically inserted / changed Nodes)
 var WATCH_PAGE_CHANGE;
 var MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = null
@@ -111,29 +112,16 @@ function isEmpty(obj) {
     return true;
 }
 
+
+/**
+ * Called by kanji_content_detect.
+ * When user clicks browserAction, this function would be invoked.
+ */
 function toggleFurigana() {
     if (document.body.hasAttribute("fiprocessed")) {
-        revertRubies();
-        browser.runtime.sendMessage({
-            message: "reset_page_action_icon"
-            //icon can only be changed by background page
-        }, function(response) {});
-        KANJI_TEXT_NODES = {};
-        if (WATCH_PAGE_CHANGE) {
-            stopWatcher()
-        }
+        disableFurigana()
     } else {
-        KANJI_TEXT_NODES = scanForKanjiTextNodes();
-        if (!isEmpty(KANJI_TEXT_NODES) || PERSISTENT_MODE) {
-            document.body.setAttribute("fiprocessed", "true");
-            //The background page will respond with data including a "furiganizedTextNodes" member, see below.
-            submitKanjiTextNodes(false);
-        } else {
-            alert("No text with kanji above your level found. Sorry, false alarm!");
-        }
-        if (WATCH_PAGE_CHANGE) {
-            startWatcher()
-        }
+        enableFurigana()
     }
 }
 
@@ -143,26 +131,26 @@ function enableFurigana() {
         document.body.setAttribute("fiprocessed", "true");
         //The background page will respond with data including a "furiganizedTextNodes" member, see below.
         submitKanjiTextNodes(false);
-        if (WATCH_PAGE_CHANGE) {
-            startWatcher()
-        }
     } else {
-        alert("No text with kanji found. Sorry, false alarm!");
+        // alert("No text with kanji found. Sorry, false alarm!");
+    }
+    if (WATCH_PAGE_CHANGE) {
+        startWatcher()
     }
 }
 
 function disableFurigana() {
-    if (document.body.hasAttribute("fiprocessed")) {
-        revertRubies();
-        browser.runtime.sendMessage({
-            message: "reset_page_action_icon"
-            //icon can only be changed by background page
-        }, function (response) { });
-        if (WATCH_PAGE_CHANGE) {
-            stopWatcher()
-        }
-        KANJI_TEXT_NODES = {};
+    if (!document.body.hasAttribute("fiprocessed")) {
+        return
     }
+    revertRubies();
+    //icon can only be changed by background page
+    browser.runtime.sendMessage({ message: "reset_page_action_icon" });
+    if (WATCH_PAGE_CHANGE) {
+        stopWatcher()
+    }
+    KANJI_TEXT_NODES = {};
+    document.body.removeAttribute("fiprocessed");
 }
 
 /*** Events ***/
@@ -190,9 +178,7 @@ browser.runtime.onMessage.addListener(
             } else {
                 KANJI_TEXT_NODES = {};
                 document.body.setAttribute("fiprocessed", "true");
-                browser.runtime.sendMessage({
-                    message: "show_page_processed"
-                }, function(response) {});
+                browser.runtime.sendMessage({ message: "show_page_processed" })
             }
         } else {
             console.log("Unexpected msg received from extension script: " + JSON.stringify(data).substr(0, 200));
@@ -228,7 +214,7 @@ function nodeWatcherFn(mutationList, observer) {
         }
     }
     window.clearTimeout(NODE_WATCHER_DEBOUNCE_TIMEOUT_ID)
-    NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = window.setTimeout(processDynamicallyChangedNodes, 1000);
+    NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = window.setTimeout(processDynamicallyChangedNodes, 500);
     // console.log('setTimout...', NODE_WATCHER_DEBOUNCE_TIMEOUT_ID)
 }
 function pushDynamicallyChangedNodes(node) {
