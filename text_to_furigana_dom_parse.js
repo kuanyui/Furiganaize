@@ -3,10 +3,10 @@ var INCLUDE_LINK_TEXT;
 var WATCH_PAGE_CHANGE;
 var KANJI_TEXT_NODES = {};
 var SUBMITTED_KANJI_TEXT_NODES = {};
-let MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = null
-let PERSISTENT_MODE = false
-let FURIGANA_ENABLED = false
-let AUTO_START = false
+var MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = null
+var PERSISTENT_MODE = false
+var FURIGANA_ENABLED = false
+var AUTO_START = false
 
 // fetch stored configuration values from the background script
 browser.runtime.sendMessage({ message: "config_values_request"}).then(function(response) {

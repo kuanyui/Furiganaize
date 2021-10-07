@@ -1,8 +1,8 @@
-var dicfiles = ['char.category', 'code2category', 'word2id', 'word.dat', 'word.ary.idx', 'word.inf', 'matrix.bin'];
-var tagger = null;
-var furiganized = {};
-var exceptions = null;
-var furiganaEnabled = false;
+var DICT_FILES = ['char.category', 'code2category', 'word2id', 'word.dat', 'word.ary.idx', 'word.inf', 'matrix.bin'];
+var TAGGER = null;
+var FURIGANAIZED = {};
+var EXCEPTIONS = null;
+var FURIGANA_ENABLED = false;
 
 
 function doInCurrentTab(tabCallback) {
@@ -130,7 +130,7 @@ igo.getServerFileToArrayBufffer("res/ipadic.zip", function(buffer) {
         var reader = new FileReader();
         reader.onload = function(e) {
             var dic = Zip.inflate(new Uint8Array(reader.result))
-            tagger = loadTagger(dic);
+            TAGGER = loadTagger(dic);
         }
         reader.readAsArrayBuffer(blob);
     } catch (e) {
@@ -140,7 +140,7 @@ igo.getServerFileToArrayBufffer("res/ipadic.zip", function(buffer) {
 var request = new XMLHttpRequest();
 request.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
-        exceptions = request.response
+        EXCEPTIONS = request.response
     }
 }
 request.open('GET','res/exceptions.json',true);
@@ -154,8 +154,8 @@ request.send();
 
 function loadTagger(dicdir) {
     var files = new Array();
-    for (var i = 0; i < dicfiles.length; ++i) {
-        files[dicfiles[i]] = dicdir.files[dicfiles[i]].inflate();
+    for (var i = 0; i < DICT_FILES.length; ++i) {
+        files[DICT_FILES[i]] = dicdir.files[DICT_FILES[i]].inflate();
     }
 
     var category = new igo.CharCategory(files['code2category'], files['char.category']);
@@ -265,7 +265,7 @@ browser.runtime.onMessage.addListener(
                 watchPageChange: localStorage.getItem("watch_page_change"),
                 persistentMode: localStorage.getItem("persistent_mode"),
                 autoStart: localStorage.getItem("auto_start"),
-                furiganaEnabled: furiganaEnabled
+                furiganaEnabled: FURIGANA_ENABLED
             });
         //prepare tab for injection
         } else if (request.message == "init_tab_for_fi") {
@@ -277,16 +277,16 @@ browser.runtime.onMessage.addListener(
             });
         //process DOM nodes containing kanji and insert furigana
         } else if (request.message == 'text_to_furiganize') {
-            furiganized = {};
+            FURIGANAIZED = {};
             for (key in request.textToFuriganize) {
-                furiganized[key] = request.textToFuriganize[key];
-                tagged = tagger.parse(request.textToFuriganize[key]);
+                FURIGANAIZED[key] = request.textToFuriganize[key];
+                tagged = TAGGER.parse(request.textToFuriganize[key]);
 
                 processed = '';
                 // override numeric term (dates, ages etc) readings
                 // TODO: implement override
                 var numeric = false;
-                var numeric_yomi = exceptions;
+                var numeric_yomi = EXCEPTIONS;
                 var numeric_kanji = '';
 
                 tagged.forEach(function(t) {
@@ -311,29 +311,29 @@ browser.runtime.onMessage.addListener(
                                     kanjiFound = true;
                                 }
                                 if (kanjiFound && yomiFound) {
-                                    addRuby(furiganized, kanji, yomi, key, processed);
+                                    addRuby(FURIGANAIZED, kanji, yomi, key, processed);
                                     kanjiFound = false;
                                     yomiFound = false;
                                 }
                             });
                         } else {
-                            addRuby(furiganized, kanji, yomi, key, processed);
+                            addRuby(FURIGANAIZED, kanji, yomi, key, processed);
                         }
                     }
                 });
             }
             //send processed DOM nodes back to the tab content script
             browser.tabs.sendMessage(sender.tab.id, {
-                furiganizedTextNodes: furiganized
+                furiganizedTextNodes: FURIGANAIZED
             });
-            furiganaEnabled = true;
+            FURIGANA_ENABLED = true;
         //update page icon to 'enabled'
         } else if (request.message == "show_page_processed") {
             setupBrowserActionIcon(true, sender.tab.id)
         //update page icon to 'disabled'
         } else if (request.message == "reset_page_action_icon") {
             setupBrowserActionIcon(false, sender.tab.id)
-            furiganaEnabled = false;
+            FURIGANA_ENABLED = false;
         } else {
             console.log("Programming error: a request with the unexpected \"message\" value \"" + request.message + "\" was received in the background page.");
         }

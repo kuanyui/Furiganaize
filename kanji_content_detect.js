@@ -5,11 +5,13 @@ var USER_KANJI_REGEXP;
 var INCLUDE_LINK_TEXT = false;
 var INSERTED_NODES_TO_CHECK = [];
 var INSERTED_NODE_CHECK_TIMEOUT_ID = null;
-let MUTATION_OBSERVER = null
+var MUTATION_OBSERVER = null
+var PERSISTENT_MODE = false
+
 browser.runtime.sendMessage({message: "config_values_request"}).then(function(response) {
 	USER_KANJI_REGEXP = new RegExp("[" + response.userKanjiList + "]");
 	INCLUDE_LINK_TEXT = JSON.parse(response.includeLinkText);
-	persistentMode = JSON.parse(response.persistentMode);
+	PERSISTENT_MODE = JSON.parse(response.persistentMode);
 	let useMobileFloatingButton = JSON.parse(response.useMobileFloatingButton);
     let globallyShowMobileFloatingButton = JSON.parse(response.globallyShowMobileFloatingButton);
     if (globallyShowMobileFloatingButton) {
@@ -18,7 +20,7 @@ browser.runtime.sendMessage({message: "config_values_request"}).then(function(re
 	// Having received the config data, start searching for relevant kanji
 	// If none find, do nothing for now except start a listener for node insertions
 	// If persistent mode enabled - enable furigana right away
-	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || persistentMode || globallyShowMobileFloatingButton) {
+	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || PERSISTENT_MODE || globallyShowMobileFloatingButton) {
 		browser.runtime.sendMessage({message: "init_tab_for_fi"});
     } else {
         MUTATION_OBSERVER = new MutationObserver(DOMNodeInsertedHandler);
