@@ -215,7 +215,7 @@ function enableTabForFI(tab) {
 }
 
 //Ruby tag injector
-function addRuby(furiganized, kanji, yomi, key, processed) {
+function addRuby(furiganized, kanji, yomi, key, processed, yomiStyle) {
     //furigana can be displayed in either hiragana, katakana or romaji
     switch (localStorage.getItem("furigana_display")) {
         case "hira":
@@ -228,28 +228,32 @@ function addRuby(furiganized, kanji, yomi, key, processed) {
             break;
     }
 
-    ruby_rxp = new RegExp(`<ruby><rb>${kanji}<\\/rb><rp>\\(<\\/rp><rt[ style=]*.*?>([\\u3040-\\u3096|\\u30A1-\\u30FA|\\uFF66-\\uFF9D|\\u31F0-\\u31FF]+)<\\/rt><rp>\\)<\\/rp><\\/ruby>`, 'g');
-
-    //apply user styles to furigana text
-    yomi_size = '';
-    yomi_color = '';
-
-    localStorage.getItem('yomi_size').length > 0 ? yomi_size = `font-size:${localStorage.getItem('yomi_size')}pt` : yomi_size = '';
-    localStorage.getItem('yomi_color').length > 0 ? yomi_color = `;color:${localStorage.getItem('yomi_color')}`  : yomi_color = '';
-
-    yomi_style = yomi_size + yomi_color;
+    const rubyPatt = new RegExp(`<ruby><rb>${kanji}<\\/rb><rp>\\(<\\/rp><rt[ style=]*.*?>([\\u3040-\\u3096|\\u30A1-\\u30FA|\\uFF66-\\uFF9D|\\u31F0-\\u31FF]+)<\\/rt><rp>\\)<\\/rp><\\/ruby>`, 'g');
 
     //inject furigana into text nodes
     //a different regex is used for repeat passes to avoid having multiple rubies on the same base
     if (processed.indexOf(kanji) == -1) {
         processed += kanji;
-        if (furiganized[key].match(ruby_rxp)) {
-            furiganized[key] = furiganized[key].replace(ruby_rxp, `<ruby><rb>${kanji}</rb><rp>(</rp><rt style="${yomi_style}">${yomi}</rt><rp>)</rp></ruby>`);
+        if (furiganized[key].match(rubyPatt)) {
+            furiganized[key] = furiganized[key].replace(rubyPatt, `<ruby><rb>${kanji}</rb><rp>(</rp><rt style="${yomiStyle}">${yomi}</rt><rp>)</rp></ruby>`);
         } else {
             bare_rxp = new RegExp(kanji, 'g');
-            furiganized[key] = furiganized[key].replace(bare_rxp, `<ruby><rb>${kanji}</rb><rp>(</rp><rt style="${yomi_style}">${yomi}</rt><rp>)</rp></ruby>`);
+            furiganized[key] = furiganized[key].replace(bare_rxp, `<ruby><rb>${kanji}</rb><rp>(</rp><rt style="${yomiStyle}">${yomi}</rt><rp>)</rp></ruby>`);
         }
     }
+}
+
+function getYomiStyle() {
+    let yomiSize = ''
+    let yomiColor = ''
+    if (localStorage.getItem('yomi_size').length > 0) {
+        yomiSize = `font-size:${localStorage.getItem('yomi_size')}pt`
+    }
+    if (localStorage.getItem('yomi_color').length > 0) {
+        yomiColor = `;color:${localStorage.getItem('yomi_color')}`
+    }
+    let yomiStyle = yomiSize + yomiColor;
+    return yomiStyle
 }
 
 //Extension requests listener. Handles communication between extension and the content scripts
@@ -277,6 +281,7 @@ browser.runtime.onMessage.addListener(
             });
         //process DOM nodes containing kanji and insert furigana
         } else if (request.message == 'text_to_furiganize') {
+            const yomiStyle = getYomiStyle()
             FURIGANAIZED = {};
             for (key in request.textToFuriganize) {
                 FURIGANAIZED[key] = request.textToFuriganize[key];
@@ -311,13 +316,13 @@ browser.runtime.onMessage.addListener(
                                     kanjiFound = true;
                                 }
                                 if (kanjiFound && yomiFound) {
-                                    addRuby(FURIGANAIZED, kanji, yomi, key, processed);
+                                    addRuby(FURIGANAIZED, kanji, yomi, key, processed, yomiStyle);
                                     kanjiFound = false;
                                     yomiFound = false;
                                 }
                             });
                         } else {
-                            addRuby(FURIGANAIZED, kanji, yomi, key, processed);
+                            addRuby(FURIGANAIZED, kanji, yomi, key, processed, yomiStyle);
                         }
                     }
                 });
