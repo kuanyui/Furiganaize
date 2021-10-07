@@ -4,6 +4,9 @@ var WATCH_PAGE_CHANGE;
 var KANJI_TEXT_NODES = {};
 var SUBMITTED_KANJI_TEXT_NODES = {};
 let MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = null
+let PERSISTENT_MODE = false
+let FURIGANA_ENABLED = false
+let AUTO_START = false
 
 // fetch stored configuration values from the background script
 browser.runtime.sendMessage({ message: "config_values_request"}).then(function(response) {
@@ -11,14 +14,14 @@ browser.runtime.sendMessage({ message: "config_values_request"}).then(function(r
     INCLUDE_LINK_TEXT = JSON.parse(response.includeLinkText);
     WATCH_PAGE_CHANGE = JSON.parse(response.watchPageChange);
 
-    persistentMode = JSON.parse(response.persistentMode);
-    furiganaEnabled = JSON.parse(response.furiganaEnabled);
-    autoStart = JSON.parse(response.autoStart);
+    PERSISTENT_MODE = JSON.parse(response.persistentMode);
+    FURIGANA_ENABLED = JSON.parse(response.furiganaEnabled);
+    AUTO_START = JSON.parse(response.autoStart);
     //Parse for kanji and insert furigana immediately if persistent mode is enabled
-    if (persistentMode && furiganaEnabled) {
+    if (PERSISTENT_MODE && FURIGANA_ENABLED) {
         enableFurigana();
     }
-    if (persistentMode && autoStart){
+    if (PERSISTENT_MODE && AUTO_START){
         //waiting for dictionary to load
         setTimeout(enableFurigana, 1000);
     }
@@ -105,7 +108,7 @@ function toggleFurigana() {
         KANJI_TEXT_NODES = {};
     } else {
         KANJI_TEXT_NODES = scanForKanjiTextNodes();
-        if (!isEmpty(KANJI_TEXT_NODES) || persistentMode) {
+        if (!isEmpty(KANJI_TEXT_NODES) || PERSISTENT_MODE) {
             document.body.setAttribute("fiprocessed", "true");
             //The background page will respond with data including a "furiganizedTextNodes" member, see below.
             submitKanjiTextNodes(false);
@@ -117,7 +120,7 @@ function toggleFurigana() {
 
 function enableFurigana() {
     KANJI_TEXT_NODES = scanForKanjiTextNodes();
-    if (!isEmpty(KANJI_TEXT_NODES) || persistentMode) {
+    if (!isEmpty(KANJI_TEXT_NODES) || PERSISTENT_MODE) {
         document.body.setAttribute("fiprocessed", "true");
         //The background page will respond with data including a "furiganizedTextNodes" member, see below.
         submitKanjiTextNodes(false);
