@@ -58,13 +58,13 @@ function DOMNodeInsertedHandler(mutationList, observer) {
                 return;
             }
             window.clearTimeout(INSERTED_NODE_CHECK_TIMEOUT_ID)
-            INSERTED_NODE_CHECK_TIMEOUT_ID = window.setTimeout(checkInsertedNodes, 1000);
+            INSERTED_NODE_CHECK_TIMEOUT_ID = window.setTimeout(processChangedNodes, 1000);
          }
     }
 
 }
 
-function checkInsertedNodes() {
+function processChangedNodes() {
     for (const node of INSERTED_NODES_TO_CHECK) {
         if (node.innerText.length === 0) { continue }
         if (node.innerText.match(/[\u3400-\u9FBF]/)) {
