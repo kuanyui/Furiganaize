@@ -1,12 +1,16 @@
 ﻿var USER_KANJI_REGEXP;
 var INCLUDE_LINK_TEXT;
+var WATCH_PAGE_CHANGE;
 var KANJI_TEXT_NODES = {};
 var SUBMITTED_KANJI_TEXT_NODES = {};
+let MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = null
 
 // fetch stored configuration values from the background script
 browser.runtime.sendMessage({ message: "config_values_request"}).then(function(response) {
     USER_KANJI_REGEXP = new RegExp("[" + response.userKanjiList + "]");
     INCLUDE_LINK_TEXT = JSON.parse(response.includeLinkText);
+    WATCH_PAGE_CHANGE = JSON.parse(response.watchPageChange);
+
     persistentMode = JSON.parse(response.persistentMode);
     furiganaEnabled = JSON.parse(response.furiganaEnabled);
     autoStart = JSON.parse(response.autoStart);
@@ -117,6 +121,9 @@ function enableFurigana() {
         document.body.setAttribute("fiprocessed", "true");
         //The background page will respond with data including a "furiganizedTextNodes" member, see below.
         submitKanjiTextNodes(false);
+        if (WATCH_PAGE_CHANGE) {
+            startWatcher()
+        }
     } else {
         alert("No text with kanji found. Sorry, false alarm!");
     }
@@ -128,7 +135,10 @@ function disableFurigana() {
         browser.runtime.sendMessage({
             message: "reset_page_action_icon"
             //icon can only be changed by background page
-        }, function(response) {});
+        }, function (response) { });
+        if (WATCH_PAGE_CHANGE) {
+            stopWatcher()
+        }
         KANJI_TEXT_NODES = {};
     }
 }
@@ -163,4 +173,58 @@ browser.runtime.onMessage.addListener(
     }
 );
 
-'dom_parse ends here'
+function startWatcher() {
+    if (!MUTATION_OBSERVER_FOR_INSERTING_FURIGANA) {
+        MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = new MutationObserver(nodeWatcherFn);
+    }
+    MUTATION_OBSERVER_FOR_INSERTING_FURIGANA.observe(document, { childList: true, subtree: true });
+}
+function stopWatcher() {
+    MUTATION_OBSERVER_FOR_INSERTING_FURIGANA.disconnect()
+}
+let NODE_WATCHER_TIMEOUT_ID = null
+function nodeWatcherFn(mutationList, observer) {
+    for (let mutation of mutationList) {
+        if (mutation.type === 'childList') {
+            e = mutation;
+            if (INSERTED_NODES_TO_CHECK.includes(e.target)) { continue }
+            if (INSERTED_NODES_TO_CHECK.includes(e.target.parentNode)) { continue }
+            if ((e.target.nodeType == Node.TEXT_NODE || e.target.nodeType == Node.CDATA_SECTION_NODE) &&
+                e.target.innerText !== undefined &&
+                e.target.innerText !== '' &&
+                e.target.parentNode) {
+                INSERTED_NODES_TO_CHECK.push(e.target.parentNode)
+            } else if (
+                e.target.nodeType === Node.ELEMENT_NODE &&
+                e.target.tagName !== "IMG" &&
+                e.target.tagName !== "SVG" &&
+                e.target.tagName !== "CANVAS" &&
+                e.target.tagName !== "OBJECT" &&
+                e.target.tagName !== "EMBED" &&
+                e.target.tagName !== "BODY" &&
+                e.target.tagName !== "HEAD" &&
+                e.target.innerText !== undefined &&
+                e.target.innerText !== ''
+            ) {
+                INSERTED_NODES_TO_CHECK.push(e.target);
+            } else {
+                return;
+            }
+            window.clearTimeout(NODE_WATCHER_TIMEOUT_ID)
+            NODE_WATCHER_TIMEOUT_ID = window.setTimeout(checkInsertedNodes, 1000);
+         }
+    }
+}
+
+function checkInsertedNodes() {
+    for (const node of INSERTED_NODES_TO_CHECK) {
+        if (node.innerText.length === 0) { continue }
+        if (node.innerText.match(/[\u3400-\u9FBF]/)) {
+            browser.runtime.sendMessage({message: "init_tab_for_fi"});
+            MUTATION_OBSERVER.disconnect()
+            break
+        }
+    }
+	INSERTED_NODES_TO_CHECK = [];
+	NODE_WATCHER_TIMEOUT_ID = null;
+}

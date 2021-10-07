@@ -10,7 +10,7 @@ function initControlValues() {
 		$("#persistent_mode")[0].checked = JSON.parse(localStorage.getItem("persistent_mode"));
         $("#persistent_mode")[0].checked = JSON.parse(localStorage.getItem("persistent_mode"));
         $("#use_mobile_floating_button")[0].checked = JSON.parse(localStorage.getItem("use_mobile_floating_button"));
-		$("#auto_start")[0].checked = JSON.parse(localStorage.getItem("auto_start"));
+		// $("#auto_start")[0].checked = JSON.parse(localStorage.getItem("auto_start"));
 		$("#yomi_size").val(localStorage.getItem("yomi_size"));
 		$("#yomi_color").colpick({
 			layout:'hex',
@@ -53,6 +53,10 @@ function initControlValues() {
 			var filterOkurigana = this.checked;
 			localStorage.setItem("filter_okurigana", filterOkurigana);
 		});
+		$("#watch_page_change").bind("change", function() {
+			var watchPageChange = this.checked;
+			localStorage.setItem("watch_page_change", watchPageChange);
+		});
         $("#use_mobile_floating_button").bind("change", function() {
             var useMobileFloatingButton = this.checked;
             localStorage.setItem("use_mobile_floating_button", useMobileFloatingButton);
@@ -60,10 +64,10 @@ function initControlValues() {
 		$("#persistent_mode").bind("change", function() {
 			var persistentMode = this.checked;
 			localStorage.setItem("persistent_mode", persistentMode);
-			if (!persistentMode) {
-				localStorage.setItem("auto_start", false);
-				$("#auto_start").prop('checked', false);
-			}
+			// if (!persistentMode) {
+			// 	localStorage.setItem("auto_start", false);
+			// 	$("#auto_start").prop('checked', false);
+			// }
 		});
 		$("#auto_start").bind("change", function() {
 			var autoStart = this.checked;

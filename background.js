@@ -112,6 +112,7 @@ var localStoragePrefDefaults = {
     "yomi_size": "",
     "yomi_color": "",
     "use_mobile_floating_button": false,
+    "watch_page_change": false,
     "auto_start": false
 }
 
@@ -261,6 +262,7 @@ browser.runtime.onMessage.addListener(
                 includeLinkText: localStorage.getItem("include_link_text"),
                 useMobileFloatingButton: lsMan.useMobileFloatingButton,
                 globallyShowMobileFloatingButton: lsMan.globallyShowMobileFloatingButton,
+                watchPageChange: localStorage.getItem("watch_page_change"),
                 persistentMode: localStorage.getItem("persistent_mode"),
                 autoStart: localStorage.getItem("auto_start"),
                 furiganaEnabled: furiganaEnabled
