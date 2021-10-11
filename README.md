@@ -42,16 +42,11 @@ web-ext --verbose --firefox-profile ${HOME}/.mozilla/firefox/PROFILE_DIR/ run
 ```bash
 make xpi
 ```
-# Todo list
-- New icon on SVG
-- Use `browser.browserAction` to make it more convenient to tap on Android?
-- Check `typeof toggleFurigana` before calling it. (if undefined, load it.)
-- Customizable shortcuts
 
 # Known Issues
 - It's **IMPOSSIBLE** to use this add-on under some special pages or domains like https://addons.mozilla.org/ . This is the restriction of Firefox browser itself.
 - Some kanjis are annotated with wrong furigana. This is a known issue, and not the responsibility of this package (instead, this is implemented via 3rd-party library `igo.js`). **PLEASE DO NOT OPEN ISSUE ABOUT THIS ANYMORE.**
-- Considering remove `persistent_mode` because I don't know what it is doing...
+
 
 # About License
 I originally found this great Chrome extension at [ilya.lissoboi](https://github.com/ilyalissoboi)'s [FuriganaInjectorPlusPlus](https://github.com/ilyalissoboi/FuriganaInjectorPlusPlus), but I want to make it run on my Firefox for Android so I forked it and port it into WebExtension. [It's license is MIT](https://github.com/ilyalissoboi/FuriganaInjectorPlusPlus/blob/master/LICENSE) so I decide to follow it.
