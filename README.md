@@ -4,13 +4,32 @@ A browser extension that can inject phonetic annotations of Japanese text (振�
 
 Forked from [ilya.lissoboi's FuriganaInjectorPlusPlus](https://github.com/ilyalissoboi/FuriganaInjectorPlusPlus)
 
+> I develop and release **all** my open-source software projects **for free**, and are ALL licensed under **`WTFPL`, `GPL`, `MIT`, or `MPL`. however, my “free time” is not free actually**.
+> If my works are usable to you or make you happy, please consider to donate to **reduce my business hours to _make more free and open-source projects for you and this world_**.
+>
+> Attention: Donate **only if you feel happy**; it is totally voluntary, I would never force you to do this. I always try as possible as I can to make good project because I need, and wish my work could also be helpful to others. If you donate, I will be glad and grateful, **but I cannot provide any gurantee or warranty for this project even if you do this.**
+>
+> - <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=G4F7NM38ADPEC&source=url"> <img width="24" height="24" src="https://raw.githubusercontent.com/kuanyui/kuanyui/main/img/paypal.svg"/>PayPal</a>
+> - <a href="https://liberapay.com/onoono"> <img width="24" height="24" src="https://raw.githubusercontent.com/kuanyui/kuanyui/main/img/liberapay.svg"/>LiberaPay</a></li>
+> - <a href="https://www.patreon.com/onoono"> <img width="24" height="24" src="https://raw.githubusercontent.com/kuanyui/kuanyui/main/img/patreon.svg"/>Patreon</a></li>
+>
+> Thanks for your contribution!
+
+## Differences between FuriganaInjectorPlusPlus:
+### Compatible
 - Ported to WebExtension
 - Compatible with Firefox for Android / Fenix.
-- Add floating button for mobile, which let you able to trigger it quickly. (Experimental option)
-- Improved compatibility for website with `<noscript>`, like Google, Twitter.
-- Fix bugs that some Furiganas may unable to be removed correctly. (For overlapped word splitting, for example, 低音域（ていおんいき）, will be splitted into ていおん and おんいき, then it will has an overlapping. However, when disable Furiganaize, this will cause something like (おん)(おん)(おん).)
+### Features
+- `[beta]` Add floating button for mobile, which let you able to trigger it quickly.
+- `[beta]` Add dynamic page support (e.g. Twitter).
 - Show enable / disable status via badge. (Because WebExtension API doesn't provide any way to detect dark/light status of browser theme)
 - Add support for light / dark theme.
+### Bugfixes
+- Improved compatibility for website with `<noscript>`, like Google, Twitter.
+- Fix bugs that some Furiganas may unable to be removed correctly. (For overlapped word splitting, for example, 低音域（ていおんいき）, will be splitted into ていおん and おんいき, then it will has an overlapping. However, when disable Furiganaize, this will cause something like (おん)(おん)(おん).)
+- Fix potential freezing in some page (e.g. https://materialdesignicons.com/)
+- Some other little bugfixes.
+- Slightly improved performance.
 
 # Install
 You can install latest stable release on [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/furiganaize/)
