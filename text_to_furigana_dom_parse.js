@@ -55,6 +55,8 @@ function scanForKanjiTextNodes(contextNode) {
         var iterator = document.evaluate(xPathPattern, contextNode, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
         var thisNode;
         while (thisNode = iterator.iterateNext()) {
+            if (thisNode.parentElement && thisNode.parentElement.isContentEditable) { continue }
+            if (thisNode.nodeType === Node.ELEMENT_NODE && thisNode.isContentEditable) { continue }
             if (thisNode.textContent.match(/[\u3400-\u9FBF]/)) {
                 var uid = getNextUid()
                 foundNodes[uid] = thisNode;
@@ -270,6 +272,12 @@ function pushDynamicallyChangedNodes(node) {
         return
     }
     if (DYNAMICALLY_CHANGED_NODES.includes(node.parentNode)) {
+        return
+    }
+    if (node.parentElement && node.parentElement.isContentEditable) {
+        return
+    }
+    if (node.nodeType === Node.ELEMENT_NODE && node.isContentEditable) {
         return
     }
     if ((node.nodeType == Node.TEXT_NODE || node.nodeType == Node.CDATA_SECTION_NODE) &&
