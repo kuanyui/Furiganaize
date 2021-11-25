@@ -154,7 +154,7 @@ function fiAddFloatingIcon() {
     // }
     div.onclick = function () { safeToggleFurigana() }
     const styleEl = document.createElement('style')
-    styleEl.innerText = `
+    styleEl.textContent = `
     #furiganaize_use_mobile_floating_button {
         position: fixed;
         right: 20px;
@@ -163,6 +163,7 @@ function fiAddFloatingIcon() {
         align-items: center;
         justify-content: center;
         background : #eeeeee;
+        color: #000000;
         border: 1px solid #aaa;
         border-radius: 2rem;
         width: 4rem;
