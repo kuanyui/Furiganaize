@@ -173,6 +173,7 @@ function enableFurigana() {
         browser.runtime.sendMessage({ message: 'set_cross_tabs_furigana_enabled', value: true })
     }
     CROSS_TABS_FURIGANA_ENABLED = true
+    document.FURIGANAIZE_ENABLED = true
 }
 
 function disableFurigana() {
@@ -191,13 +192,16 @@ function disableFurigana() {
         browser.runtime.sendMessage({ message: 'set_cross_tabs_furigana_enabled', value: false })
     }
     CROSS_TABS_FURIGANA_ENABLED = false
+    document.FURIGANAIZE_ENABLED = false
 }
 
 /*** Events ***/
 browser.runtime.onMessage.addListener(
     function(request, sender, sendResponseCallback) {
         if (request.furiganizedTextNodes) {
-            if (WATCH_PAGE_CHANGE) { stopWatcher() }  // pause watcher when inserting <ruby>
+            // NOTE: When furiganaize has been disabled, this request should be ignored. Because a debounce is existed, this request may come after disabling Furiganaize.
+            if (!document.FURIGANAIZE_ENABLED) { return }
+            if (WATCH_PAGE_CHANGE) { stopWatcher() }  // 1. pause watcher when inserting <ruby> (to prevent infinite loop of mutation)
             for (key in request.furiganizedTextNodes) {
                 if (SUBMITTED_KANJI_TEXT_NODES[key]) {
                     var tempDocFrag = document.createDocumentFragment();
@@ -212,7 +216,7 @@ browser.runtime.onMessage.addListener(
                     delete SUBMITTED_KANJI_TEXT_NODES[key];
                 }
             }
-            if (WATCH_PAGE_CHANGE) { startWatcher() }
+            if (WATCH_PAGE_CHANGE) { startWatcher() } // 2. resume watcher after the insertion of <ruby> finished
             if (!isEmpty(KANJI_TEXT_NODES)) {
                 submitKanjiTextNodes(false);
             } else {
@@ -227,11 +231,12 @@ browser.runtime.onMessage.addListener(
 );
 
 function startWatcher() {
-    console.log(' ===============> start watcher')
-    if (!MUTATION_OBSERVER_FOR_INSERTING_FURIGANA) {
-        MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = new MutationObserver(nodeWatcherFn);
+    if (MUTATION_OBSERVER_FOR_INSERTING_FURIGANA) {
+        console.log('[Furiganaize][DEBUG](skip) Dynamic content mutation observer existed, skip.')
+        return
     }
-    MUTATION_OBSERVER_FOR_INSERTING_FURIGANA.disconnect()
+    console.log('[Furiganaize][DEBUG] =====> Dynamic content mutation observer started.')
+    MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = new MutationObserver(nodeWatcherFn);
     MUTATION_OBSERVER_FOR_INSERTING_FURIGANA.observe(document, {
         childList: true,
         subtree: true,
@@ -239,9 +244,10 @@ function startWatcher() {
     });
 }
 function stopWatcher() {
-    console.log(' ===============> stop watcher')
+    console.log('[Furiganaize][DEBUG] =====> Dynamic content mutation observer stop.')
     if (!MUTATION_OBSERVER_FOR_INSERTING_FURIGANA) { return }
     MUTATION_OBSERVER_FOR_INSERTING_FURIGANA.disconnect()
+    MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = null
 }
 var NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = null
 function nodeWatcherFn(mutationList, observer) {
