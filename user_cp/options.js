@@ -60,6 +60,9 @@ function initControlValues() {
         $("#use_mobile_floating_button").bind("change", function() {
             var useMobileFloatingButton = this.checked;
             localStorage.setItem("use_mobile_floating_button", useMobileFloatingButton);
+            if (!useMobileFloatingButton) {
+                localStorage.setItem('globally_show_mobile_floating_button', false)
+            }
         });
 		$("#persistent_mode").bind("change", function() {
 			var persistentMode = this.checked;

@@ -14,17 +14,19 @@ function doInCurrentTab(tabCallback) {
 }
 
 class LocalStorageManager {
+    /** Used for internal state, shared across tab */
     get globallyShowMobileFloatingButton() {
         return JSON.parse(localStorage.getItem('globally_show_mobile_floating_button'))
     }
+    /** Used for internal state, shared across tab */
     set globallyShowMobileFloatingButton(nv) {
         localStorage.setItem('globally_show_mobile_floating_button', nv)
     }
-    /** in options */
+    /** Used in options */
     get useMobileFloatingButton() {
         return JSON.parse(localStorage.getItem('use_mobile_floating_button'))
     }
-    /** in options */
+    /** Used in options */
     set useMobileFloatingButton(nv) {
         localStorage.setItem('use_mobile_floating_button', nv)
     }
