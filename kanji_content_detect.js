@@ -171,6 +171,7 @@ function fiAddFloatingIcon() {
         cursor: pointer;
         user-select: none;
         font-family: sans;
+        z-index: 555555;
     }
     #furiganaize_use_mobile_floating_button span {
         font-size: 3rem;
