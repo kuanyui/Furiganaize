@@ -8,7 +8,6 @@ var INSERTED_NODE_CHECK_TIMEOUT_ID = null;
 var MUTATION_OBSERVER = null
 var PERSISTENT_MODE
 
-console.log('kanji_content_detect.js executed!')
 // Add an empty onunload function to force run this content_script even when back/forward
 // https://stackoverflow.com/questions/2638292/after-travelling-back-in-firefox-history-javascript-wont-run
 window.addEventListener('unload', function () { })
