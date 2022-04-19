@@ -111,7 +111,7 @@ function hasOnlySimpleKanji(rubySubstr) {
 
 
 function fiFloatingIconIsExist () {
-    return document.getElementById('furiganaize_use_mobile_floating_button')
+    return document.getElementById('furiganaize_trigger_button')
 }
 
 function fiToggleFloatingIcon() {
@@ -135,53 +135,86 @@ async function safeToggleFurigana() {
     fiRemoveNoScriptTags()
     toggleFurigana()  // In `text_to_furigana_dom_parse.js`
 }
-
+function transposeFloatButton() {
+    const el = document.querySelector('#furiganaize_buttons_container')
+    if (el.classList.contains('leftSide')) {
+        el.classList.remove('leftSide')
+    } else {
+        el.classList.add('leftSide')
+    }
+}
 function fiAddFloatingIcon() {
     const existed = fiFloatingIconIsExist()
     if (existed) {
         existed.remove()
     }
-    const div = document.createElement('div')
-    const span = document.createElement('span')
-    div.id = 'furiganaize_use_mobile_floating_button'
-    span.innerText = `ふ`
-    div.append(span)
+
+    const btnsWrapper = document.createElement('div')
+    btnsWrapper.id = 'furiganaize_buttons_container'
+    const triggerBtn = document.createElement('div')
+    triggerBtn.id = 'furiganaize_trigger_button'
+    triggerBtn.classList.add('furiganaize_button')
+    const transposeBtn = document.createElement('div')
+    transposeBtn.id = 'furiganaize_transpose_button'
+    transposeBtn.classList.add('furiganaize_button')
+    transposeBtn.innerText = 'うつす'
+    btnsWrapper.appendChild(triggerBtn)
+    btnsWrapper.appendChild(transposeBtn)
+    const fu = document.createElement('span')
+    fu.innerText = `ふ`
+    triggerBtn.append(fu)
     // TODO: Draggable floating button
     // div.draggable = true
     // div.ondrag = function (ev) {
     //     console.log(ev)
     // }
-    div.onclick = function () { safeToggleFurigana() }
+    triggerBtn.onclick = function () { safeToggleFurigana() }
+    transposeBtn.onclick = function () { transposeFloatButton() }
     const styleEl = document.createElement('style')
-    styleEl.textContent = `
-    #furiganaize_use_mobile_floating_button {
+    styleEl.innerText = `
+    #furiganaize_buttons_container {
         position: fixed;
-        right: 20px;
         bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        right: 20px;
+        z-index: 555555;
+    }
+    #furiganaize_buttons_container.leftSide {
+        left: 20px;
+    }
+    #furiganaize_trigger_button {
         display: flex;
         align-items: center;
         justify-content: center;
-        background : #eeeeee;
-        color: #000000;
-        border: 1px solid #aaa;
-        border-radius: 2rem;
-        width: 4rem;
-        height: 4rem;
-        cursor: pointer;
-        user-select: none;
-        font-family: sans;
-        z-index: 555555;
+        width: 50px;
+        height: 50px;
     }
-    #furiganaize_use_mobile_floating_button span {
-        font-size: 3rem;
+    #furiganaize_trigger_button span {
+        font-size: 40px;
         user-select: none;
         margin-top: -0.5rem;
     }
-    #furiganaize_use_mobile_floating_button:active {
+    .furiganaize_button {
+        color: #000000;
+        background : #eeeeee;
+        border: 1px solid #aaa;
+        margin-top: -1px;
+        cursor: pointer;
+        user-select: none;
+        font-family: sans;
+        width: 50px;
+
+    }
+    .furiganaize_button:active {
         background: #cccccc;
     }
+    #furiganaize_transpose_button {
+        text-align: center;
+        font-size: 10px;
+    }
     `
-    document.body.append(div)
+    document.body.append(btnsWrapper)
     document.body.append(styleEl)
 }
 /** <noscript> tag will cause many issues to Furiganaize, for example:
