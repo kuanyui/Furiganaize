@@ -111,7 +111,7 @@ function hasOnlySimpleKanji(rubySubstr) {
 
 
 function fiFloatingIconIsExist () {
-    return document.getElementById('furiganaize_trigger_button')
+    return document.getElementById('furiganaize_buttons_container')
 }
 
 function fiToggleFloatingIcon() {
@@ -174,7 +174,7 @@ function fiAddFloatingIcon() {
     styleEl.innerText = `
     #furiganaize_buttons_container {
         position: fixed;
-        bottom: 20px;
+        bottom: 30px;
         display: flex;
         flex-direction: column;
         right: 20px;
@@ -211,7 +211,7 @@ function fiAddFloatingIcon() {
     }
     #furiganaize_transpose_button {
         text-align: center;
-        font-size: 10px;
+        font-size: 12px;
     }
     `
     document.body.append(btnsWrapper)
