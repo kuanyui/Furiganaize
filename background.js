@@ -240,7 +240,7 @@ function addRuby(furiganized, kanji, yomi, key, processed, yomiStyle) {
             // furiganized[key] = furiganized[key].replace(rubyPatt, `<ruby><rb>${kanji}</rb><rp>(</rp><rt style="${yomiStyle}">${yomi}</rt><rp>)</rp></ruby>`);
             furiganized[key] = furiganized[key].replace(rubyPatt, `<ruby><rb>${kanji}</rb><rt style="${yomiStyle}">${yomi}</rt></ruby>`);
         } else {
-            bare_rxp = new RegExp(kanji, 'g');
+            bare_rxp = new RegExp(kanji + `(?![^<]*<\/rb>)`, 'g');
             furiganized[key] = furiganized[key].replace(bare_rxp, `<ruby><rb>${kanji}</rb><rt style="${yomiStyle}">${yomi}</rt></ruby>`);
         }
     }
