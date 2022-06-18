@@ -298,6 +298,15 @@ browser.runtime.onMessage.addListener(
                 var numeric_yomi = EXCEPTIONS;
                 var numeric_kanji = '';
 
+                // sort tagged in order to add furigana 
+                // for the longer Kanji series first
+                tagged.sort(function(a, b) {
+                    var kanjiRegExp = /([\u4E00-\u9FFF]*)/;
+                    var aKanji = a.surface.match(kanjiRegExp)[0];
+                    var bKanji = b.surface.match(kanjiRegExp)[0];
+                    return bKanji.length - aKanji.length;
+                })
+
                 tagged.forEach(function(t) {
                     if (t.surface.match(/[\u3400-\u9FBF]/)) {
                         kanji = t.surface;
