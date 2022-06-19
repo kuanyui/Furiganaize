@@ -116,7 +116,8 @@ var DEFAULT_LOCAL_STORAGE_PREFERENCE = {
     "use_mobile_floating_button": false,
     "watch_page_change": false,
     "persistent_mode": false,
-    "auto_start": false
+    "auto_start": false,
+    "prevent_splitting_consecutive_kanjis": false,
 }
 
 for (var key in DEFAULT_LOCAL_STORAGE_PREFERENCE) {
@@ -303,7 +304,7 @@ browser.runtime.onMessage.addListener(
                 var numeric_kanji = '';
 
                 if (JSON.parse(localStorage.getItem("prevent_splitting_consecutive_kanjis"))) {
-                    // sort tagged in order to add furigana 
+                    // sort tagged in order to add furigana
                     // for the longer Kanji series first
                     tagged.sort(function(a, b) {
                         var kanjiRegExp = /([\u3400-\u9FBF]*)/;

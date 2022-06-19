@@ -20,6 +20,9 @@
 		<p><label><input type="checkbox" id="includelinktext_inp"/> Include text inside links</label>
 		<span style="font-style: italic; margin-left: 24px;">E.g. <span id="link_sample" class="fakelink"><ruby><rb>今日</rb><rt>きょう</rt></ruby>の<ruby><rb>天気</rb><rt>てんき</rt></ruby></span></span>
 	</div>
+	<div class="row">
+		<p><label><input type="checkbox" id="prevent_splitting_consecutive_kanjis"/> <code>alpha</code> Always prefer to choose the longer segmentations when analyzing a sentence, to prevent some wrong splitting of consecutive Kanji characters (<i>This feature is in alpha phase testing though, it is still <b>strongly recommended to be enabled.</b></i>)</label>
+	</div>
 
 	<div class="row">
 		<p><label><input type="checkbox" id="filter_okurigana"/> Okurigana filter</label>
@@ -35,9 +38,6 @@
 	</div>
 	<div class="row">
 		<p><label><input type="checkbox" id="auto_start"/> <code>beta</code> Auto-start always. <b>Not recommended.</b></label>
-	</div>
-	<div class="row">
-		<p><label><input type="checkbox" id="prevent_splitting_consecutive_kanjis"/> <code>beta</code> Prevents splitting of consecutive Kanji characters. <b>This feature is in alpha phase testing.</b></label>
 	</div>
 	<div class="row">
 		<p><label>Furigana should be displayed with <select id="furigana_display"><option value="hira">Hiragana</option><option value="kata">Katakana</option><option value="roma">Romaji</option></select></label>
