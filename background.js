@@ -240,7 +240,11 @@ function addRuby(furiganized, kanji, yomi, key, processed, yomiStyle) {
             // furiganized[key] = furiganized[key].replace(rubyPatt, `<ruby><rb>${kanji}</rb><rp>(</rp><rt style="${yomiStyle}">${yomi}</rt><rp>)</rp></ruby>`);
             furiganized[key] = furiganized[key].replace(rubyPatt, `<ruby><rb>${kanji}</rb><rt style="${yomiStyle}">${yomi}</rt></ruby>`);
         } else {
-            bare_rxp = new RegExp(kanji + `(?![^<]*<\/rb>)`, 'g');
+            if (JSON.parse(localStorage.getItem("prevent_splitting_consecutive_kanjis"))) {
+                bare_rxp = new RegExp(kanji + `(?![^<]*<\/rb>)`, 'g');
+            } else {
+                bare_rxp = new RegExp(kanji, 'g');
+            }
             furiganized[key] = furiganized[key].replace(bare_rxp, `<ruby><rb>${kanji}</rb><rt style="${yomiStyle}">${yomi}</rt></ruby>`);
         }
     }
@@ -298,14 +302,16 @@ browser.runtime.onMessage.addListener(
                 var numeric_yomi = EXCEPTIONS;
                 var numeric_kanji = '';
 
-                // sort tagged in order to add furigana 
-                // for the longer Kanji series first
-                tagged.sort(function(a, b) {
-                    var kanjiRegExp = /([\u4E00-\u9FFF]*)/;
-                    var aKanji = a.surface.match(kanjiRegExp)[0];
-                    var bKanji = b.surface.match(kanjiRegExp)[0];
-                    return bKanji.length - aKanji.length;
-                })
+                if (JSON.parse(localStorage.getItem("prevent_splitting_consecutive_kanjis"))) {
+                    // sort tagged in order to add furigana 
+                    // for the longer Kanji series first
+                    tagged.sort(function(a, b) {
+                        var kanjiRegExp = /([\u4E00-\u9FFF]*)/;
+                        var aKanji = a.surface.match(kanjiRegExp)[0];
+                        var bKanji = b.surface.match(kanjiRegExp)[0];
+                        return bKanji.length - aKanji.length;
+                    });
+                }
 
                 tagged.forEach(function(t) {
                     if (t.surface.match(/[\u3400-\u9FBF]/)) {
