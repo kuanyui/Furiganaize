@@ -11,6 +11,7 @@ function initControlValues() {
         $("#watch_page_change")[0].checked = JSON.parse(localStorage.getItem("watch_page_change"));
         $("#use_mobile_floating_button")[0].checked = JSON.parse(localStorage.getItem("use_mobile_floating_button"));
 		// $("#auto_start")[0].checked = JSON.parse(localStorage.getItem("auto_start"));
+		$("#prevent_splitting_consecutive_kanjis")[0].checked = JSON.parse(localStorage.getItem("prevent_splitting_consecutive_kanjis"));
 		$("#yomi_size").val(localStorage.getItem("yomi_size"));
 		$("#yomi_color").colpick({
 			layout:'hex',
@@ -78,6 +79,14 @@ function initControlValues() {
 			if (autoStart) {
 				localStorage.setItem("persistent_mode", autoStart);
 				$("#persistent_mode").prop('checked', autoStart);
+			}
+		});
+		$("#prevent_splitting_consecutive_kanjis").bind("change", function() {
+			var preventSplittingConsecutiveKanjis = this.checked;
+			localStorage.setItem("prevent_splitting_consecutive_kanjis", preventSplittingConsecutiveKanjis);
+			if (preventSplittingConsecutiveKanjis) {
+				localStorage.setItem("prevent_splitting_consecutive_kanjis", preventSplittingConsecutiveKanjis);
+				$("#prevent_splitting_consecutive_kanjis").prop('checked', preventSplittingConsecutiveKanjis);
 			}
 		});
 		$("#yomi_size").bind("change", function() {
