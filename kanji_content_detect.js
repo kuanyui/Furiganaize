@@ -13,13 +13,13 @@ var PERSISTENT_MODE
 window.addEventListener('unload', function () { })
 
 function autoSetBrowserActionIcon() {
-    const enabled = document.body.hasAttribute("fiprocessed")
-    browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: enabled });
-    return enabled
+    const state = document.body.hasAttribute("fiprocessed") ? 'INSERTED' : 'UNTOUCHED'
+    browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: state });
+    return state
 }
 
 browser.runtime.sendMessage({ message: "config_values_request" }).then(function (response) {
-    const alreadyEnabled = autoSetBrowserActionIcon() // TODO: Use MutationObserver to auto call this function?
+    const alreadyEnabled = autoSetBrowserActionIcon() === 'INSERTED' // TODO: Use MutationObserver to auto call this function?
     if (alreadyEnabled) {
         // REFACTORING: May needn't because never happened after adding document.onunload ...?
         // If already enabled, just init dom_parser directly without detecting kanji again.
@@ -143,6 +143,7 @@ function transposeFloatButton() {
         el.classList.add('leftSide')
     }
 }
+
 function fiAddFloatingIcon() {
     const existed = fiFloatingIconIsExist()
     if (existed) {
@@ -151,6 +152,9 @@ function fiAddFloatingIcon() {
 
     const btnsWrapper = document.createElement('div')
     btnsWrapper.id = 'furiganaize_buttons_container'
+    const ledIndicator = document.createElement('div')
+    ledIndicator.classList.add('led_indicator')
+    ledIndicator.classList.add('red')
     const triggerBtn = document.createElement('div')
     triggerBtn.id = 'furiganaize_trigger_button'
     triggerBtn.classList.add('furiganaize_button')
@@ -159,6 +163,7 @@ function fiAddFloatingIcon() {
     transposeBtn.classList.add('furiganaize_button')
     transposeBtn.innerText = 'うつす'
     btnsWrapper.appendChild(triggerBtn)
+    btnsWrapper.appendChild(ledIndicator)
     btnsWrapper.appendChild(transposeBtn)
     const fu = document.createElement('span')
     fu.innerText = `ふ`
@@ -182,6 +187,29 @@ function fiAddFloatingIcon() {
     }
     #furiganaize_buttons_container.leftSide {
         left: 20px;
+    }
+    #furiganaize_buttons_container .led_indicator {
+        display: block;
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: 6px;
+        height: 6px;
+        border-radius: 6px;
+        border: 1px solid #333333;
+        background: #666666
+    }
+    #furiganaize_buttons_container .led_indicator.purple {
+        border: 1px solid #5500a1;
+        background: #ee33f1
+    }
+    #furiganaize_buttons_container .led_indicator.red {
+        border: 1px solid #660000;
+        background: #ff6666
+    }
+    #furiganaize_buttons_container .led_indicator.green {
+        border: 1px solid #337700;
+        background: #99dd22
     }
     #furiganaize_trigger_button {
         display: flex;
@@ -209,14 +237,51 @@ function fiAddFloatingIcon() {
     .furiganaize_button:active {
         background: #cccccc;
     }
+    #furiganaize_buttons_container.busy .furiganaize_button {
+        background: #cccccc;
+        pointer-events: none;
+    }
+    #furiganaize_buttons_container.busy .furiganaize_button span,
+    #furiganaize_buttons_container.busy .led_indicator {
+        animation: furiganaize_blinking 0.5s linear infinite;
+    }
     #furiganaize_transpose_button {
         text-align: center;
         font-size: 12px;
+    }
+
+    @keyframes furiganaize_blinking {
+        50% { opacity: 0.2; }
     }
     `
     document.body.append(btnsWrapper)
     document.body.append(styleEl)
 }
+
+function fiSetFloatingButtonState(state) {
+    const wrapper = document.querySelector('#furiganaize_buttons_container')
+    const led = document.querySelector('#furiganaize_buttons_container .led_indicator')
+    led.className = 'led_indicator'
+    console.trace('Button====>', wrapper, state)
+    switch (state) {
+        case 'UNTOUCHED': {
+            wrapper.classList.remove('busy')
+            led.classList.add('red')
+            break
+        }
+        case 'PROCESSING': {
+            wrapper.classList.add('busy')
+            led.classList.add('purple')
+            break
+        }
+        case 'INSERTED': {
+            wrapper.classList.remove('busy')
+            led.classList.add('green')
+            break
+        }
+    }
+}
+
 /** <noscript> tag will cause many issues to Furiganaize, for example:
  *   - Google: force reload / redirect page. (Clue: 1. Use window.beforeunload to avoid reload, then insert furigana. 2. A suspicious style tag is found: <style>table,div,span,p{display:none}</style> 3. This tag is in <noscript>)
  *   - Twitter: the whole page becomes blank.

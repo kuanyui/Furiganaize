@@ -68,7 +68,7 @@ function scanForKanjiTextNodes(contextNode) {
     return foundNodes;
 }
 
-function submitKanjiTextNodes(keepAllRuby) {
+function submitKanjiTextNodes(keepAllRuby=undefined) {
     var msgData = {
         message: "text_to_furiganize",
         keepAllRuby: keepAllRuby
@@ -89,6 +89,7 @@ function submitKanjiTextNodes(keepAllRuby) {
 }
 
 function revertRubies() {
+    browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: 'PROCESSING' });
     document.querySelectorAll("rp,rt").forEach(x=>x.remove())
     var rubies = document.getElementsByTagName("RUBY");
     const parentElMap = new Map()
@@ -114,6 +115,8 @@ function revertRubies() {
         }
     }
     document.body.removeAttribute("fiprocessed");
+    browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: 'UNTOUCHED' });
+    fiSetFloatingButtonState('UNTOUCHED')
 }
 
 function isEmpty(obj) {
@@ -160,6 +163,7 @@ function toggleFurigana() {
 }
 
 function enableFurigana() {
+    fiSetFloatingButtonState('PROCESSING')
     console.log('enableFurigana()')
     if (document.body.hasAttribute("fiprocessed")) {  // If already enabled (this may happened when using back/next of browser)  // REFACTORING: May needn't because never happened after adding document.onunload ...?
         console.log('============ has already processed before, skip.')
@@ -172,7 +176,7 @@ function enableFurigana() {
     if (!isEmpty(KANJI_TEXT_NODES) || PERSISTENT_MODE) {
         document.body.setAttribute("fiprocessed", "true");
         //The background page will respond with data including a "furiganizedTextNodes" member, see below.
-        submitKanjiTextNodes(false);
+        submitKanjiTextNodes();
     } else {
         // alert("No text with kanji found. Sorry, false alarm!");
     }
@@ -187,6 +191,7 @@ function enableFurigana() {
 }
 
 function disableFurigana() {
+    fiSetFloatingButtonState('PROCESSING')
     console.log('disableFurigana()')
     if (!document.body.hasAttribute("fiprocessed")) {
         return
@@ -228,14 +233,16 @@ browser.runtime.onMessage.addListener(
             }
             if (WATCH_PAGE_CHANGE) { startWatcher() } // 2. resume watcher after the insertion of <ruby> finished
             if (!isEmpty(KANJI_TEXT_NODES)) {
-                submitKanjiTextNodes(false);
+                submitKanjiTextNodes();
             } else {
                 KANJI_TEXT_NODES = {};
                 document.body.setAttribute("fiprocessed", "true");
                 autoSetBrowserActionIcon()
             }
+            fiSetFloatingButtonState('INSERTED')
         } else {
             console.log("Unexpected msg received from extension script: " + JSON.stringify(data).substr(0, 200));
+
         }
     }
 );

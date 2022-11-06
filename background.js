@@ -136,9 +136,12 @@ request.responseType = 'json';
 request.send();
 
 
-setupBrowserActionIcon(false, undefined)
-
-function setupBrowserActionIcon(furiInserted, tabId) {
+setupBrowserActionIcon("UNTOUCHED", undefined)
+var blinkTimeoutId = -1
+function setupBrowserActionIcon(state, tabId) {
+    console.log('ICON STATE===', state)
+    browser.browserAction.enable(tabId)
+    window.clearTimeout(blinkTimeoutId)
     if (lsMan.useMobileFloatingButton) {
         // TODO: Set different title or color for mobile floating icon
         if (lsMan.globallyShowMobileFloatingButton) {
@@ -152,12 +155,25 @@ function setupBrowserActionIcon(furiInserted, tabId) {
         }
         return
     }
-    if (furiInserted) {
+    if (state === "PROCESSING") {
         // FIXME: Want to restore icon to theme_icons but USELESS. This shit API : https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/browserAction/setIcon
         // NOTE: check thias, because elder Firefox for Android doesn't support this.
         // if (typeof browser.browserAction.setIcon === 'function') {
         //     browser.browserAction.setIcon({ tabId: tabId, path: null, imageData: null });  // reset to default theme icons
         // }
+        browser.browserAction.disable(tabId)
+        browser.browserAction.setTitle({ tabId: tabId, title: "処理中...", });
+        const fn = (i=0) => {
+            if (i % 2) {
+                browser.browserAction.setBadgeBackgroundColor({ tabId: tabId, color: "#9600E1", });
+            } else {
+                browser.browserAction.setBadgeBackgroundColor({ tabId: tabId, color: "#ffffff", });
+            }
+            blinkTimeoutId = window.setTimeout(() => fn(++i), 200)
+        }
+        fn()
+        browser.browserAction.setBadgeText({ tabId: tabId, text: "ﾋﾞｼﾞｰ", });
+    } else if (state === "INSERTED") {
         browser.browserAction.setTitle({ tabId: tabId, title: "振り仮名を削除", });
         browser.browserAction.setBadgeBackgroundColor({ tabId: tabId, color: "#99dd22", });
         browser.browserAction.setBadgeText({ tabId: tabId, text: "ｵﾝ", });
@@ -258,6 +274,7 @@ browser.runtime.onMessage.addListener(
             });
             //process DOM nodes containing kanji and insert furigana
         } else if (request.message == 'text_to_furiganize') {
+            setupBrowserActionIcon('PROCESSING', sender.tab.id)
             workerMan.runIgo(request.textMapNeedFuriganaize).then((furiganaized) => {
                 //send processed DOM nodes back to the tab content script
                 browser.tabs.sendMessage(sender.tab.id, {
@@ -266,7 +283,9 @@ browser.runtime.onMessage.addListener(
             })
         } else if (request.message === "set_page_action_icon_status") {
             const newValue = request.value
-            setupBrowserActionIcon(newValue, sender.tab.id)
+            window.setTimeout(() => {
+                setupBrowserActionIcon(newValue, sender.tab.id)
+            }, 200)
         } else if (request.message === 'set_cross_tabs_furigana_enabled') {
             console.log('set CROSS_TABS_FURIGANA_ENABLED', request.value)
             CROSS_TABS_FURIGANA_ENABLED = request.value
