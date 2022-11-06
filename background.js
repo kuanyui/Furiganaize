@@ -290,11 +290,14 @@ browser.runtime.onMessage.addListener(
             });
         //process DOM nodes containing kanji and insert furigana
         } else if (request.message == 'text_to_furiganize') {
+            console.time('text_to_furiganize')
             const yomiStyle = getYomiStyle()
+            const preferLongerKanjiSegments = JSON.parse(localStorage.getItem("prevent_splitting_consecutive_kanjis"))
+            const filterOkurigana = JSON.parse(localStorage.getItem("filter_okurigana"))
             FURIGANAIZED = {};
             for (key in request.textToFuriganize) {
                 FURIGANAIZED[key] = request.textToFuriganize[key];
-                tagged = TAGGER.parse(request.textToFuriganize[key]);
+                const tagged = TAGGER.parse(request.textToFuriganize[key]);
 
                 processed = '';
                 // override numeric term (dates, ages etc) readings
@@ -303,7 +306,7 @@ browser.runtime.onMessage.addListener(
                 var numeric_yomi = EXCEPTIONS;
                 var numeric_kanji = '';
 
-                if (JSON.parse(localStorage.getItem("prevent_splitting_consecutive_kanjis"))) {
+                if (preferLongerKanjiSegments) {
                     // sort tagged in order to add furigana
                     // for the longer Kanji series first
                     tagged.sort(function(a, b) {
@@ -314,19 +317,19 @@ browser.runtime.onMessage.addListener(
                     });
                 }
 
-                tagged.forEach(function(t) {
+                tagged.forEach((t) => {
                     if (t.surface.match(/[\u3400-\u9FBF]/)) {
-                        kanji = t.surface;
-                        yomi = t.feature.split(',')[t.feature.split(',').length - 2];
+                        let kanji = t.surface;
+                        let yomi = t.feature.split(',')[t.feature.split(',').length - 2];
 
                         //filter okurigana (word endings)
-                        if (JSON.parse(localStorage.getItem("filter_okurigana"))) {
-                            diff = JsDiff.diffChars(kanji, wanakana.toHiragana(yomi));
-                            kanjiFound = false;
-                            yomiFound = false;
+                        if (filterOkurigana) {
+                            const diff = JsDiff.diffChars(kanji, wanakana.toHiragana(yomi));
+                            let kanjiFound = false;
+                            let yomiFound = false;
                             //separate kanji and kana characters in the string using diff
                             //and inject furigana only into kanji part
-                            diff.forEach(function(part) {
+                            diff.forEach((part) => {
                                 if (part.added) {
                                     yomi = wanakana.toKatakana(part.value);
                                     yomiFound = true;
@@ -351,6 +354,7 @@ browser.runtime.onMessage.addListener(
             browser.tabs.sendMessage(sender.tab.id, {
                 furiganizedTextNodes: FURIGANAIZED
             });
+            console.timeEnd('text_to_furiganize')
         } else if (request.message === "set_page_action_icon_status") {
             const newValue = request.value
             setupBrowserActionIcon(newValue, sender.tab.id)
