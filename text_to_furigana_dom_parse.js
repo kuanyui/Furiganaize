@@ -73,12 +73,12 @@ function submitKanjiTextNodes(keepAllRuby) {
         message: "text_to_furiganize",
         keepAllRuby: keepAllRuby
     };
-    msgData.textToFuriganize = {};
+    msgData.textMapNeedFuriganaize = {};
     var strLength = 0;
     for (key in KANJI_TEXT_NODES) {
         if (KANJI_TEXT_NODES[key] && KANJI_TEXT_NODES[key].data) {
             strLength += KANJI_TEXT_NODES[key].data.length;
-            msgData.textToFuriganize[key] = KANJI_TEXT_NODES[key].data;
+            msgData.textMapNeedFuriganaize[key] = KANJI_TEXT_NODES[key].data;
             //reduce the nodes just to strings for passing to the background page.
             SUBMITTED_KANJI_TEXT_NODES[key] = KANJI_TEXT_NODES[key];
         }

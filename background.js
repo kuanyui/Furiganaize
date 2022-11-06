@@ -1,6 +1,3 @@
-var DICT_FILES = ['char.category', 'code2category', 'word2id', 'word.dat', 'word.ary.idx', 'word.inf', 'matrix.bin'];
-var TAGGER = null;
-var FURIGANAIZED = {};
 var EXCEPTIONS = null;
 /** Cross-tab keep on/off status. For PERSISTENT_MODE only. Not for settings. */
 var CROSS_TABS_FURIGANA_ENABLED = false;
@@ -127,20 +124,7 @@ for (var key in DEFAULT_LOCAL_STORAGE_PREFERENCE) {
     }
 }
 
-//initialize IGO-JS
-igo.getServerFileToArrayBufffer("res/ipadic.zip", function(buffer) {
-    try {
-        var blob = new Blob([new Uint8Array(buffer)]);
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var dic = Zip.inflate(new Uint8Array(reader.result))
-            TAGGER = loadTagger(dic);
-        }
-        reader.readAsArrayBuffer(blob);
-    } catch (e) {
-        console.error(e.toString());
-    }
-});
+
 var request = new XMLHttpRequest();
 request.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
@@ -151,23 +135,6 @@ request.open('GET','res/exceptions.json',true);
 request.responseType = 'json';
 request.send();
 
-/*****************
- *  Functions
- *****************/
-//load dictionaries
-
-function loadTagger(dicdir) {
-    var files = new Array();
-    for (var i = 0; i < DICT_FILES.length; ++i) {
-        files[DICT_FILES[i]] = dicdir.files[DICT_FILES[i]].inflate();
-    }
-
-    var category = new igo.CharCategory(files['code2category'], files['char.category']);
-    var wdc = new igo.WordDic(files['word2id'], files['word.dat'], files['word.ary.idx'], files['word.inf']);
-    var unk = new igo.Unknown(category);
-    var mtx = new igo.Matrix(files['matrix.bin']);
-    return new igo.Tagger(wdc, unk, mtx);
-}
 
 setupBrowserActionIcon(false, undefined)
 
@@ -217,40 +184,6 @@ function enableTabForFI(tab) {
     });
 }
 
-//Ruby tag injector
-function addRuby(furiganized, kanji, yomi, key, processed, yomiStyle) {
-    //furigana can be displayed in either hiragana, katakana or romaji
-    switch (localStorage.getItem("furigana_display")) {
-        case "hira":
-            yomi = wanakana.toHiragana(yomi);
-            break;
-        case "roma":
-            yomi = wanakana.toRomaji(yomi);
-            break;
-        default:
-            break;
-    }
-    // const rubyPatt = new RegExp(`<ruby><rb>${kanji}<\\/rb><rp>\\(<\\/rp><rt[ style=]*.*?>([\\u3040-\\u3096|\\u30A1-\\u30FA|\\uFF66-\\uFF9D|\\u31F0-\\u31FF]+)<\\/rt><rp>\\)<\\/rp><\\/ruby>`, 'g');
-    const rubyPatt = new RegExp(`<ruby><rb>${kanji}<\\/rb><rt[ style=]*.*?>([\\u3040-\\u3096|\\u30A1-\\u30FA|\\uFF66-\\uFF9D|\\u31F0-\\u31FF]+)<\\/rt><\\/ruby>`, 'g');
-
-    //inject furigana into text nodes
-    //a different regex is used for repeat passes to avoid having multiple rubies on the same base
-    if (processed.indexOf(kanji) == -1) {
-        processed += kanji;
-        if (furiganized[key].match(rubyPatt)) {
-            // furiganized[key] = furiganized[key].replace(rubyPatt, `<ruby><rb>${kanji}</rb><rp>(</rp><rt style="${yomiStyle}">${yomi}</rt><rp>)</rp></ruby>`);
-            furiganized[key] = furiganized[key].replace(rubyPatt, `<ruby><rb>${kanji}</rb><rt style="${yomiStyle}">${yomi}</rt></ruby>`);
-        } else {
-            if (JSON.parse(localStorage.getItem("prevent_splitting_consecutive_kanjis"))) {
-                bare_rxp = new RegExp(kanji + `(?![^<]*<\/rb>)`, 'g');
-            } else {
-                bare_rxp = new RegExp(kanji, 'g');
-            }
-            furiganized[key] = furiganized[key].replace(bare_rxp, `<ruby><rb>${kanji}</rb><rt style="${yomiStyle}">${yomi}</rt></ruby>`);
-        }
-    }
-}
-
 function getYomiStyle() {
     let yomiSize = ''
     let yomiColor = ''
@@ -264,11 +197,46 @@ function getYomiStyle() {
     return yomiStyle
 }
 
+class WorkerManager {
+    constructor() {
+        this._reqId = 0
+        this._promiseResolverMap = {}
+        this._worker = new Worker('./concatenated_igoworker.js')
+        this._worker.onmessage = (_msg) => {
+            const msg = _msg.data
+            const resolver = this._promiseResolverMap[msg.reqId]
+            delete this._promiseResolverMap[msg.reqId]
+            resolver(msg.furiganaizedTextMap)
+        }
+    }
+    runIgo(textMapNeedsFuriganaize) {
+        const yomiStyle = getYomiStyle()
+        const preferLongerKanjiSegments = JSON.parse(localStorage.getItem("prevent_splitting_consecutive_kanjis"))
+        const filterOkurigana = JSON.parse(localStorage.getItem("filter_okurigana"))
+        const furiganaType = localStorage.getItem("furigana_display")
+        const req = {
+            reqId: ++this._reqId,
+            textMapNeedsFuriganaize: textMapNeedsFuriganaize,
+            options: {
+                yomiStyle, preferLongerKanjiSegments, filterOkurigana, furiganaType
+            }
+        }
+        console.log('runIgo!')
+        const prom = new Promise((resolve, reject) => {
+            this._worker.postMessage(req)
+            this._promiseResolverMap[req.reqId] = resolve
+        })
+        return prom
+    }
+}
+const workerMan = new WorkerManager()
+
+
 //Extension requests listener. Handles communication between extension and the content scripts
 browser.runtime.onMessage.addListener(
     function(request, sender, sendResponseCallback) {
         //send config variables to content script
-        console.log('message from tab =>', request.message)
+        console.log('message from tab, request.message ===', request.message, request)
         if (request.message == "config_values_request") {
             sendResponseCallback({
                 userKanjiList: localStorage.getItem("user_kanji_list"),
@@ -284,77 +252,18 @@ browser.runtime.onMessage.addListener(
         } else if (request.message == "init_dom_parser_for_tab") {
             enableTabForFI(sender.tab)
         } else if (request.message == 'force_load_dom_parser') {
-        //sometime loaded `text_to_furigana_dom_parse` unloaded by unknown reason (ex: Idle for too long on Android?), reload it.
+            //sometime loaded `text_to_furigana_dom_parse` unloaded by unknown reason (ex: Idle for too long on Android?), reload it.
             return browser.tabs.executeScript(sender.tab.id, {
                 file: "/text_to_furigana_dom_parse.js"
             });
-        //process DOM nodes containing kanji and insert furigana
+            //process DOM nodes containing kanji and insert furigana
         } else if (request.message == 'text_to_furiganize') {
-            console.time('text_to_furiganize')
-            const yomiStyle = getYomiStyle()
-            const preferLongerKanjiSegments = JSON.parse(localStorage.getItem("prevent_splitting_consecutive_kanjis"))
-            const filterOkurigana = JSON.parse(localStorage.getItem("filter_okurigana"))
-            FURIGANAIZED = {};
-            for (key in request.textToFuriganize) {
-                FURIGANAIZED[key] = request.textToFuriganize[key];
-                const tagged = TAGGER.parse(request.textToFuriganize[key]);
-
-                processed = '';
-                // override numeric term (dates, ages etc) readings
-                // TODO: implement override
-                var numeric = false;
-                var numeric_yomi = EXCEPTIONS;
-                var numeric_kanji = '';
-
-                if (preferLongerKanjiSegments) {
-                    // sort tagged in order to add furigana
-                    // for the longer Kanji series first
-                    tagged.sort(function(a, b) {
-                        var kanjiRegExp = /([\u3400-\u9FBF]*)/;
-                        var aKanji = a.surface.match(kanjiRegExp)[0];
-                        var bKanji = b.surface.match(kanjiRegExp)[0];
-                        return bKanji.length - aKanji.length;
-                    });
-                }
-
-                tagged.forEach((t) => {
-                    if (t.surface.match(/[\u3400-\u9FBF]/)) {
-                        let kanji = t.surface;
-                        let yomi = t.feature.split(',')[t.feature.split(',').length - 2];
-
-                        //filter okurigana (word endings)
-                        if (filterOkurigana) {
-                            const diff = JsDiff.diffChars(kanji, wanakana.toHiragana(yomi));
-                            let kanjiFound = false;
-                            let yomiFound = false;
-                            //separate kanji and kana characters in the string using diff
-                            //and inject furigana only into kanji part
-                            diff.forEach((part) => {
-                                if (part.added) {
-                                    yomi = wanakana.toKatakana(part.value);
-                                    yomiFound = true;
-                                }
-                                if (part.removed) {
-                                    kanji = part.value;
-                                    kanjiFound = true;
-                                }
-                                if (kanjiFound && yomiFound) {
-                                    addRuby(FURIGANAIZED, kanji, yomi, key, processed, yomiStyle);
-                                    kanjiFound = false;
-                                    yomiFound = false;
-                                }
-                            });
-                        } else {
-                            addRuby(FURIGANAIZED, kanji, yomi, key, processed, yomiStyle);
-                        }
-                    }
+            workerMan.runIgo(request.textMapNeedFuriganaize).then((furiganaized) => {
+                //send processed DOM nodes back to the tab content script
+                browser.tabs.sendMessage(sender.tab.id, {
+                    furiganizedTextNodes: furiganaized
                 });
-            }
-            //send processed DOM nodes back to the tab content script
-            browser.tabs.sendMessage(sender.tab.id, {
-                furiganizedTextNodes: FURIGANAIZED
-            });
-            console.timeEnd('text_to_furiganize')
+            })
         } else if (request.message === "set_page_action_icon_status") {
             const newValue = request.value
             setupBrowserActionIcon(newValue, sender.tab.id)

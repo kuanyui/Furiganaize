@@ -13,3 +13,13 @@ server: build-xpi
 zip-repo:
 	rm -f "../${NAME}-upload.zip"
 	zip -r "../${NAME}-upload.zip" .    -x node_modules/\*
+
+# bundle because Firefox currently doesn't support background.service_worker in manifest.json
+cat:
+	cat "lib/igo.js" \
+		"lib/zipjs/jsinflate.js" \
+		"lib/zipjs/sjis.js" \
+		"lib/zipjs/zip.js" \
+		"lib/wanakana.js" \
+		"lib/diff.js" \
+		"igoworker.js" > "concatenated_igoworker.js"
