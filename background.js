@@ -114,7 +114,7 @@ var DEFAULT_LOCAL_STORAGE_PREFERENCE = {
     "watch_page_change": false,
     "persistent_mode": false,
     "auto_start": false,
-    "prevent_splitting_consecutive_kanjis": false,
+    "prevent_splitting_consecutive_kanjis": true,
 }
 
 for (var key in DEFAULT_LOCAL_STORAGE_PREFERENCE) {
