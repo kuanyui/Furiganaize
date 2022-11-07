@@ -21,7 +21,7 @@
 		<span style="font-style: italic; margin-left: 24px;">E.g. <span id="link_sample" class="fakelink"><ruby><rb>今日</rb><rt>きょう</rt></ruby>の<ruby><rb>天気</rb><rt>てんき</rt></ruby></span></span>
 	</div>
 	<div class="row">
-		<p><label><input type="checkbox" id="prevent_splitting_consecutive_kanjis"/> <code>alpha</code> Always prefer to choose the longer segmentations when analyzing a sentence, to prevent some wrong splitting of consecutive Kanji characters (<i>This feature is in alpha phase testing though, it is still <b>strongly recommended to be enabled.</b></i>)</label>
+		<p><label><input type="checkbox" id="prevent_splitting_consecutive_kanjis"/> <code>alpha</code> Always prefer to choose the longer segmentations when analyzing a sentence, to prevent some wrong splitting of consecutive Kanji characters (<i>This feature is in alpha phase testing though, it is still <b class="recommended">strongly recommended to be enabled.</b></i>)</label>
 	</div>
 
 	<div class="row">
@@ -34,10 +34,10 @@
 		<p><label><input type="checkbox" id="watch_page_change"/> <code>beta</code> Watch the changes of page for dynamic pages. (<b>Warning: Due to technical reasons, this may impact performance, and some furigana may become wrong when processing the same area multiple times.</b> These are known issues, don't complain this in issue tracker, unless it cause severe problem (e.g. crash) or you have found solution or going to make a PR to fix this. Thanks.) </label>
 	</div>
 	<div class="row">
-		<p><label><input type="checkbox" id="persistent_mode"/> <code>beta</code> Persistent mode (keep Furigana on/off status across tabs and pages. <b>Not recommended. Be careful if you still meant to use this, it may slow down your browser when you accidentally open an unexpected large web page, and may slow down a bit whenever use back/next of browser.</b>)</label>
+		<p><label><input type="checkbox" id="persistent_mode"/> <code>alpha</code> Persistent mode (keep Furigana on/off status across tabs and pages. <b class="not_recommended">Not recommended. Be careful if you still meant to use this, it may slow down or even crash your browser when you accidentally open an unexpected large web page, and may slow down a bit whenever use back/next of browser.</b>)</label>
 	</div>
 	<div class="row">
-		<p><label><input type="checkbox" id="auto_start"/> <code>beta</code> Auto-start always. <b>Not recommended.</b></label>
+		<p><label><input type="checkbox" id="auto_start"/> <code>alpha</code> Auto-start always. <b class="not_recommended">Not recommended.</b></label>
 	</div>
 	<div class="row">
 		<p><label>Furigana should be displayed with <select id="furigana_display"><option value="hira">Hiragana</option><option value="kata">Katakana</option><option value="roma">Romaji</option></select></label>

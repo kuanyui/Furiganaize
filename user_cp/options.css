@@ -47,3 +47,10 @@ code {
 	border: 1px solid #aaaaaa;
 	padding: 1px 3px;
 }
+
+.not_recommended {
+	color: #880000;
+}
+.recommended {
+	color: #008800;
+}
