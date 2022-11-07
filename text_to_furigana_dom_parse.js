@@ -217,7 +217,11 @@ browser.runtime.onMessage.addListener(
     function(request, sender, sendResponseCallback) {
         if (request.furiganizedTextNodes) {
             // NOTE: When furiganaize has been disabled, this request should be ignored. Because a debounce is existed, this request may come after disabling Furiganaize.
-            if (!document.FURIGANAIZE_ENABLED) { return }
+            if (!document.FURIGANAIZE_ENABLED) {
+                browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: 'UNTOUCHED' });
+                fiSetFloatingButtonState('UNTOUCHED')
+                return
+            }
             if (WATCH_PAGE_CHANGE) { stopWatcher() }  // 1. pause watcher when inserting <ruby> (to prevent infinite loop of mutation)
             for (key in request.furiganizedTextNodes) {
                 if (SUBMITTED_KANJI_TEXT_NODES[key]) {
