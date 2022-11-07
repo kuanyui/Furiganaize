@@ -24,12 +24,15 @@ Forked from [ilya.lissoboi's FuriganaInjectorPlusPlus](https://github.com/ilyali
 - `[beta]` Add dynamic page support (e.g. Twitter).
 - Show enable / disable status via badge. (Because WebExtension API doesn't provide any way to detect dark/light status of browser theme)
 - Add support for light / dark theme.
+### Performance
+- Use WebWorker to analyze sentence to prevent blocking and improve performance & UX.
+- Huge improvement on the performance of removing ruby tags.
+- Some other small performance improvements.
 ### Bugfixes
 - Improved compatibility for website with `<noscript>`, like Google, Twitter.
 - Fix bugs that some Furiganas may unable to be removed correctly. (For overlapped word splitting, for example, 低音域（ていおんいき）, will be splitted into ていおん and おんいき, then it will has an overlapping. However, when disable Furiganaize, this will cause something like (おん)(おん)(おん).)
 - Fix potential freezing in some page (e.g. https://materialdesignicons.com/)
 - Some other little bugfixes.
-- Slightly improved performance.
 
 # Install
 You can install latest stable release on [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/furiganaize/)
