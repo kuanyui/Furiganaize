@@ -68,7 +68,9 @@ function scanForKanjiTextNodes(contextNode) {
     return foundNodes;
 }
 
-function submitKanjiTextNodes(keepAllRuby=undefined) {
+function submitKanjiTextNodes(keepAllRuby = undefined) {
+    fiSetFloatingButtonState('PROCESSING')
+    browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: 'PROCESSING' });
     var msgData = {
         message: "text_to_furiganize",
         keepAllRuby: keepAllRuby

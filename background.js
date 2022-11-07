@@ -164,7 +164,7 @@ function setupBrowserActionIcon(state, tabId) {
         browser.browserAction.disable(tabId)
         browser.browserAction.setTitle({ tabId: tabId, title: "処理中...", });
         const fn = (i=0) => {
-            if (i % 2) {
+            if (i % 2 === 0) {
                 browser.browserAction.setBadgeBackgroundColor({ tabId: tabId, color: "#9600E1", });
             } else {
                 browser.browserAction.setBadgeBackgroundColor({ tabId: tabId, color: "#ffffff", });
