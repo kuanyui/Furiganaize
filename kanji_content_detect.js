@@ -260,6 +260,7 @@ function fiAddFloatingIcon() {
 
 function fiSetFloatingButtonState(state) {
     const wrapper = document.querySelector('#furiganaize_buttons_container')
+    if (!wrapper) { return }
     const led = document.querySelector('#furiganaize_buttons_container .led_indicator')
     led.className = 'led_indicator'
     console.trace('Button====>', wrapper, state)
