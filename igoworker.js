@@ -15,7 +15,7 @@ igo.getServerFileToArrayBufffer("res/ipadic.zip", function(buffer) {
             console.log('igo.js is ready.')
         }
         reader.readAsArrayBuffer(blob);
-        console.log('Initialize data for igo.js....', blob)
+        console.log('Initialize data for igo.js....')
     } catch (e) {
         console.error(e.toString());
     }
@@ -36,7 +36,7 @@ function loadTagger(dicdir) {
 
 onmessage = (_request) => {
     const req = _request.data
-    console.log('onMessage ==>', req)
+    // console.log('onMessage ==>', req)
     const yomiStyle = req.options.yomiStyle
     const preferLongerKanjiSegments = req.options.preferLongerKanjiSegments
     const filterOkurigana = req.options.filterOkurigana
@@ -45,7 +45,7 @@ onmessage = (_request) => {
     for (key in req.textMapNeedsFuriganaize) {
         FURIGANAIZED[key] = req.textMapNeedsFuriganaize[key];
         const tagged = TAGGER.parse(req.textMapNeedsFuriganaize[key]);
-        console.log('-->', tagged)
+        // console.log('-->', tagged)
         processed = '';
         // override numeric term (dates, ages etc) readings
         // TODO: implement override
@@ -97,7 +97,7 @@ onmessage = (_request) => {
             }
         });
     }
-    console.log('Furiganized ===>', FURIGANAIZED)
+    // console.log('Furiganized ===>', FURIGANAIZED)
     postMessage({
         reqId: req.reqId,
         furiganaizedTextMap: FURIGANAIZED
