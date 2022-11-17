@@ -63,6 +63,7 @@ onmessage = (_request) => {
                 return bKanji.length - aKanji.length;
             });
         }
+        // console.log('tagged ===>', tagged)
 
         tagged.forEach((t) => {
             if (t.surface.match(/[\u3400-\u9FBF]/)) {
@@ -119,7 +120,7 @@ function addRuby(furiganized, kanji, yomi, key, processed, yomiStyle, furiganaTy
             break;
     }
     // const rubyPatt = new RegExp(`<ruby><rb>${kanji}<\\/rb><rp>\\(<\\/rp><rt[ style=]*.*?>([\\u3040-\\u3096|\\u30A1-\\u30FA|\\uFF66-\\uFF9D|\\u31F0-\\u31FF]+)<\\/rt><rp>\\)<\\/rp><\\/ruby>`, 'g');
-    const rubyPatt = new RegExp(`<ruby><rb>${kanji}<\\/rb><rt[ style=]*.*?>([\\u3040-\\u3096|\\u30A1-\\u30FA|\\uFF66-\\uFF9D|\\u31F0-\\u31FF]+)<\\/rt><\\/ruby>`, 'g');
+    const rubyPatt = new RegExp(`<ruby><rb>${kanji}<\\/rb><rt[ style=]*.*?>([\\u3400-\\u9FBF]+)<\\/rt><\\/ruby>`, 'g');
 
     //inject furigana into text nodes
     //a different regex is used for repeat passes to avoid having multiple rubies on the same base
