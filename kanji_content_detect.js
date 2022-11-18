@@ -263,7 +263,7 @@ function fiSetFloatingButtonState(state) {
     if (!wrapper) { return }
     const led = document.querySelector('#furiganaize_buttons_container .led_indicator')
     led.className = 'led_indicator'
-    console.trace('Button====>', wrapper, state)
+    // console.trace('Button====>', wrapper, state)
     switch (state) {
         case 'UNTOUCHED': {
             wrapper.classList.remove('busy')

@@ -8,7 +8,16 @@
 		}
 	},
 	"background": {
-		"scripts": ["lib/jquery-3.3.1.min.js", "lib/igo.js", "lib/zipjs/jsinflate.js", "lib/zipjs/sjis.js", "lib/zipjs/zip.js", "lib/wanakana.js", "lib/diff.js", "background.js"]
+		"scripts": [
+			// "lib/jquery-3.3.1.min.js",
+			// "lib/igo.js",
+			// "lib/zipjs/jsinflate.js",
+			// "lib/zipjs/sjis.js",
+			// "lib/zipjs/zip.js",
+			// "lib/wanakana.js",
+			// "lib/diff.js",
+			"common.js",
+			"background.js"]
 	},
 	"content_scripts": [ {
 		"js": ["kanji_content_detect.js"],
@@ -20,7 +29,8 @@
 	"icons": { "512": "img/icon_black.svg"  },
 	"options_ui": {
 		"page": "user_cp/options.html",
-		"browser_style": true
+		"browser_style": true,
+		"open_in_tab": false
 	},
 	"browser_action": {
 		"default_title": "Toggle furigana",

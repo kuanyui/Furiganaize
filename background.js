@@ -103,27 +103,6 @@ if (localStorage.getItem("user_kanji_list") === null) {
 }
 var USER_KANJI_REGEXP = new RegExp("[" + localStorage.getItem("user_kanji_list") + "]");
 
-//initialize local storage
-var DEFAULT_LOCAL_STORAGE_PREFERENCE = {
-    "include_link_text": true,
-    "furigana_display": "hira",
-    "filter_okurigana": true,
-    "yomi_size": "",
-    "yomi_color": "",
-    "use_mobile_floating_button": false,
-    "watch_page_change": false,
-    "persistent_mode": false,
-    "auto_start": false,
-    "prevent_splitting_consecutive_kanjis": true,
-}
-
-for (var key in DEFAULT_LOCAL_STORAGE_PREFERENCE) {
-    if (localStorage.getItem(key) === null) {
-        console.log("The localStorage \"" + key + "\" value was null. It will be initialised to" + DEFAULT_LOCAL_STORAGE_PREFERENCE[key] + ".");
-        localStorage.setItem(key, DEFAULT_LOCAL_STORAGE_PREFERENCE[key]);
-    }
-}
-
 
 var request = new XMLHttpRequest();
 request.onreadystatechange = function() {
@@ -201,16 +180,17 @@ function enableTabForFI(tab) {
 }
 
 function getYomiStyle() {
-    let yomiSize = ''
-    let yomiColor = ''
-    if (localStorage.getItem('yomi_size').length > 0) {
-        yomiSize = `font-size:${localStorage.getItem('yomi_size')}pt`
+    let style = ''
+    const sizeValue = localStorage.getItem('yomi_size_value')
+    const sizeUnit = localStorage.getItem('yomi_size_unit')
+    const color = localStorage.getItem('yomi_color')
+    if (sizeUnit !== '__unset__') {
+        style += `font-size:${sizeValue}${sizeUnit}`
     }
-    if (localStorage.getItem('yomi_color').length > 0) {
-        yomiColor = `;color:${localStorage.getItem('yomi_color')}`
+    if (color) {
+        style += `;color:${color}`
     }
-    let yomiStyle = yomiSize + yomiColor;
-    return yomiStyle
+    return style
 }
 
 class WorkerManager {

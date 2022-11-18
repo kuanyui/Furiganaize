@@ -2,6 +2,7 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<script type="text/javascript" src="../lib/jquery-3.3.1.min.js"></script>
+	<script type="text/javascript" src="../common.js"></script>
 	<script type="text/javascript" src="options.js"></script>
 	<link rel="stylesheet" type="text/css" media="all" href="options.css" />
 	<script src="../lib/colpick.js" type="text/javascript"></script>
@@ -15,11 +16,7 @@
 <body class="fi_help_page">
 
 	<h2><img src="../img/icon_black.svg" style="vertical-align: -10%; margin-right: 8px;"/> Furiganaize 設定</h2>
-
-	<div class="row">
-		<p><label><input type="checkbox" id="includelinktext_inp"/> Include text inside links</label>
-		<span style="font-style: italic; margin-left: 24px;">E.g. <span id="link_sample" class="fakelink"><ruby><rb>今日</rb><rt>きょう</rt></ruby>の<ruby><rb>天気</rb><rt>てんき</rt></ruby></span></span></p>
-	</div>
+	<h3>Analysis of Sentence</h3>
 	<div class="row">
 		<p><label><input type="checkbox" id="prevent_splitting_consecutive_kanjis"/> <code>alpha</code> Always prefer to choose the longer segmentations when analyzing a sentence, to prevent some wrong splitting of consecutive Kanji characters (<i>This feature is in alpha phase testing though, it is still <b class="recommended">strongly recommended to be enabled.</b></i>)</label></p>
 	</div>
@@ -38,8 +35,19 @@
 		</label></p>
 	</div>
 	<div class="row">
+		<p><label>Furigana should be displayed with <select id="furigana_display"><option value="hira">Hiragana</option><option value="kata">Katakana</option><option value="roma">Romaji</option></select></label></p>
+	</div>
+	<h3>Elements</h3>
+	<div class="row">
+		<p><label><input type="checkbox" id="includelinktext_inp"/> Include text inside links</label>
+		<span style="font-style: italic; margin-left: 24px;">E.g. <span id="link_sample" class="fakelink"><ruby><rb>今日</rb><rt>きょう</rt></ruby>の<ruby><rb>天気</rb><rt>てんき</rt></ruby></span></span></p>
+	</div>
+	<h3>User Interface</h3>
+	<div class="row">
 		<p><label><input type="checkbox" id="use_mobile_floating_button"/> <code>beta</code> Use mobile floating icon (Size may be unreasonable small on mobile. Doesn't find a way to fix this currently)</label></p>
 	</div>
+
+	<h3>Convenience</h3>
 	<div class="row">
 		<p><label><input type="checkbox" id="watch_page_change"/> <code>beta</code> Watch the changes of page for dynamic pages. (<b>Warning: Due to technical reasons, this may impact performance, and some furigana may become wrong when processing the same area multiple times.</b> These are known issues, don't complain this in issue tracker, unless it cause severe problem (e.g. crash) or you have found solution or going to make a PR to fix this. Thanks.) </label></p>
 	</div>
@@ -49,25 +57,47 @@
 	<div class="row">
 		<p><label><input type="checkbox" id="auto_start"/> <code>alpha</code> Auto-start always. <b class="not_recommended">Not recommended.</b></label></p>
 	</div>
-	<div class="row">
-		<p><label>Furigana should be displayed with <select id="furigana_display"><option value="hira">Hiragana</option><option value="kata">Katakana</option><option value="roma">Romaji</option></select></label></p>
-	</div>
+	<h3>Style</h3>
+
 	<div style="margin-bottom: 14px">
-		<p style="display:flex;align-items:center;">
-			<label style="display:flex;align-items:center;">Furigana size <input type="range" id="yomi_size" style="margin-left: 10px" min="6" max="18"/></label>
-			<span>
-				<ruby><rb>今日</rb><rt class="style_sample"></rt>きょう</rt></ruby>の<ruby><rb>天気</rb><rt class="style_sample" style="">てんき</rt></ruby>
-			</span>
-		</p>
+			<label>Furigana size
+				<input type="text" id="yomi_size_value" style="width: 70px;" min="1" max="40"/>
+				<button type="button" style="width: 2rem; text-align: center;" id="yomi_size_dec"> - </button>
+				<button type="button" style="width: 2rem; text-align: center;" id="yomi_size_inc"> + </button>
+				<select id="yomi_size_unit" style="width: 80px">
+					<optgroup label="Not Specified">
+						<option value="__unset__">unset (Select this means not to specify font-size)</option>
+					</optgroup>
+					<optgroup label="Absolute">
+						<option value="px">px (pixel)</option>
+						<option value="pt">pt (point)</option>
+						<option value="mm">mm (millimeters)</option>
+						<!-- <option value="cm">cm (centimeters)</option> -->
+						<!-- <option value="in">in (inches)</option> -->
+						<option value="pc">pc (picas)</option>
+					</optgroup>
+					<optgroup label="Relative">
+						<option value="rem">rem (relative to font-size of root element)</option>
+						<option value="em">em (relative to the font-size of the current element)</option>
+					</optgroup>
+				</select>
+			</label>
+			<button type="button" id="yomi_size_reset">🗑️ Reset</button>
 	</div>
-	<div class="row">
+	<!-- <div class="row">
 		<p><label>Furigana size reset <input type="button" value="Reset size to default" id="yomi_size_reset"/></label></p>
-	</div>
+	</div> -->
 	<div class="row">
-		<p><label>Furigana color <input type="button" value="Pick a color" id="yomi_color"/></label></p>
+		<label>Furigana color <button type="button" id="yomi_color">🎨 Pick a Color</button></label>
+		<button type="button" id="yomi_color_reset">🗑️ Reset</button>
 	</div>
-	<div class="row">
-		<p><label>Furigana color reset <input type="button" value="Reset color to default" id="yomi_color_reset"/></label></p>
+	<b>Preview</b> <i style="font-size: 0.7rem;">(for reference only, the actual rendered text size may be different, depends on the style of webpage itself.)</i>
+	<pre style="overflow: scroll; width: 100%; height: 60px; padding: 10px; border: 1px solid #aaaaaa;">
+		<ruby><rb>今日</rb><rt class="style_sample"></rt>きょう</rt></ruby>の<ruby><rb>天気</rb><rt class="style_sample" style="">てんき</rt></ruby>
+	</pre>
+	<div>
+		<h3>Reset All to Default</h3>
+		<button type="button" id="reset_all">⚠️ Reset all settings to default values</button>
 	</div>
 </body>
 </html>
