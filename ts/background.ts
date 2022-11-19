@@ -78,14 +78,14 @@ browser.browserAction.onClicked.addListener(function (curTab) {
                     browser.tabs.executeScript(tabs[i].id, { code: "fiRemoveFloatingIcon();" })
                         .catch(err => console.log('[Error] This exception may be due to you opened some special domains such as https://addons.mozilla.org/, which Firefox forbids you from do this', err, tabs[i]));
                 }
-            })
+            }).catch((err) => { console.error('[To Developer] Error when tab.query()' , err) })
         } else {
             browser.tabs.query({}).then(function (tabs) {
                 for (var i = 0; i < tabs.length; i++) {
                     browser.tabs.executeScript(tabs[i].id, { code: "fiAddFloatingIcon();" })
                         .catch(err => console.log('[Error] This exception may be due to you opened some special domains such as https://addons.mozilla.org/, which Firefox forbids you from do this', err, tabs[i]));
                 }
-            })
+            }).catch((err) => { console.error('[To Developer] Error when tab.query()' , err) })
         }
         lsMan.globallyShowMobileFloatingButton = !lsMan.globallyShowMobileFloatingButton
         setupBrowserActionIcon('UNTOUCHED', undefined)  // FIXME: Don't sure wtf is this.
@@ -178,7 +178,7 @@ function setupBrowserActionIcon(state: furiganaize_state_t, tabId: number | unde
 function enableTabForFI(tab: browser.tabs.Tab) {
     // setupBrowserActionIcon(false, tab.id)
     return browser.tabs.executeScript(tab.id, {
-        file: "/content_full.js"
+        file: "/js/content_full.js"
     });
 }
 
@@ -203,7 +203,7 @@ class WorkerManager {
     constructor() {
         this._reqId = 0
         this._promiseResolverMap = {}
-        this._worker = new Worker('./concatenated_igoworker.js')
+        this._worker = new Worker('./js/concatenated_igoworker.js')
         this._worker.onmessage = (_msg) => {
             const msg = _msg.data
             const resolver = this._promiseResolverMap[msg.reqId]
@@ -262,7 +262,7 @@ browser.runtime.onMessage.addListener(
         } else if (msg.message == 'force_load_dom_parser') {
             //sometime loaded `content_full` unloaded by unknown reason (ex: Idle for too long on Android?), reload it.
             return browser.tabs.executeScript(senderTabId, {
-                file: "/content_full.js"
+                file: "/js/content_full.js"
             });
             //process DOM nodes containing kanji and insert furigana
         } else if (msg.message == 'text_to_furiganize') {

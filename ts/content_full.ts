@@ -60,7 +60,9 @@ function scanForKanjiTextNodes(contextNode?: Node): Record<number, Text> {
         'not(ancestor-or-self::canvas)',
         'not(ancestor-or-self::object)',  // is this truly necessary?
         'not(ancestor-or-self::img)',     // is this truly necessary?
-        'not(ancestor-or-self::*[attribute::contenteditable eq "true"])'  // the Text node must NOT have any ancestor Element is contenteditable.
+        // NOTE: the Text node must NOT have any ancestor Element is contenteditable.
+        // But this syntax cannot be interpreted by Firefox correctly...
+        // 'not(ancestor-or-self::*[attribute::contenteditable eq "true"])'
     ]
     if (!INCLUDE_LINK_TEXT) {
         _xPathAnd.push('not(ancestor-or-self::a)')

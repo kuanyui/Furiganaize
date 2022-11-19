@@ -3,7 +3,7 @@ var TAGGER: igo.Tagger
 
 console.log('WORKER!!!')
 // initialize IGO-JS
-igo.getServerFileToArrayBufffer("res/ipadic.zip", function(buffer) {
+igo.getServerFileToArrayBufffer("../res/ipadic.zip", function(buffer) {
     try {
         var blob = new Blob([new Uint8Array(buffer)]);
         var reader = new FileReader();
