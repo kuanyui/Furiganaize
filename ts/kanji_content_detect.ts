@@ -3,9 +3,9 @@
  ***************************************************************/
 var USER_KANJI_REGEXP;
 var INCLUDE_LINK_TEXT = false;
-var INSERTED_NODES_TO_CHECK = [];
-var INSERTED_NODE_CHECK_TIMEOUT_ID = null;
-var MUTATION_OBSERVER = null
+var INSERTED_NODES_TO_CHECK: Node[] = [];
+var INSERTED_NODE_CHECK_TIMEOUT_ID = -1;
+var MUTATION_OBSERVER: MutationObserver | null = null
 var PERSISTENT_MODE
 
 // Add an empty onunload function to force run this content_script even when back/forward
@@ -46,32 +46,41 @@ browser.runtime.sendMessage({ message: "config_values_request" }).then(function 
     }
 });
 
-function DOMNodeInsertedHandler(mutationList, observer) {
+/** Node Tools */
+class NT {
+    static isElement(x: Node): x is HTMLElement { return x.nodeType === Node.ELEMENT_NODE }
+    static isText(x: Node): x is Text { return x.nodeType === Node.TEXT_NODE }
+    static isCdataSection(x: Node): x is CDATASection { return x.nodeType === Node.CDATA_SECTION_NODE }
+    static isTextOrCdataSection(x: Node): x is Text | CDATASection { return x.nodeType === Node.CDATA_SECTION_NODE }
+}
+    // function isElementNode(x: Node): x is Element { return x.nodeType === Node.ELEMENT_NODE }
+
+function DOMNodeInsertedHandler(mutationList: MutationRecord[], observer: MutationObserver) {
     for (let mutation of mutationList) {
         if (mutation.type === 'childList') {
-            e = mutation;
-            if (INSERTED_NODES_TO_CHECK.includes(e.target)) { continue }
-            if (INSERTED_NODES_TO_CHECK.includes(e.target.parentNode)) { continue }
-            if ((e.target.nodeType == Node.TEXT_NODE || e.target.nodeType == Node.CDATA_SECTION_NODE) &&
-                e.target.innerText !== undefined &&
-                e.target.innerText !== '' &&
-                e.target.parentNode) {
-                // console.log('type 1', e.target)
-                INSERTED_NODES_TO_CHECK.push(e.target.parentNode)
+            const tar = mutation.target
+            if (INSERTED_NODES_TO_CHECK.includes(tar)) { continue }
+            if (INSERTED_NODES_TO_CHECK.includes(tar.parentNode!)) { continue }
+            if ((NT.isTextOrCdataSection(tar)) &&
+                tar.textContent !== undefined &&
+                tar.textContent !== '' &&
+                tar.parentNode) {
+                // console.log('type 1', target)
+                INSERTED_NODES_TO_CHECK.push(tar.parentNode)
             } else if (
-                e.target.nodeType === Node.ELEMENT_NODE &&
-                e.target.tagName !== "IMG" &&
-                e.target.tagName !== "SVG" &&
-                e.target.tagName !== "CANVAS" &&
-                e.target.tagName !== "OBJECT" &&
-                e.target.tagName !== "EMBED" &&
-                e.target.tagName !== "BODY" &&
-                e.target.tagName !== "HEAD" &&
-                e.target.innerText !== undefined &&
-                e.target.innerText !== ''
+                NT.isElement(tar) &&
+                tar.tagName !== "IMG" &&
+                tar.tagName !== "SVG" &&
+                tar.tagName !== "CANVAS" &&
+                tar.tagName !== "OBJECT" &&
+                tar.tagName !== "EMBED" &&
+                tar.tagName !== "BODY" &&
+                tar.tagName !== "HEAD" &&
+                tar.innerText !== undefined &&
+                tar.innerText !== ''
             ) {
-                // console.log('type 2', e.target)
-                INSERTED_NODES_TO_CHECK.push(e.target);
+                // console.log('type 2', target)
+                INSERTED_NODES_TO_CHECK.push(tar);
             } else {
                 return;
             }
@@ -79,7 +88,6 @@ function DOMNodeInsertedHandler(mutationList, observer) {
             INSERTED_NODE_CHECK_TIMEOUT_ID = window.setTimeout(processChangedNodes, 1000);
          }
     }
-
 }
 
 
@@ -93,21 +101,21 @@ function processChangedNodes() {
         }
     }
 	INSERTED_NODES_TO_CHECK = [];
-	INSERTED_NODE_CHECK_TIMEOUT_ID = null;
+	INSERTED_NODE_CHECK_TIMEOUT_ID = -1;
 }
 
-function hasOnlySimpleKanji(rubySubstr) {
-	var foundKanji = rubySubstr.match(/[\u3400-\u9FBF]/g);
-	if (foundKanji) {
-		for (var x = 0; x < foundKanji.length; x++) {
-			if (!USER_KANJI_REGEXP.exec(foundKanji[x]))
-				return false;
-		}
-	} else {
-		return null;
-	}
-	return true;
-}
+// function hasOnlySimpleKanji(rubySubstr) {
+// 	var foundKanji = rubySubstr.match(/[\u3400-\u9FBF]/g);
+// 	if (foundKanji) {
+// 		for (var x = 0; x < foundKanji.length; x++) {
+// 			if (!USER_KANJI_REGEXP.exec(foundKanji[x]))
+// 				return false;
+// 		}
+// 	} else {
+// 		return null;
+// 	}
+// 	return true;
+// }
 
 
 function fiFloatingIconIsExist () {
@@ -137,6 +145,10 @@ async function safeToggleFurigana() {
 }
 function transposeFloatButton() {
     const el = document.querySelector('#furiganaize_buttons_container')
+    if (!el) {
+        console.error('[To Developer] This should not happened.')
+        return
+    }
     if (el.classList.contains('leftSide')) {
         el.classList.remove('leftSide')
     } else {
@@ -258,10 +270,13 @@ function fiAddFloatingIcon() {
     document.body.append(styleEl)
 }
 
-function fiSetFloatingButtonState(state) {
+type furiganaize_state_t = 'UNTOUCHED' | 'PROCESSING' | 'INSERTED'
+
+function fiSetFloatingButtonState(state: furiganaize_state_t) {
     const wrapper = document.querySelector('#furiganaize_buttons_container')
     if (!wrapper) { return }
     const led = document.querySelector('#furiganaize_buttons_container .led_indicator')
+    if (!led) { return }
     led.className = 'led_indicator'
     // console.trace('Button====>', wrapper, state)
     switch (state) {

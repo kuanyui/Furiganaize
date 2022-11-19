@@ -28,7 +28,7 @@
 	"description": "__MSG_manifestExtDescription__",
 	"icons": { "512": "img/icon_black.svg"  },
 	"options_ui": {
-		"page": "user_cp/options.html",
+		"page": "options_ui/options.html",
 		"browser_style": true,
 		"open_in_tab": false
 	},

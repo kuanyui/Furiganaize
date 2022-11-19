@@ -1,0 +1,27 @@
+{
+  "name": "furiganaize",
+  "version": "1.0.0",
+  "description": "A browser extension that can inject phonetic annotations of Japanese text (振り仮名, furigana) on the fly.",
+  "main": "background.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kuanyui/Furiganaize.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kuanyui/Furiganaize/issues"
+  },
+  "homepage": "https://github.com/kuanyui/Furiganaize#readme",
+  "devDependencies": {
+    "tsc": "^2.0.4",
+    "typescript": "^4.9.3",
+    "web-ext-types": "^3.2.1"
+  }
+}

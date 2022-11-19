@@ -21,10 +21,10 @@ igo.getServerFileToArrayBufffer("res/ipadic.zip", function(buffer) {
     }
 });
 
-function loadTagger(dicdir) {
-    var files = new Array();
-    for (var i = 0; i < DICT_FILES.length; ++i) {
-        files[DICT_FILES[i]] = dicdir.files[DICT_FILES[i]].inflate();
+function loadTagger(dicdir: Zip.ZipFilesMap) {
+    var inflatedFiles: Record<string, Uint8Array> = {}
+    for (const fileName of DICT_FILES) {
+        inflatedFiles[fileName] = dicdir.files[fileName].inflate();
     }
 
     var category = new igo.CharCategory(files['code2category'], files['char.category']);

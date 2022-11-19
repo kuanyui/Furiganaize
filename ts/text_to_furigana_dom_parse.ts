@@ -1,16 +1,16 @@
-﻿var USER_KANJI_REGEXP;
-var INCLUDE_LINK_TEXT;
-var KANJI_TEXT_NODES = {};
-var SUBMITTED_KANJI_TEXT_NODES = {};
+﻿var USER_KANJI_REGEXP: RegExp
+var INCLUDE_LINK_TEXT: boolean
+var KANJI_TEXT_NODES: Record<number, string> = {}
+var SUBMITTED_KANJI_TEXT_NODES: Record<number, string> = {}
 // May re-declare
 var PERSISTENT_MODE;
 /** Cross-tab keep on/off status. For PERSISTENT_MODE.  Not for settings. */
-var CROSS_TABS_FURIGANA_ENABLED;
-var AUTO_START;
+var CROSS_TABS_FURIGANA_ENABLED: boolean
+var AUTO_START: boolean
 // For dynamic Nodes (dynamically inserted / changed Nodes)
-var WATCH_PAGE_CHANGE;
-var MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = null
-var DYNAMICALLY_CHANGED_NODES = []
+var WATCH_PAGE_CHANGE: boolean;
+var MUTATION_OBSERVER_FOR_INSERTING_FURIGANA: MutationObserver | null = null
+var DYNAMICALLY_CHANGED_NODES: Node[] = []
 
 var __LAST_UID = 0
 function getNextUid() {
@@ -44,20 +44,20 @@ browser.runtime.sendMessage({ message: "config_values_request" }).then(function 
 /*****************
  *	Functions
  *****************/
-function scanForKanjiTextNodes(contextNode) {
+function scanForKanjiTextNodes(contextNode?: Node): Record<number, Node> {
     if (!contextNode) {
         contextNode = document.body
     }
     //Scan all text for /[\u3400-\u9FBF]/, then add each text node that isn't made up only of kanji only in the user's simple kanji list
     const xPathPattern = '//*[not(ancestor-or-self::head) and not(ancestor::select) and not(ancestor-or-self::script)and not(ancestor-or-self::ruby)' + (INCLUDE_LINK_TEXT ? '' : ' and not(ancestor-or-self::a)') + ']/text()[normalize-space(.) != ""]';
-    var foundNodes = {};
+    var foundNodes: Record<number, Node> = {};
     try {
         var iterator = document.evaluate(xPathPattern, contextNode, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
         var thisNode;
         while (thisNode = iterator.iterateNext()) {
             if (thisNode.parentElement && thisNode.parentElement.isContentEditable) { continue }
-            if (thisNode.nodeType === Node.ELEMENT_NODE && thisNode.isContentEditable) { continue }
-            if (thisNode.textContent.match(/[\u3400-\u9FBF]/)) {
+            if (NT.isElement(thisNode) && thisNode.isContentEditable) { continue }
+            if (NT.isElement(thisNode) && thisNode.textContent && thisNode.textContent.match(/[\u3400-\u9FBF]/)) {
                 var uid = getNextUid()
                 foundNodes[uid] = thisNode;
             }
@@ -68,6 +68,16 @@ function scanForKanjiTextNodes(contextNode) {
     return foundNodes;
 }
 
+type MsgCtx2Bg =
+    { message: "config_values_request" } |
+    { message: "init_dom_parser_for_tab" } |
+    { message: "force_load_dom_parser" } |
+    { message: "set_page_action_icon_status", value: furiganaize_state_t } |
+    { message: "set_cross_tabs_furigana_enabled", value: boolean }
+type MsgBg2Ctx =
+    { furiganizedTextNodes: furiganaized }
+
+
 function submitKanjiTextNodes(keepAllRuby = undefined) {
     fiSetFloatingButtonState('PROCESSING')
     browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: 'PROCESSING' });
@@ -77,7 +87,7 @@ function submitKanjiTextNodes(keepAllRuby = undefined) {
     };
     msgData.textMapNeedFuriganaize = {};
     var strLength = 0;
-    for (key in KANJI_TEXT_NODES) {
+    for (const key in KANJI_TEXT_NODES) {
         if (KANJI_TEXT_NODES[key] && KANJI_TEXT_NODES[key].data) {
             strLength += KANJI_TEXT_NODES[key].data.length;
             msgData.textMapNeedFuriganaize[key] = KANJI_TEXT_NODES[key].data;
@@ -272,7 +282,7 @@ function stopWatcher() {
     MUTATION_OBSERVER_FOR_INSERTING_FURIGANA.disconnect()
     MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = null
 }
-var NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = null
+var NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = -1
 function nodeWatcherFn(mutationList, observer) {
     for (let mutation of mutationList) {
         if (mutation.type === 'childList') {
@@ -288,20 +298,20 @@ function nodeWatcherFn(mutationList, observer) {
     NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = window.setTimeout(processDynamicallyChangedNodes, 500);
     // console.log('setTimout...', NODE_WATCHER_DEBOUNCE_TIMEOUT_ID)
 }
-function pushDynamicallyChangedNodes(node) {
+function pushDynamicallyChangedNodes(node: Node) {
     if (DYNAMICALLY_CHANGED_NODES.includes(node)) {
         return
     }
-    if (DYNAMICALLY_CHANGED_NODES.includes(node.parentNode)) {
+    if (DYNAMICALLY_CHANGED_NODES.includes(node.parentNode!)) {
         return
     }
     if (node.parentElement && node.parentElement.isContentEditable) {
         return
     }
-    if (node.nodeType === Node.ELEMENT_NODE && node.isContentEditable) {
+    if (NT.isElement(node) && node.isContentEditable) {
         return
     }
-    if ((node.nodeType == Node.TEXT_NODE || node.nodeType == Node.CDATA_SECTION_NODE) &&
+    if (NT.isTextOrCdataSection(node) &&
         node.innerText !== undefined &&
         node.innerText !== '' &&
         node.parentNode) {
@@ -309,7 +319,7 @@ function pushDynamicallyChangedNodes(node) {
         return
     }
     if (
-        node.nodeType === Node.ELEMENT_NODE &&
+        NT.isElement(node) &&
         node.tagName !== "IMG" &&
         node.tagName !== "SVG" &&
         node.tagName !== "CANVAS" &&
