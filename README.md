@@ -39,13 +39,14 @@ You can install latest stable release on [Firefox Add-ons](https://addons.mozill
 
 # Dev
 ```bash
+make watch
 web-ext --verbose --firefox-profile ${HOME}/.mozilla/firefox/PROFILE_DIR/ run
 
 # or
 adb devices
 web-ext run -t firefox-android --adb-device XXXXXX --firefox-apk org.mozilla.fenix
 ```
-> ATTENTION: Due to Firefox currently doesn't support `background.service_worker` in manifest.json, this project use the most simple GNU `cat` to concatenate JS files for WebWorker... please use `make cat` to create JS file for WebWorker before you dev.
+> ATTENTION: Due to Firefox currently doesn't support `background.service_worker` in manifest.json, this project use the most simple GNU `cat` to concatenate JS files for WebWorker...
 
 # Build to *.xpi
 ```bash

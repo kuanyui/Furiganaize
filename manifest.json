@@ -9,18 +9,14 @@
 	},
 	"background": {
 		"scripts": [
-			// "lib/jquery-3.3.1.min.js",
-			// "lib/igo.js",
-			// "lib/zipjs/jsinflate.js",
-			// "lib/zipjs/sjis.js",
-			// "lib/zipjs/zip.js",
-			// "lib/wanakana.js",
-			// "lib/diff.js",
-			"common.js",
-			"background.js"]
-	},
-	"content_scripts": [ {
-		"js": ["kanji_content_detect.js"],
+			"js/common.js",
+			"js/background.js"]
+		},
+		"content_scripts": [ {
+			"js": [
+			"js/common.js",
+			"js/content_preload.js"
+		],
 		"matches": ["http://*/*", "https://*/*", "file://*/*"],
 		"all_frames": true
 	} ],

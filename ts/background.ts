@@ -1,3 +1,4 @@
+var a = 0;
 var EXCEPTIONS = null;
 /** Cross-tab keep on/off status. For PERSISTENT_MODE only. Not for settings. */
 var CROSS_TABS_FURIGANA_ENABLED = false;
@@ -43,13 +44,13 @@ if (browser.commands) {  // NOTE: Android does not support browser.commands
                             for (var i = 0; i < tabs.length; i++) {
                                 browser.tabs.executeScript(tabs[i].id, { code: "fiRemoveFloatingIcon();" });
                             }
-                        })
+                        }).catch((err) => { console.error('[To Developer] Error when tab.query()' , err) })
                     } else {
                         browser.tabs.query({}).then( function (tabs) {
                             for (var i = 0; i < tabs.length; i++) {
                                 browser.tabs.executeScript(tabs[i].id, { code: "fiAddFloatingIcon();" });
                             }
-                        })
+                        }).catch((err) => { console.error('[To Developer] Error when tab.query()' , err) })
                     }
                     lsMan.globallyShowMobileFloatingButton = !lsMan.globallyShowMobileFloatingButton
                     setupBrowserActionIcon('UNTOUCHED', undefined)  // FIXME: Don't sure wtf is this.
