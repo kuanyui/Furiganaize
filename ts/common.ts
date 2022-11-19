@@ -56,3 +56,4 @@ function initLocalStorageWithDefaultValues() {
     }
 }
 
+initLocalStorageWithDefaultValues()

@@ -43,7 +43,7 @@ function reloadDataFromLocalStorageToOptionUi() {
         //update preview with saved style
 
         rerenderSample()
-    } catch (err) { alert(err); }
+    } catch (err) { console.error('[To Developer] Error:', err); }
 }
 function bindUiEvents() {
     try {
@@ -172,6 +172,6 @@ function bindUiEvents() {
             }
             reloadDataFromLocalStorageToOptionUi()
 		});
-	} catch (err) { alert(err); }
+	} catch (err) { console.error('[To Developer] Error:', err); }
 }
 
