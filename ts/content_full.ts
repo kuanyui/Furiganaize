@@ -1,9 +1,9 @@
-﻿var USER_KANJI_REGEXP: RegExp
+﻿// var USER_KANJI_REGEXP: RegExp
 var INCLUDE_LINK_TEXT: boolean
-var KANJI_TEXT_NODES: Record<number, string> = {}
-var SUBMITTED_KANJI_TEXT_NODES: Record<number, string> = {}
+var KANJI_TEXT_NODES: Record<number, Text> = {}
+var SUBMITTED_KANJI_TEXT_NODES: Record<string, Text> = {}
 // May re-declare
-var PERSISTENT_MODE;
+var PERSISTENT_MODE: boolean
 /** Cross-tab keep on/off status. For PERSISTENT_MODE.  Not for settings. */
 var CROSS_TABS_FURIGANA_ENABLED: boolean
 var AUTO_START: boolean
@@ -24,11 +24,11 @@ function getNextUid() {
 // fetch stored configuration values from the background script
 browser.runtime.sendMessage({ message: "config_values_request" }).then(function (response) {
     console.log('bg.crossTabsFuriganaEnabled', JSON.parse(response.crossTabsFuriganaEnabled))
-    USER_KANJI_REGEXP = new RegExp("[" + response.userKanjiList + "]");
+    // USER_KANJI_REGEXP = new RegExp("[" + response.userKanjiList + "]");
     INCLUDE_LINK_TEXT = JSON.parse(response.includeLinkText);
     WATCH_PAGE_CHANGE = JSON.parse(response.watchPageChange);
 
-    PERSISTENT_MODE = JSON.parse(response.persistentMode);
+    PERSISTENT_MODE = !!JSON.parse(response.persistentMode);
     CROSS_TABS_FURIGANA_ENABLED = JSON.parse(response.crossTabsFuriganaEnabled);
     AUTO_START = JSON.parse(response.autoStart);
     //Parse for kanji and insert furigana immediately if persistent mode is enabled
@@ -44,60 +44,64 @@ browser.runtime.sendMessage({ message: "config_values_request" }).then(function 
 /*****************
  *	Functions
  *****************/
-function scanForKanjiTextNodes(contextNode?: Node): Record<number, Node> {
+function scanForKanjiTextNodes(contextNode?: Node): Record<number, Text> {
     if (!contextNode) {
         contextNode = document.body
     }
+    // @see https://www.w3.org/TR/2017/REC-xpath-31-20170321/
+    // ancestor::div        selects all div ancestors of the context node
+    const _xPathAnd: string[] = [
+        'not(ancestor-or-self::head)',
+        'not(ancestor-or-self::script)',
+        'not(ancestor-or-self::style)',
+        'not(ancestor::select)',
+        'not(ancestor-or-self::svg)',
+        'not(ancestor-or-self::ruby)',
+        'not(ancestor-or-self::canvas)',
+        'not(ancestor-or-self::object)',  // is this truly necessary?
+        'not(ancestor-or-self::img)',     // is this truly necessary?
+        'not(ancestor-or-self::*[attribute::contenteditable eq "true"])'  // the Text node must NOT have any ancestor Element is contenteditable.
+    ]
+    if (!INCLUDE_LINK_TEXT) {
+        _xPathAnd.push('not(ancestor-or-self::a)')
+    }
     //Scan all text for /[\u3400-\u9FBF]/, then add each text node that isn't made up only of kanji only in the user's simple kanji list
-    const xPathPattern = '//*[not(ancestor-or-self::head) and not(ancestor::select) and not(ancestor-or-self::script)and not(ancestor-or-self::ruby)' + (INCLUDE_LINK_TEXT ? '' : ' and not(ancestor-or-self::a)') + ']/text()[normalize-space(.) != ""]';
-    var foundNodes: Record<number, Node> = {};
+    const xPathPattern = `//*[${_xPathAnd.join(' and ')}]/text()[normalize-space(.) != ""]`;
+    var foundTextNodes: Record<number, Text> = {}
     try {
         var iterator = document.evaluate(xPathPattern, contextNode, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
-        var thisNode;
-        while (thisNode = iterator.iterateNext()) {
-            if (thisNode.parentElement && thisNode.parentElement.isContentEditable) { continue }
-            if (NT.isElement(thisNode) && thisNode.isContentEditable) { continue }
-            if (NT.isElement(thisNode) && thisNode.textContent && thisNode.textContent.match(/[\u3400-\u9FBF]/)) {
+        var node: Text
+        while (node = iterator.iterateNext() as Text) {
+            if (node.textContent && node.textContent.match(/[\u3400-\u9FBF]/)) {  // TODO: REFACTOR
                 var uid = getNextUid()
-                foundNodes[uid] = thisNode;
+                foundTextNodes[uid] = node;
             }
         }
     } catch (e) {
         alert('Error during XPath document iteration: ' + e);
     }
-    return foundNodes;
+    return foundTextNodes;
 }
 
-type MsgCtx2Bg =
-    { message: "config_values_request" } |
-    { message: "init_dom_parser_for_tab" } |
-    { message: "force_load_dom_parser" } |
-    { message: "set_page_action_icon_status", value: furiganaize_state_t } |
-    { message: "set_cross_tabs_furigana_enabled", value: boolean }
-type MsgBg2Ctx =
-    { furiganizedTextNodes: furiganaized }
 
-
-function submitKanjiTextNodes(keepAllRuby = undefined) {
+function submitKanjiTextNodes() {
     fiSetFloatingButtonState('PROCESSING')
     browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: 'PROCESSING' });
-    var msgData = {
+    const msgData: MsgCtx2Bg = {
         message: "text_to_furiganize",
-        keepAllRuby: keepAllRuby
+        textMapNeedFuriganaize: {}
     };
-    msgData.textMapNeedFuriganaize = {};
-    var strLength = 0;
     for (const key in KANJI_TEXT_NODES) {
-        if (KANJI_TEXT_NODES[key] && KANJI_TEXT_NODES[key].data) {
-            strLength += KANJI_TEXT_NODES[key].data.length;
-            msgData.textMapNeedFuriganaize[key] = KANJI_TEXT_NODES[key].data;
+        const node = KANJI_TEXT_NODES[key]
+        if (node && node.data) {
+            msgData.textMapNeedFuriganaize[key] = node.data;
             //reduce the nodes just to strings for passing to the background page.
-            SUBMITTED_KANJI_TEXT_NODES[key] = KANJI_TEXT_NODES[key];
+            SUBMITTED_KANJI_TEXT_NODES[key] = node
         }
         //unset each member as done.
         delete KANJI_TEXT_NODES[key];
     }
-    browser.runtime.sendMessage(msgData, function(response) {});
+    browser.runtime.sendMessage(msgData)
 }
 
 function revertRubies() {
@@ -131,7 +135,7 @@ function revertRubies() {
     fiSetFloatingButtonState('UNTOUCHED')
 }
 
-function isEmpty(obj) {
+function isEmptyObject(obj: object) {
     for (var prop in obj) {
         if (obj.hasOwnProperty(prop))
             return false;
@@ -185,7 +189,7 @@ function enableFurigana() {
         return
     }
     KANJI_TEXT_NODES = scanForKanjiTextNodes();
-    if (!isEmpty(KANJI_TEXT_NODES) || PERSISTENT_MODE) {
+    if (!isEmptyObject(KANJI_TEXT_NODES) || PERSISTENT_MODE) {
         document.body.setAttribute("fiprocessed", "true");
         //The background page will respond with data including a "furiganizedTextNodes" member, see below.
         submitKanjiTextNodes();
@@ -223,44 +227,45 @@ function disableFurigana() {
 }
 
 /*** Events ***/
-browser.runtime.onMessage.addListener(
-    function(request, sender, sendResponseCallback) {
-        if (request.furiganizedTextNodes) {
-            // NOTE: When furiganaize has been disabled, this request should be ignored. Because a debounce is existed, this request may come after disabling Furiganaize.
-            if (!document.FURIGANAIZE_ENABLED) {
-                browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: 'UNTOUCHED' });
-                fiSetFloatingButtonState('UNTOUCHED')
-                return
-            }
-            if (WATCH_PAGE_CHANGE) { stopWatcher() }  // 1. pause watcher when inserting <ruby> (to prevent infinite loop of mutation)
-            for (key in request.furiganizedTextNodes) {
-                if (SUBMITTED_KANJI_TEXT_NODES[key]) {
-                    var tempDocFrag = document.createDocumentFragment();
-                    var dummyParent = document.createElement("DIV");
-                    dummyParent.innerHTML = request.furiganizedTextNodes[key];
-                    while (dummyParent.firstChild) {
-                        tempDocFrag.appendChild(dummyParent.firstChild);
-                    }
-                    if (SUBMITTED_KANJI_TEXT_NODES[key].parentNode) {
-                        SUBMITTED_KANJI_TEXT_NODES[key].parentNode.replaceChild(tempDocFrag, SUBMITTED_KANJI_TEXT_NODES[key]);
-                    }
-                    delete SUBMITTED_KANJI_TEXT_NODES[key];
-                }
-            }
-            if (WATCH_PAGE_CHANGE) { startWatcher() } // 2. resume watcher after the insertion of <ruby> finished
-            if (!isEmpty(KANJI_TEXT_NODES)) {
-                submitKanjiTextNodes();
-            } else {
-                KANJI_TEXT_NODES = {};
-                document.body.setAttribute("fiprocessed", "true");
-                autoSetBrowserActionIcon()
-            }
-            fiSetFloatingButtonState('INSERTED')
-        } else {
-            console.log("Unexpected msg received from extension script: " + JSON.stringify(data).substr(0, 200));
-
+browser.runtime.onMessage.addListener((_msg: any, sender: browser.runtime.MessageSender) => {
+    const msg: MsgBg2Ctx = _msg
+    if (msg.furiganizedTextNodes) {
+        // NOTE: When furiganaize has been disabled, this request should be ignored. Because a debounce is existed, this request may come after disabling Furiganaize.
+        if (!document.FURIGANAIZE_ENABLED) {
+            browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: 'UNTOUCHED' });
+            fiSetFloatingButtonState('UNTOUCHED')
+            return
         }
+        if (WATCH_PAGE_CHANGE) { stopWatcher() }  // 1. pause watcher when inserting <ruby> (to prevent infinite loop of mutation)
+        for (const key in msg.furiganizedTextNodes) {
+            if (SUBMITTED_KANJI_TEXT_NODES[key]) {
+                var tempDocFrag = document.createDocumentFragment();
+                var dummyParent = document.createElement("DIV");
+                dummyParent.innerHTML = msg.furiganizedTextNodes[key];
+                while (dummyParent.firstChild) {
+                    tempDocFrag.appendChild(dummyParent.firstChild);
+                }
+                const parentNode = SUBMITTED_KANJI_TEXT_NODES[key].parentNode
+                if (parentNode) {
+                    parentNode.replaceChild(tempDocFrag, SUBMITTED_KANJI_TEXT_NODES[key]);
+                }
+                delete SUBMITTED_KANJI_TEXT_NODES[key];
+            }
+        }
+        if (WATCH_PAGE_CHANGE) { startWatcher() } // 2. resume watcher after the insertion of <ruby> finished
+        if (!isEmptyObject(KANJI_TEXT_NODES)) {
+            submitKanjiTextNodes();
+        } else {
+            KANJI_TEXT_NODES = {};
+            document.body.setAttribute("fiprocessed", "true");
+            autoSetBrowserActionIcon()
+        }
+        fiSetFloatingButtonState('INSERTED')
+    } else {
+        console.log("Unexpected msg received from background script: ", msg)
+
     }
+}
 );
 
 function startWatcher() {
@@ -283,7 +288,7 @@ function stopWatcher() {
     MUTATION_OBSERVER_FOR_INSERTING_FURIGANA = null
 }
 var NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = -1
-function nodeWatcherFn(mutationList, observer) {
+function nodeWatcherFn(mutationList: MutationRecord[], observer: MutationObserver) {
     for (let mutation of mutationList) {
         if (mutation.type === 'childList') {
             const e = mutation;
@@ -312,8 +317,8 @@ function pushDynamicallyChangedNodes(node: Node) {
         return
     }
     if (NT.isTextOrCdataSection(node) &&
-        node.innerText !== undefined &&
-        node.innerText !== '' &&
+        node.textContent !== undefined &&
+        node.textContent !== '' &&
         node.parentNode) {
         DYNAMICALLY_CHANGED_NODES.push(node.parentNode)
         return
@@ -338,7 +343,7 @@ function pushDynamicallyChangedNodes(node: Node) {
 }
 function processDynamicallyChangedNodes() {
     // console.log('==================================================> Process dynamic changed nodes!', DYNAMICALLY_CHANGED_NODES)
-    NODE_WATCHER_TIMEOUT_ID = null;
+    NODE_WATCHER_DEBOUNCE_TIMEOUT_ID = -1;
     while (DYNAMICALLY_CHANGED_NODES.length) {
         const node = DYNAMICALLY_CHANGED_NODES.pop()
         const textNodesObj = scanForKanjiTextNodes(node)

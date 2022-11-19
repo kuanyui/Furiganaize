@@ -11,4 +11,5 @@ org-mode-config.el
 org-clock-save.el
 emacs-config.el
 node_modules/
-concatenated_igoworker.js
+/js/
+.directory

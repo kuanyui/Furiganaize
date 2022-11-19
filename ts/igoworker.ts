@@ -1,5 +1,5 @@
 var DICT_FILES = ['char.category', 'code2category', 'word2id', 'word.dat', 'word.ary.idx', 'word.inf', 'matrix.bin'];
-var TAGGER = null;
+var TAGGER: igo.Tagger
 
 console.log('WORKER!!!')
 // initialize IGO-JS
@@ -9,44 +9,48 @@ igo.getServerFileToArrayBufffer("res/ipadic.zip", function(buffer) {
         var reader = new FileReader();
         reader.onload = function(e) {
             console.log('Unzipping data for igo.js...')
-            var dic = Zip.inflate(new Uint8Array(reader.result))
+            var dic = Zip.inflate(new Uint8Array(reader.result as ArrayBuffer))
             console.log('Loading data for igo.js...')
             TAGGER = loadTagger(dic);
             console.log('igo.js is ready.')
         }
         reader.readAsArrayBuffer(blob);
         console.log('Initialize data for igo.js....')
-    } catch (e) {
+    } catch (e: any) {
         console.error(e.toString());
     }
 });
 
-function loadTagger(dicdir: Zip.ZipFilesMap) {
+function loadTagger(dicdir: Zip.ZipData) {
     var inflatedFiles: Record<string, Uint8Array> = {}
     for (const fileName of DICT_FILES) {
         inflatedFiles[fileName] = dicdir.files[fileName].inflate();
     }
-
-    var category = new igo.CharCategory(files['code2category'], files['char.category']);
-    var wdc = new igo.WordDic(files['word2id'], files['word.dat'], files['word.ary.idx'], files['word.inf']);
+    var category = new igo.CharCategory(inflatedFiles['code2category'], inflatedFiles['char.category']);
+    var wdc = new igo.WordDic(inflatedFiles['word2id'], inflatedFiles['word.dat'], inflatedFiles['word.ary.idx'], inflatedFiles['word.inf']);
     var unk = new igo.Unknown(category);
-    var mtx = new igo.Matrix(files['matrix.bin']);
+    var mtx = new igo.Matrix(inflatedFiles['matrix.bin']);
     return new igo.Tagger(wdc, unk, mtx);
 }
 
 onmessage = (_request) => {
-    const req = _request.data
+    const req: MsgBg2IgoWorker = _request.data
+    const response: MsgIgoWorker2Bg = {
+        reqId: req.reqId,
+        furiganaizedTextMap: {}
+    }
+    const processedMap = response.furiganaizedTextMap
     // console.log('onMessage ==>', req)
     const yomiStyle = req.options.yomiStyle
     const preferLongerKanjiSegments = req.options.preferLongerKanjiSegments
     const filterOkurigana = req.options.filterOkurigana
     const furiganaType = req.options.furiganaType
-    const FURIGANAIZED = {};
-    for (key in req.textMapNeedsFuriganaize) {
-        FURIGANAIZED[key] = req.textMapNeedsFuriganaize[key];
+    for (const _key in req.textMapNeedsFuriganaize) {
+        const key = parseInt(_key)
+        processedMap[key] = req.textMapNeedsFuriganaize[key];
         const tagged = TAGGER.parse(req.textMapNeedsFuriganaize[key]);
         // console.log('-->', tagged)
-        processed = '';
+        let processed = '';
         // override numeric term (dates, ages etc) readings
         // TODO: implement override
         // var numeric = false;
@@ -56,11 +60,15 @@ onmessage = (_request) => {
         if (preferLongerKanjiSegments) {
             // sort tagged in order to add furigana
             // for the longer Kanji series first
-            tagged.sort(function(a, b) {
-                var kanjiRegExp = /([\u3400-\u9FBF]*)/;
-                var aKanji = a.surface.match(kanjiRegExp)[0];
-                var bKanji = b.surface.match(kanjiRegExp)[0];
-                return bKanji.length - aKanji.length;
+            tagged.sort(function(a: igo.Morpheme, b: igo.Morpheme) {
+                var kanjiRegExp = /([\u3400-\u9FBF]*)/
+                const aMatch = a.surface.match(kanjiRegExp)
+                const bMatch = b.surface.match(kanjiRegExp)
+                if (!aMatch) { return 0 }
+                if (!bMatch) { return 0 }
+                var aKanji = aMatch[0]
+                var bKanji = bMatch[0]
+                return bKanji.length - aKanji.length
             });
         }
         // console.log('tagged ===>', tagged)
@@ -87,27 +95,24 @@ onmessage = (_request) => {
                             kanjiFound = true;
                         }
                         if (kanjiFound && yomiFound) {
-                            addRuby(FURIGANAIZED, kanji, yomi, key, processed, yomiStyle, furiganaType, preferLongerKanjiSegments);
+                            addRuby(processedMap, key, kanji, yomi, processed, yomiStyle, furiganaType, preferLongerKanjiSegments);
                             kanjiFound = false;
                             yomiFound = false;
                         }
                     });
                 } else {
-                    addRuby(FURIGANAIZED, kanji, yomi, key, processed, yomiStyle, furiganaType, preferLongerKanjiSegments);
+                    addRuby(processedMap, key, kanji, yomi, processed, yomiStyle, furiganaType, preferLongerKanjiSegments);
                 }
             }
         });
     }
     // console.log('Furiganized ===>', FURIGANAIZED)
-    postMessage({
-        reqId: req.reqId,
-        furiganaizedTextMap: FURIGANAIZED
-    })
+    postMessage(response)
 }
 
 
 //Ruby tag injector
-function addRuby(furiganized, kanji, yomi, key, processed, yomiStyle, furiganaType, preferLongerKanjiSegments) {
+function addRuby(processMap: Record<number, string>,  key: number, kanji: string, yomi: string, processed: string, yomiStyle: string, furiganaType: furigana_type_t, preferLongerKanjiSegments: boolean) {
     //furigana can be displayed in either hiragana, katakana or romaji
     switch (furiganaType) {
         case "hira":
@@ -126,16 +131,17 @@ function addRuby(furiganized, kanji, yomi, key, processed, yomiStyle, furiganaTy
     //a different regex is used for repeat passes to avoid having multiple rubies on the same base
     if (processed.indexOf(kanji) == -1) {
         processed += kanji;
-        if (furiganized[key].match(rubyPatt)) {
+        if (processMap[key].match(rubyPatt)) {
             // furiganized[key] = furiganized[key].replace(rubyPatt, `<ruby><rb>${kanji}</rb><rp>(</rp><rt style="${yomiStyle}">${yomi}</rt><rp>)</rp></ruby>`);
-            furiganized[key] = furiganized[key].replace(rubyPatt, `<ruby><rb>${kanji}</rb><rt style="${yomiStyle}">${yomi}</rt></ruby>`);
+            processMap[key] = processMap[key].replace(rubyPatt, `<ruby><rb>${kanji}</rb><rt style="${yomiStyle}">${yomi}</rt></ruby>`);
         } else {
+            let bare_rxp: RegExp
             if (preferLongerKanjiSegments) {
                 bare_rxp = new RegExp(kanji + `(?![^<]*<\/rb>)`, 'g');
             } else {
                 bare_rxp = new RegExp(kanji, 'g');
             }
-            furiganized[key] = furiganized[key].replace(bare_rxp, `<ruby><rb>${kanji}</rb><rt style="${yomiStyle}">${yomi}</rt></ruby>`);
+            processMap[key] = processMap[key].replace(bare_rxp, `<ruby><rb>${kanji}</rb><rt style="${yomiStyle}">${yomi}</rt></ruby>`);
         }
     }
 }

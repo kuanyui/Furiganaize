@@ -1,10 +1,10 @@
 declare namespace igo {
     export function getServerFileToArrayBufffer<T=any>(url: string, successCb: (xhrResponse: T) => void)
     export class CharCategory {
-        constructor(code2category: Uint8Array, charcategory: Uint8Array, bigendian: boolean = false)
+        constructor(code2category: Uint8Array, charcategory: Uint8Array, bigendian?: boolean = false)
     }
     export class WordDic {
-        constructor(word2id: Uint8Array, worddat: Uint8Array, wordary: Uint8Array, wordinf: Uint8Array, bigendian: boolean = false)
+        constructor(word2id: Uint8Array, worddat: Uint8Array, wordary: Uint8Array, wordinf: Uint8Array, bigendian?: boolean = false)
     }
     export class Matrix {
         constructor(buffer: Uint8Array, bigendian: boolean = false)
@@ -16,7 +16,7 @@ declare namespace igo {
     }
     export class Tagger {
         constructor(worddic: WordDic, unknown: Unknown, matrix: Matrix)
-        parse (text: string, result: Morpheme[] = [])
+        parse (text: string, result: Morpheme[] = []): Morpheme[]
     }
     /** 形態素クラス */
     export class Morpheme {

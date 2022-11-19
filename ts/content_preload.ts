@@ -1,12 +1,12 @@
 ﻿/***************************************************************
  *	This script set to run_at document load. See manifest.json.
  ***************************************************************/
-var USER_KANJI_REGEXP;
+// var USER_KANJI_REGEXP;
 var INCLUDE_LINK_TEXT = false;
 var INSERTED_NODES_TO_CHECK: Node[] = [];
 var INSERTED_NODE_CHECK_TIMEOUT_ID = -1;
 var MUTATION_OBSERVER: MutationObserver | null = null
-var PERSISTENT_MODE
+var PERSISTENT_MODE: boolean
 
 // Add an empty onunload function to force run this content_script even when back/forward
 // https://stackoverflow.com/questions/2638292/after-travelling-back-in-firefox-history-javascript-wont-run
@@ -27,7 +27,7 @@ browser.runtime.sendMessage({ message: "config_values_request" }).then(function 
         browser.runtime.sendMessage({ message: "init_dom_parser_for_tab" });
         return
     }
-	USER_KANJI_REGEXP = new RegExp("[" + response.userKanjiList + "]");
+	// USER_KANJI_REGEXP = new RegExp("[" + response.userKanjiList + "]");
 	INCLUDE_LINK_TEXT = JSON.parse(response.includeLinkText);
 	PERSISTENT_MODE = JSON.parse(response.persistentMode);
 	let useMobileFloatingButton = JSON.parse(response.useMobileFloatingButton);
@@ -93,10 +93,13 @@ function DOMNodeInsertedHandler(mutationList: MutationRecord[], observer: Mutati
 
 function processChangedNodes() {
     for (const node of INSERTED_NODES_TO_CHECK) {
-        if (node.innerText.length === 0) { continue }
-        if (node.innerText.match(/[\u3400-\u9FBF]/)) {
-            browser.runtime.sendMessage({message: "init_dom_parser_for_tab"});
-            MUTATION_OBSERVER.disconnect()
+        if (!node.textContent) { continue }
+        if (node.textContent.match(/[\u3400-\u9FBF]/)) {
+            browser.runtime.sendMessage({ message: "init_dom_parser_for_tab" })
+            if (MUTATION_OBSERVER) {
+                MUTATION_OBSERVER.disconnect()
+                MUTATION_OBSERVER = null
+            }
             break
         }
     }
