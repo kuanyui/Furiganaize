@@ -9,12 +9,11 @@
 	},
 	"background": {
 		"scripts": [
-			"js/common.js",
+			"js/config_storage_manager.js",
 			"js/background.js"]
 		},
 		"content_scripts": [ {
 			"js": [
-			"js/common.js",
 			"js/content_preload.js"
 		],
 		"matches": ["http://*/*", "https://*/*", "file://*/*"],

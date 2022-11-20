@@ -3,7 +3,9 @@ NAME="Furiganaize"
 XPI_DIR=../xpi
 
 build:
+	rm -f js/*
 	./node_modules/.bin/tsc
+	# A workaround for Firefox:
 	# bundle with simplest GNU "cat" because the latest Firefox still doesn't support background.service_worker in manifest.json
 	# https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/background#browser_compatibility
 	cat "lib/igo.js" \
