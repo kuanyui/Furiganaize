@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/kuanyui/Furiganaize#readme",
   "devDependencies": {
+    "@types/jquery": "^3.5.14",
     "tsc": "^2.0.4",
     "typescript": "^4.9.3",
     "web-ext-types": "^3.2.1"
