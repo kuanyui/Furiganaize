@@ -1,10 +1,13 @@
-﻿// var USER_KANJI_REGEXP: RegExp
-var INCLUDE_LINK_TEXT: boolean
+﻿var INCLUDE_LINK_TEXT: boolean
 var KANJI_TEXT_NODES: Record<number, Text> = {}
 var SUBMITTED_KANJI_TEXT_NODES: Record<string, Text> = {}
 // May re-declare
 var PERSISTENT_MODE: boolean
-/** Cross-tab keep on/off status. For PERSISTENT_MODE.  Not for settings. */
+/**
+ * - Current **"(cross-tab) keep on/off"** status.
+ * - NOT stored in settings.
+ * - For PERSISTENT_MODE only.
+ **/
 var CROSS_TABS_FURIGANA_ENABLED: boolean
 var AUTO_START: boolean
 // For dynamic Nodes (dynamically inserted / changed Nodes)
@@ -24,7 +27,6 @@ function getNextUid() {
 // fetch stored configuration values from the background script
 browser.runtime.sendMessage({ message: "config_values_request" }).then(function (response) {
     console.log('bg.crossTabsFuriganaEnabled', JSON.parse(response.crossTabsFuriganaEnabled))
-    // USER_KANJI_REGEXP = new RegExp("[" + response.userKanjiList + "]");
     INCLUDE_LINK_TEXT = JSON.parse(response.includeLinkText);
     WATCH_PAGE_CHANGE = JSON.parse(response.watchPageChange);
 
@@ -89,7 +91,7 @@ function scanForKanjiTextNodes(contextNode?: Node): Record<number, Text> {
 function submitKanjiTextNodes() {
     fiSetFloatingButtonState('PROCESSING')
     browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: 'PROCESSING' });
-    const msgData: MsgCtx2Bg = {
+    const msgData: MsgTab2Bg = {
         message: "text_to_furiganize",
         textMapNeedFuriganaize: {}
     };
@@ -230,7 +232,7 @@ function disableFurigana() {
 
 /*** Events ***/
 browser.runtime.onMessage.addListener((_msg: any, sender: browser.runtime.MessageSender) => {
-    const msg: MsgBg2Ctx = _msg
+    const msg: MsgBg2Tab = _msg
     if (msg.furiganizedTextNodes) {
         // NOTE: When furiganaize has been disabled, this request should be ignored. Because a debounce is existed, this request may come after disabling Furiganaize.
         if (!document.FURIGANAIZE_ENABLED) {

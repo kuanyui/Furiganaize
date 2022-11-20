@@ -1,7 +1,6 @@
 ﻿/***************************************************************
  *	This script set to run_at document load. See manifest.json.
  ***************************************************************/
-// var USER_KANJI_REGEXP;
 var INCLUDE_LINK_TEXT = false;
 var INSERTED_NODES_TO_CHECK: Node[] = [];
 var INSERTED_NODE_CHECK_TIMEOUT_ID = -1;
@@ -27,7 +26,6 @@ browser.runtime.sendMessage({ message: "config_values_request" }).then(function 
         browser.runtime.sendMessage({ message: "init_dom_parser_for_tab" });
         return
     }
-	// USER_KANJI_REGEXP = new RegExp("[" + response.userKanjiList + "]");
 	INCLUDE_LINK_TEXT = JSON.parse(response.includeLinkText);
 	PERSISTENT_MODE = JSON.parse(response.persistentMode);
 	let useMobileFloatingButton = JSON.parse(response.useMobileFloatingButton);
@@ -106,19 +104,6 @@ function processChangedNodes() {
 	INSERTED_NODES_TO_CHECK = [];
 	INSERTED_NODE_CHECK_TIMEOUT_ID = -1;
 }
-
-// function hasOnlySimpleKanji(rubySubstr) {
-// 	var foundKanji = rubySubstr.match(/[\u3400-\u9FBF]/g);
-// 	if (foundKanji) {
-// 		for (var x = 0; x < foundKanji.length; x++) {
-// 			if (!USER_KANJI_REGEXP.exec(foundKanji[x]))
-// 				return false;
-// 		}
-// 	} else {
-// 		return null;
-// 	}
-// 	return true;
-// }
 
 
 function fiFloatingIconIsExist () {

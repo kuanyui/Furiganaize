@@ -1,8 +1,21 @@
 var a = 0;
 var EXCEPTIONS = null;
-/** Cross-tab keep on/off status. For PERSISTENT_MODE only. Not for settings. */
+/**
+ * - Current **"(cross-tab) keep on/off"** status.
+ * - NOT stored in settings.
+ * - For PERSISTENT_MODE only.
+ **/
 var CROSS_TABS_FURIGANA_ENABLED = false;
+/** For read synchronously. To write, please use configStorageManager */
+var STORAGE: ConfigStorageRoot
 
+configStorageManager.getRoot().then((obj) => {
+    Object.assign(STORAGE, obj)
+  })
+  configStorageManager.onOptionsChanged((newRoot, changes) => {
+    console.log('[background] storage changed!', changes)
+    Object.assign(STORAGE, newRoot)
+})
 
 function doInCurrentTab(tabCallback: (tab: browser.tabs.Tab) => void) {
     browser.tabs.query(
@@ -12,25 +25,6 @@ function doInCurrentTab(tabCallback: (tab: browser.tabs.Tab) => void) {
     })
 }
 
-class LocalStorageManager {
-    /** Used for internal state, shared across tab */
-    get globallyShowMobileFloatingButton() {
-        return JSON.parse(localStorage.getItem('globally_show_mobile_floating_button')!)
-    }
-    /** Used for internal state, shared across tab */
-    set globallyShowMobileFloatingButton(nv) {
-        localStorage.setItem('globally_show_mobile_floating_button', nv)
-    }
-    /** Used in options */
-    get useMobileFloatingButton() {
-        return JSON.parse(localStorage.getItem('use_mobile_floating_button')!)
-    }
-    /** Used in options */
-    set useMobileFloatingButton(nv) {
-        localStorage.setItem('use_mobile_floating_button', nv)
-    }
-}
-const lsMan = new LocalStorageManager()
 
 // For keyboard shortcut only
 if (browser.commands) {  // NOTE: Android does not support browser.commands
@@ -38,8 +32,8 @@ if (browser.commands) {  // NOTE: Android does not support browser.commands
         console.log('trigger via browser commands (keyboard shortcuts)')
         if (cmd === 'toggle-furigana') {
             doInCurrentTab(function (curTab) {
-                if (lsMan.useMobileFloatingButton) {
-                    if (lsMan.globallyShowMobileFloatingButton) {
+                if (STORAGE.use_mobile_floating_button) {
+                    if (STORAGE.globally_show_mobile_floating_button) {
                         browser.tabs.query({}).then(function (tabs) {
                             for (var i = 0; i < tabs.length; i++) {
                                 browser.tabs.executeScript(tabs[i].id, { code: "fiRemoveFloatingIcon();" });
@@ -52,7 +46,7 @@ if (browser.commands) {  // NOTE: Android does not support browser.commands
                             }
                         }).catch((err) => { console.error('[To Developer] Error when tab.query()' , err) })
                     }
-                    lsMan.globallyShowMobileFloatingButton = !lsMan.globallyShowMobileFloatingButton
+                    STORAGE.globally_show_mobile_floating_button = !STORAGE.globally_show_mobile_floating_button
                     setupBrowserActionIcon('UNTOUCHED', undefined)  // FIXME: Don't sure wtf is this.
                 } else {
                     browser.tabs.executeScript(curTab.id, {code: "safeToggleFurigana();"});
@@ -63,16 +57,14 @@ if (browser.commands) {  // NOTE: Android does not support browser.commands
 }
 
 // Click on browserAction icon
-browser.browserAction.onClicked.addListener(function (curTab) {
-    // if (JSON.parse(localStorage.getItem('persistent_mode')) == true) {
-    //     browser.tabs.query({} ,function (tabs) {
+browser.browserAction.onClicked.addListener(function (curTab) {    // if (STORAGE.'persistent_mode')) == true) {//     browser.tabs.query({} ,function (tabs) {
     //         for (var i = 0; i < tabs.length; i++) {
     //             browser.tabs.executeScript(tabs[i].id, {code: "safeToggleFurigana();"});
     //         }
     //     });
     // }
-    if (lsMan.useMobileFloatingButton) {
-        if (lsMan.globallyShowMobileFloatingButton) {
+    if (STORAGE.use_mobile_floating_button) {
+        if (STORAGE.globally_show_mobile_floating_button) {
             browser.tabs.query({}).then(function (tabs) {
                 for (var i = 0; i < tabs.length; i++) {
                     browser.tabs.executeScript(tabs[i].id, { code: "fiRemoveFloatingIcon();" })
@@ -87,23 +79,13 @@ browser.browserAction.onClicked.addListener(function (curTab) {
                 }
             }).catch((err) => { console.error('[To Developer] Error when tab.query()' , err) })
         }
-        lsMan.globallyShowMobileFloatingButton = !lsMan.globallyShowMobileFloatingButton
+        STORAGE.globally_show_mobile_floating_button = !STORAGE.globally_show_mobile_floating_button
         setupBrowserActionIcon('UNTOUCHED', undefined)  // FIXME: Don't sure wtf is this.
     } else {
         browser.tabs.executeScript(curTab.id, {code: "safeToggleFurigana();"});
     }
 });
 
-//initialize variables
-if (!localStorage)
-    console.log("Error: localStorage not available to background page. Has local storage been disabled in this instance of browser?");
-
-if (localStorage.getItem("user_kanji_list") === null) {
-    console.log("The localStorage \"user_kanji_list\" value was null. It will be initialised to the installation default list.");
-    var defaultUserKanjiList = "日一国会人年大十二本中長出三同時政事自行社見月分議後前民生連五発間対上部東者党地合市業内相方四定今回新場金員九入選立開手米力学問高代明実円関決子動京全目表戦経通外最言氏現理調体化田当八六約主題下首意法不来作性的要用制治度務強気小七成期公持野協取都和統以機平総加山思家話世受区領多県続進正安設保改数記院女初北午指権心界支第産結百派点教報済書府活原先共得解名交資予川向際査勝面委告軍文反元重近千考判認画海参売利組知案道信策集在件団別物側任引使求所次水半品昨論計死官増係感特情投示変打男基私各始島直両朝革価式確村提運終挙果西勢減台広容必応演電歳住争談能無再位置企真流格有疑口過局少放税検藤町常校料沢裁状工建語球営空職証土与急止送援供可役構木割聞身費付施切由説転食比難防補車優夫研収断井何南石足違消境神番規術護展態導鮮備宅害配副算視条幹独警宮究育席輸訪楽起万着乗店述残想線率病農州武声質念待試族象銀域助労例衛然早張映限親額監環験追審商葉義伝働形景落欧担好退準賞訴辺造英被株頭技低毎医復仕去姿味負閣韓渡失移差衆個門写評課末守若脳極種美岡影命含福蔵量望松非撃佐核観察整段横融型白深字答夜製票況音申様財港識注呼渉達";
-    localStorage.setItem("user_kanji_list", defaultUserKanjiList);
-}
-// var USER_KANJI_REGEXP = new RegExp("[" + localStorage.getItem("user_kanji_list") + "]");
 
 
 var request = new XMLHttpRequest();
@@ -124,9 +106,9 @@ function setupBrowserActionIcon(state: furiganaize_state_t, tabId: number | unde
     console.log('ICON STATE===', state)
     browser.browserAction.enable(tabId)
     window.clearTimeout(blinkTimeoutId)
-    if (lsMan.useMobileFloatingButton) {
+    if (STORAGE.use_mobile_floating_button) {
         // TODO: Set different title or color for mobile floating icon
-        if (lsMan.globallyShowMobileFloatingButton) {
+        if (STORAGE.globally_show_mobile_floating_button) {
             browser.browserAction.setTitle({ tabId: undefined, title: "フローティングアイコンを隠す", });
             browser.browserAction.setBadgeBackgroundColor({ tabId: undefined, color: "#2fafff", });
             browser.browserAction.setBadgeText({ tabId: undefined, text: "ｱｲｺﾝｵﾝ", });
@@ -213,9 +195,9 @@ class WorkerManager {
     }
     runIgo(textMapNeedsFuriganaize: Record<number, string>) {
         const yomiStyle = getYomiStyle()
-        const preferLongerKanjiSegments = JSON.parse(localStorage.getItem("prevent_splitting_consecutive_kanjis")!)
-        const filterOkurigana = JSON.parse(localStorage.getItem("filter_okurigana")!)
-        const furiganaType = localStorage.getItem("furigana_display")
+        const preferLongerKanjiSegments = STORAGE.prevent_splitting_consecutive_kanjis
+        const filterOkurigana = STORAGE.filter_okurigana
+        const furiganaType = STORAGE.furigana_display
         const req = {
             reqId: ++this._reqId,
             textMapNeedsFuriganaize: textMapNeedsFuriganaize,
@@ -237,7 +219,7 @@ const workerMan = new WorkerManager()
 var _debug: browser.runtime.onMessageEvent
 browser.runtime.onMessage.addListener(
     function (_msg: object, sender: browser.runtime.MessageSender, sendResponseCallback: (response: object) => Promise<void>) {
-        const msg: MsgCtx2Bg = _msg as any
+        const msg: MsgTab2Bg = _msg as any
         //send config variables to content script
         console.log('message from tab, request.message ===', msg.message, msg)
         if (!sender.tab) {
@@ -247,13 +229,13 @@ browser.runtime.onMessage.addListener(
         const senderTabId = sender.tab!.id!
         if (msg.message == "config_values_request") {
             sendResponseCallback({
-                userKanjiList: localStorage.getItem("user_kanji_list"),
-                includeLinkText: localStorage.getItem("include_link_text"),
-                useMobileFloatingButton: lsMan.useMobileFloatingButton,
-                globallyShowMobileFloatingButton: lsMan.globallyShowMobileFloatingButton,
-                watchPageChange: localStorage.getItem("watch_page_change"),
-                persistentMode: localStorage.getItem("persistent_mode"),
-                autoStart: localStorage.getItem("auto_start"),
+                // userKanjiList: STORAGE.user_kanji_list,  // DEPRECATED
+                includeLinkText: STORAGE.include_link_text,
+                use_mobile_floating_button: STORAGE.use_mobile_floating_button,
+                globally_show_mobile_floating_button: STORAGE.globally_show_mobile_floating_button,  // TODO: shit
+                watchPageChange: STORAGE.watch_page_change,
+                persistentMode: STORAGE.persistent_mode,
+                autoStart: STORAGE.auto_start,
                 crossTabsFuriganaEnabled: CROSS_TABS_FURIGANA_ENABLED
             });
         //prepare tab for injection
@@ -287,10 +269,3 @@ browser.runtime.onMessage.addListener(
     }
 );
 
-//Storage events
-// window.addEventListener("storage",
-    // function(e) {
-        // if (e.key == "user_kanji_list") { //re-initialize the data in each tab (when they reload or they move to a new page)
-            // USER_KANJI_REGEXP = new RegExp("[" + localStorage.getItem("user_kanji_list") + "]");
-        // }
-    // }, false);
