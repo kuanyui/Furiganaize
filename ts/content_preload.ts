@@ -176,7 +176,7 @@ function fiAddFloatingIcon() {
     triggerBtn.onclick = function () { safeToggleFurigana() }
     transposeBtn.onclick = function () { transposeFloatButton() }
     const styleEl = document.createElement('style')
-    styleEl.innerText = `
+    styleEl.textContent = `
     #furiganaize_buttons_container {
         position: fixed;
         bottom: 30px;
