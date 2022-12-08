@@ -13,7 +13,12 @@ type TypedChangeDict<T> = { [K in keyof T]: TypedStorageChange<T[K]> }
 
 type furigana_type_t = 'hira' | 'kata' | 'roma'
 
-interface ConfigStorageRoot {
+interface MyStorageRoot {
+    settings: MyStorageSettings
+    state: MyStorageState
+}
+
+interface MyStorageSettings {
     /** Add furigana in anchor element (`<a>`) */
     include_link_text: boolean
     /** Show furigana as Hiragana, Katakana or Romaji */
@@ -29,8 +34,6 @@ interface ConfigStorageRoot {
     yomi_color: string
     /** Used in options */
     use_mobile_floating_button: boolean
-    /** Used for internal state, shared across tab */
-    globally_show_mobile_floating_button: boolean
     /** Use MutationObserver to watch dynamic page */
     watch_page_change: boolean
     /** Keep Furigana on/off status across tabs and pages. NOT RECOMMENDED. */
@@ -43,64 +46,31 @@ interface ConfigStorageRoot {
     prevent_splitting_consecutive_kanjis: boolean
 }
 
+interface MyStorageState {
+    /** Used for internal state, shared across tab */
+    globally_show_mobile_floating_button: boolean
+}
+
 //initialize local storage
-var DEFAULT_LOCAL_STORAGE_PREFERENCE: ConfigStorageRoot = {
-    include_link_text: true,
-    furigana_display: "hira",
-    filter_okurigana: true,
-    yomi_size_value: "",
-    yomi_size_unit: "__unset__",
-    yomi_color: "",
-    use_mobile_floating_button: false,
-    globally_show_mobile_floating_button: false,
-    watch_page_change: false,
-    persistent_mode: false,
-    auto_start: false,
-    prevent_splitting_consecutive_kanjis: true,
+var DEFAULT_LOCAL_STORAGE_ROOT: MyStorageRoot = {
+    settings: {
+        include_link_text: true,
+        furigana_display: "hira",
+        filter_okurigana: true,
+        yomi_size_value: "",
+        yomi_size_unit: "__unset__",
+        yomi_color: "",
+        use_mobile_floating_button: false,
+        watch_page_change: false,
+        persistent_mode: false,
+        auto_start: false,
+        prevent_splitting_consecutive_kanjis: true,
+    },
+    state: {
+        globally_show_mobile_floating_button: false,
+    }
 } as const
 
-/**
- * @return true if modified the originalRoot. Else, false.
- */
-function deepObjectShaper<T, U>(originalRoot: T, wishedShape: U): boolean {
-    let modified = false
-    for (const k in originalRoot) {
-        // @ts-expect-error
-        if (!Object.keys(wishedShape).includes(k)) {
-            delete originalRoot[k]
-            modified = true
-        }
-    }
-    for (const k in wishedShape) {
-        // @ts-expect-error
-        const ori = originalRoot[k]
-        const wish = wishedShape[k]
-        if (isObject(ori) && isObject(wish)) {
-            modified = modified || deepObjectShaper(ori, wish)
-        // @ts-expect-error
-        } else if (!Object.keys(originalRoot).includes(k)) {
-            // @ts-expect-error
-            originalRoot[k] = wishedShape[k]
-            modified = true
-        } else if (typeof ori !== typeof wish) {
-            // @ts-expect-error
-            originalRoot[k] = wishedShape[k]
-            modified = true
-        } else {
-            // skip
-        }
-    }
-    return modified
-}
-function isObject<T extends object>(x: any): x is T {
-    return typeof x === 'object' &&
-        !Array.isArray(x) &&
-        x !== null
-}
-
-function deepCopy<T>(x: T): T {
-    return JSON.parse(JSON.stringify(x))
-}
 
 class ConfigStorageManager {
     // tsconfig: useDefineForClassFields = false
@@ -112,25 +82,31 @@ class ConfigStorageManager {
         this.area = browser.storage.local
         this.initAndGetRoot()
     }
-    getDefaultRoot(): ConfigStorageRoot {
-        return Object.assign({}, DEFAULT_LOCAL_STORAGE_PREFERENCE)
+    getDefaultRoot(): MyStorageRoot {
+        return Object.assign({}, DEFAULT_LOCAL_STORAGE_ROOT)
     }
-    setRootSubsetPartially(subset: Partial<ConfigStorageRoot>): Promise<void> {
+    setRootSubsetPartially(subset: DeepPartial<MyStorageRoot>): Promise<void> {
         return this.getRoot().then((existingRoot) => {
             Object.assign(existingRoot, subset)
             this.area.set(existingRoot as any)
         })
     }
-    setRoot(newRoot: ConfigStorageRoot) {
+    setRootArbitrary(newRoot: MyStorageRoot) {
         this.area.set(newRoot as any)
     }
+    setRootSafely(newRoot: MyStorageRoot) {
+        return this.getRoot().then((existingRoot) => {
+            deepObjectShaper(newRoot, existingRoot)
+            this.area.set(newRoot as any)
+        })
+    }
     /** Without migrations */
-    initAndGetRoot(): Promise<ConfigStorageRoot> {
+    initAndGetRoot(): Promise<MyStorageRoot> {
         return this.area.get().then((_ori) => {
             /** may be malformed */
             const DEFAULT_ROOT = this.getDefaultRoot()
             let modified: boolean
-            let root = _ori as unknown as ConfigStorageRoot
+            let root = _ori as unknown as MyStorageRoot
             if (!root) {
                 root = DEFAULT_ROOT
                 modified = true
@@ -139,15 +115,15 @@ class ConfigStorageManager {
             }
             console.log('[GET] browser.storage.sync.get() ORIGINAL', deepCopy(root))
             if (modified) {
-                this.setRoot(root)
+                this.setRootSafely(root)
             }
             return root
         })
     }
     /** Get data object from LocalStorage */
-    getRoot(): Promise<ConfigStorageRoot> {
+    getRoot(): Promise<MyStorageRoot> {
         return this.area.get().then((root) => {
-            return root as unknown as ConfigStorageRoot
+            return root as unknown as MyStorageRoot
         }).catch((err) => {
             console.error('Error when getting settings from browser.storage:', err)
             return this.initAndGetRoot()
@@ -158,9 +134,9 @@ class ConfigStorageManager {
     //         return root[category]
     //     })
     // }
-    onOptionsChanged(cb: (newOptions: ConfigStorageRoot, changes: TypedChangeDict<ConfigStorageRoot>) => void) {
+    onOptionsChanged(cb: (newOptions: MyStorageRoot, changes: TypedChangeDict<MyStorageRoot>) => void) {
         browser.storage.onChanged.addListener((_changes, areaName) => {
-            const changes = _changes as TypedChangeDict<ConfigStorageRoot>
+            const changes = _changes as TypedChangeDict<MyStorageRoot>
             if (areaName === 'sync' || areaName === 'local') {
                 if (changes) {
                     this.getRoot().then((newRoot) => {

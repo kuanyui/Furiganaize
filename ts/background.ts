@@ -7,7 +7,7 @@ var EXCEPTIONS = null;
  **/
 var CROSS_TABS_FURIGANA_ENABLED = false;
 /** For read synchronously. To write, please use configStorageManager */
-var STORAGE: ConfigStorageRoot = configStorageManager.getDefaultRoot()
+var STORAGE: MyStorageRoot = configStorageManager.getDefaultRoot()
 
 configStorageManager.getRoot().then((obj) => {
     Object.assign(STORAGE, obj)

@@ -47,28 +47,28 @@ async function reloadDataFromLocalStorageToOptionUi() {
     try {
         const root = await configStorageManager.getRoot()
         const form = selectAllFormElement()
-        form.include_link_text[0].checked = root.include_link_text;
-        form.furigana_display.val(root.furigana_display);
-        form.filter_okurigana[0].checked = root.filter_okurigana;
-        form.persistent_mode[0].checked = root.persistent_mode;
-        form.watch_page_change[0].checked = root.watch_page_change;
-        form.use_mobile_floating_button[0].checked = root.use_mobile_floating_button;
-        form.auto_start[0].checked = root.auto_start;
-        form.prevent_splitting_consecutive_kanjis[0].checked = root.prevent_splitting_consecutive_kanjis;
-        form.yomi_size_value.val(root.yomi_size_value);
-        form.yomi_size_unit.val(root.yomi_size_unit);
+        form.include_link_text[0].checked = root.settings.include_link_text;
+        form.furigana_display.val(root.settings.furigana_display);
+        form.filter_okurigana[0].checked = root.settings.filter_okurigana;
+        form.persistent_mode[0].checked = root.settings.persistent_mode;
+        form.watch_page_change[0].checked = root.settings.watch_page_change;
+        form.use_mobile_floating_button[0].checked = root.settings.use_mobile_floating_button;
+        form.auto_start[0].checked = root.settings.auto_start;
+        form.prevent_splitting_consecutive_kanjis[0].checked = root.settings.prevent_splitting_consecutive_kanjis;
+        form.yomi_size_value.val(root.settings.yomi_size_value);
+        form.yomi_size_unit.val(root.settings.yomi_size_unit);
         $<HTMLInputElement>("#yomi_color").colpick({
             layout: 'hex',
             submit: 0,
             onChange: function (hsb, hex, rgb, el, bySetColor) {
                 const colorCode = '#' + hex
                 if (!bySetColor) {
-                    configStorageManager.setRootSubsetPartially({ yomi_color: colorCode })
+                    configStorageManager.setRootSubsetPartially({ settings: { yomi_color: colorCode } })
                     rerenderSample({ color: colorCode })
                 }
             }
         });
-        $<HTMLInputElement>("#yomi_color").colpickSetColor(root.yomi_color);
+        $<HTMLInputElement>("#yomi_color").colpickSetColor(root.settings.yomi_color);
 
         rerenderSample()
     } catch (err) { console.error('[To Developer] Error:', err); }
@@ -187,13 +187,13 @@ function bindUiEvents() {
         });
         formEls._yomi_size_reset.bind("click", function() {
             configStorageManager.setRootSubsetPartially({
-                yomi_size_value: DEFAULT_LOCAL_STORAGE_PREFERENCE.yomi_size_value,
-                yomi_size_unit: DEFAULT_LOCAL_STORAGE_PREFERENCE.yomi_size_unit,
+                yomi_size_value: DEFAULT_LOCAL_STORAGE_ROOT.yomi_size_value,
+                yomi_size_unit: DEFAULT_LOCAL_STORAGE_ROOT.yomi_size_unit,
             }).then(() => {
                 rerenderSample()
             })
-            formEls.yomi_size_value.val(DEFAULT_LOCAL_STORAGE_PREFERENCE.yomi_size_value);
-            formEls.yomi_size_unit.val(DEFAULT_LOCAL_STORAGE_PREFERENCE.yomi_size_unit);
+            formEls.yomi_size_value.val(DEFAULT_LOCAL_STORAGE_ROOT.yomi_size_value);
+            formEls.yomi_size_unit.val(DEFAULT_LOCAL_STORAGE_ROOT.yomi_size_unit);
         });
         formEls._yomi_color_reset.bind("click", function() {
             console.log('resetting color')
@@ -202,7 +202,7 @@ function bindUiEvents() {
             rerenderSample()
 		});
         formEls._reset_all.bind("click", function () {
-            configStorageManager.setRootSubsetPartially(DEFAULT_LOCAL_STORAGE_PREFERENCE).then(() => {
+            configStorageManager.setRootSubsetPartially(DEFAULT_LOCAL_STORAGE_ROOT).then(() => {
                 reloadDataFromLocalStorageToOptionUi()
             })
 		});
