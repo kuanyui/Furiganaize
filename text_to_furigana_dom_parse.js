@@ -92,8 +92,7 @@ function submitKanjiTextNodes(keepAllRuby = undefined) {
 
 function revertRubies() {
     browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: 'PROCESSING' });
-    document.querySelectorAll("rp,rt").forEach(x=>x.remove())
-    var rubies = document.getElementsByTagName("RUBY");
+    var rubies = document.querySelectorAll("ruby.FGZ");
     const parentElMap = new Map()
     for (const rubyElem of rubies) {
         var parentNode = rubyElem.parentNode;
@@ -108,7 +107,7 @@ function revertRubies() {
         const parentNode = x[0]
         const rubyElems = x[1]
         if (parentNode.nodeType === Node.ELEMENT_NODE) {
-            parentNode.innerHTML = parentNode.innerHTML.replace(/<[/]?(ruby|rb)>/ig, '')
+            parentNode.innerHTML = parentNode.innerHTML.replace(/<ruby class="FGZ"><rb>(.+?)<[/]rb>.+?<[/]ruby>/ig, '$1')
             // parentNode.normalize();
         } else {
             for (const rubyElem of rubyElems) {
