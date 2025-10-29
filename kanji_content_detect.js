@@ -24,7 +24,7 @@ browser.runtime.sendMessage({ message: "config_values_request" }).then(function 
         // REFACTORING: May needn't because never happened after adding document.onunload ...?
         // If already enabled, just init dom_parser directly without detecting kanji again.
         // This situation may happened when using back/next of browser
-        browser.runtime.sendMessage({ message: "init_dom_parser_for_tab" });
+        browser.runtime.sendMessage({ message: "init_dom_parser_for_tab", });
         return
     }
 	USER_KANJI_REGEXP = new RegExp("[" + response.userKanjiList + "]");

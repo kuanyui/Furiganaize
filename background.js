@@ -40,20 +40,20 @@ if (browser.commands) {  // NOTE: Android does not support browser.commands
                     if (lsMan.globallyShowMobileFloatingButton) {
                         browser.tabs.query({}, function (tabs) {
                             for (var i = 0; i < tabs.length; i++) {
-                                browser.tabs.executeScript(tabs[i].id, { code: "fiRemoveFloatingIcon();" });
+                                browser.tabs.executeScript(tabs[i].id, { code: "fiRemoveFloatingIcon();", allFrames: true, matchAboutBlank: true });
                             }
                         })
                     } else {
                         browser.tabs.query({}, function (tabs) {
                             for (var i = 0; i < tabs.length; i++) {
-                                browser.tabs.executeScript(tabs[i].id, { code: "fiAddFloatingIcon();" });
+                                browser.tabs.executeScript(tabs[i].id, { code: "fiAddFloatingIcon();", allFrames: true, matchAboutBlank: true });
                             }
                         })
                     }
                     lsMan.globallyShowMobileFloatingButton = !lsMan.globallyShowMobileFloatingButton
                     setupBrowserActionIcon(false, undefined)
                 } else {
-                    browser.tabs.executeScript(curTab.id, {code: "safeToggleFurigana();"});
+                    browser.tabs.executeScript(curTab.id, { code: "safeToggleFurigana();", allFrames: true, matchAboutBlank: true });
                 }
             })
         }
@@ -73,14 +73,14 @@ browser.browserAction.onClicked.addListener(function (curTab) {
         if (lsMan.globallyShowMobileFloatingButton) {
             browser.tabs.query({}, function (tabs) {
                 for (var i = 0; i < tabs.length; i++) {
-                    browser.tabs.executeScript(tabs[i].id, { code: "fiRemoveFloatingIcon();" })
+                    browser.tabs.executeScript(tabs[i].id, { code: "fiRemoveFloatingIcon();", allFrames: true, matchAboutBlank: true })
                         .catch(err => console.log('[Error] This exception may be due to you opened some special domains such as https://addons.mozilla.org/, which Firefox forbids you from do this', err, tabs[i]));
                 }
             })
         } else {
             browser.tabs.query({}, function (tabs) {
                 for (var i = 0; i < tabs.length; i++) {
-                    browser.tabs.executeScript(tabs[i].id, { code: "fiAddFloatingIcon();" })
+                    browser.tabs.executeScript(tabs[i].id, { code: "fiAddFloatingIcon();", allFrames: true, matchAboutBlank: true })
                         .catch(err => console.log('[Error] This exception may be due to you opened some special domains such as https://addons.mozilla.org/, which Firefox forbids you from do this', err, tabs[i]));
                 }
             })
@@ -88,7 +88,7 @@ browser.browserAction.onClicked.addListener(function (curTab) {
         lsMan.globallyShowMobileFloatingButton = !lsMan.globallyShowMobileFloatingButton
         setupBrowserActionIcon(false, undefined)
     } else {
-        browser.tabs.executeScript(curTab.id, {code: "safeToggleFurigana();"});
+        browser.tabs.executeScript(curTab.id, { code: "safeToggleFurigana();", allFrames: true, matchAboutBlank: true });
     }
 });
 
@@ -172,10 +172,12 @@ function setupBrowserActionIcon(state, tabId) {
 }
 
 //prepare a tab for furigana injection
-function enableTabForFI(tab) {
+function enableTabForFI(tab, frameId) {
     // setupBrowserActionIcon(false, tab.id)
     return browser.tabs.executeScript(tab.id, {
-        file: "/text_to_furigana_dom_parse.js"
+        file: "/text_to_furigana_dom_parse.js",
+        frameId: frameId,
+        matchAboutBlank: true,
     });
 }
 
@@ -232,7 +234,7 @@ const workerMan = new WorkerManager()
 browser.runtime.onMessage.addListener(
     function(request, sender, sendResponseCallback) {
         //send config variables to content script
-        console.log('message from tab, request.message ===', request.message, request)
+        console.log(`message from tab (frame ${sender.frameId}), request.message ===`, request.message, request)
         if (request.message == "config_values_request") {
             sendResponseCallback({
                 userKanjiList: localStorage.getItem("user_kanji_list"),
@@ -244,22 +246,24 @@ browser.runtime.onMessage.addListener(
                 autoStart: localStorage.getItem("auto_start"),
                 crossTabsFuriganaEnabled: CROSS_TABS_FURIGANA_ENABLED
             });
-        //prepare tab for injection
         } else if (request.message == "init_dom_parser_for_tab") {
-            enableTabForFI(sender.tab)
+            //prepare tab for injection
+            enableTabForFI(sender.tab, sender.frameId)
         } else if (request.message == 'force_load_dom_parser') {
             //sometime loaded `text_to_furigana_dom_parse` unloaded by unknown reason (ex: Idle for too long on Android?), reload it.
             return browser.tabs.executeScript(sender.tab.id, {
-                file: "/text_to_furigana_dom_parse.js"
+                file: "/text_to_furigana_dom_parse.js",
+                frameId: sender.frameId,
+                matchAboutBlank: true,
             });
-            //process DOM nodes containing kanji and insert furigana
         } else if (request.message == 'text_to_furiganize') {
+            //process DOM nodes containing kanji and insert furigana
             setupBrowserActionIcon('PROCESSING', sender.tab.id)
             workerMan.runIgo(request.textMapNeedFuriganaize).then((furiganaized) => {
                 //send processed DOM nodes back to the tab content script
                 browser.tabs.sendMessage(sender.tab.id, {
-                    furiganizedTextNodes: furiganaized
-                });
+                    furiganizedTextNodes: furiganaized,
+                }, { frameId: sender.frameId });
             })
         } else if (request.message === "set_page_action_icon_status") {
             const newValue = request.value

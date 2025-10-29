@@ -21,8 +21,9 @@
 	},
 	"content_scripts": [ {
 		"js": ["kanji_content_detect.js"],
-		"matches": ["http://*/*", "https://*/*", "file://*/*"],
-		"all_frames": true
+		"matches": ["<all_urls>"],
+		"all_frames": true,
+		"match_about_blank": true   // For empty iframe
 	} ],
 	"default_locale": "en",
 	"description": "__MSG_manifestExtDescription__",
