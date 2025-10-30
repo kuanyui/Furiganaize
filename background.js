@@ -181,20 +181,6 @@ function enableTabForFI(tab, frameId) {
     });
 }
 
-function getYomiStyle() {
-    let style = ''
-    const sizeValue = localStorage.getItem('yomi_size_value')
-    const sizeUnit = localStorage.getItem('yomi_size_unit')
-    const color = localStorage.getItem('yomi_color')
-    if (sizeUnit !== '__unset__') {
-        style += `font-size:${sizeValue}${sizeUnit}`
-    }
-    if (color) {
-        style += `;color:${color}`
-    }
-    return style
-}
-
 class WorkerManager {
     constructor() {
         this._reqId = 0
@@ -208,7 +194,6 @@ class WorkerManager {
         }
     }
     runIgo(textMapNeedsFuriganaize) {
-        const yomiStyle = getYomiStyle()
         const preferLongerKanjiSegments = JSON.parse(localStorage.getItem("prevent_splitting_consecutive_kanjis"))
         const filterOkurigana = JSON.parse(localStorage.getItem("filter_okurigana"))
         const furiganaType = localStorage.getItem("furigana_display")
@@ -216,7 +201,7 @@ class WorkerManager {
             reqId: ++this._reqId,
             textMapNeedsFuriganaize: textMapNeedsFuriganaize,
             options: {
-                yomiStyle, preferLongerKanjiSegments, filterOkurigana, furiganaType
+                preferLongerKanjiSegments, filterOkurigana, furiganaType
             }
         }
         console.log('runIgo!')
@@ -228,6 +213,37 @@ class WorkerManager {
     }
 }
 const workerMan = new WorkerManager()
+
+
+function getDynamicCss() {
+    const sizeValue = localStorage.getItem('yomi_size_value')
+    const sizeUnit = localStorage.getItem('yomi_size_unit')
+    const color = localStorage.getItem('yomi_color')
+    let cssContent = 'ruby.FGZ > rt {'
+    if (sizeUnit !== '__unset__') {
+        cssContent += `font-size:${sizeValue}${sizeUnit} !important;`
+    }
+    if (color) {
+        cssContent += `color:${color} !important;`
+    }
+    cssContent += `}`
+    return cssContent
+}
+
+browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    if (changeInfo.status === 'complete') {
+        browser.tabs.insertCSS(tabId, { allFrames: true, code: getDynamicCss(), matchAboutBlank: true }).catch(() => {});
+    }
+});
+
+// Aggressively insertCSS when content of iframe loaded
+browser.webNavigation.onDOMContentLoaded.addListener((details) => {
+    browser.tabs.insertCSS(details.tabId, {
+      frameId: details.frameId,
+      matchAboutBlank: true,
+      code: getDynamicCss(),
+    }).catch(() => { });
+});
 
 
 //Extension requests listener. Handles communication between extension and the content scripts
@@ -246,6 +262,7 @@ browser.runtime.onMessage.addListener(
                 autoStart: localStorage.getItem("auto_start"),
                 crossTabsFuriganaEnabled: CROSS_TABS_FURIGANA_ENABLED
             });
+
         } else if (request.message == "init_dom_parser_for_tab") {
             //prepare tab for injection
             enableTabForFI(sender.tab, sender.frameId)
