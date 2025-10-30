@@ -1,4 +1,6 @@
-﻿var USER_KANJI_REGEXP;
+﻿/// <reference path="./kanji_content_detect.js" />
+
+var USER_KANJI_REGEXP;
 var INCLUDE_LINK_TEXT;
 var KANJI_TEXT_NODES = {};
 var SUBMITTED_KANJI_TEXT_NODES = {};

@@ -1,4 +1,6 @@
-﻿/***************************************************************
+﻿/// <reference path="./text_to_furigana_dom_parse.js" />
+
+/***************************************************************
  *	This script set to run_at document load. See manifest.json.
  ***************************************************************/
 var USER_KANJI_REGEXP;
@@ -127,7 +129,7 @@ function fiRemoveFloatingIcon() {
     const el = fiFloatingIconIsExist()
     if (el) { el.remove() }
 }
-
+/** If {@link toggleFurigana()} function is unloaded (e.g. after browser navigating back/next), force load it again. */
 async function safeToggleFurigana() {
     if ((typeof toggleFurigana) !== 'function') {
         await browser.runtime.sendMessage({ message: "force_load_dom_parser" })
@@ -258,6 +260,9 @@ function fiAddFloatingIcon() {
     document.body.append(styleEl)
 }
 
+/**
+ * @param {'UNTOUCHED' | 'PROCESSING' | 'INSERTED'} state
+ */
 function fiSetFloatingButtonState(state) {
     const wrapper = document.querySelector('#furiganaize_buttons_container')
     if (!wrapper) { return }
