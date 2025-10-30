@@ -1,0 +1,77 @@
+#furiganaize_buttons_container {
+    position: fixed;
+    bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    right: 20px;
+    z-index: 555555;
+}
+#furiganaize_buttons_container.leftSide {
+    left: 20px;
+    right: unset;
+}
+#furiganaize_buttons_container .led_indicator {
+    display: block;
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 6px;
+    border: 1px solid #333333;
+    background: #666666
+}
+#furiganaize_buttons_container .led_indicator.purple {
+    border: 1px solid #5500a1;
+    background: #ee33f1
+}
+#furiganaize_buttons_container .led_indicator.red {
+    border: 1px solid #660000;
+    background: #ff6666
+}
+#furiganaize_buttons_container .led_indicator.green {
+    border: 1px solid #337700;
+    background: #99dd22
+}
+#furiganaize_trigger_button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+}
+#furiganaize_trigger_button span {
+    font-size: 40px;
+    user-select: none;
+    margin-top: -0.5rem;
+}
+.furiganaize_button {
+    color: #000000;
+    background : #eeeeee;
+    border: 1px solid #aaa;
+    margin-top: -1px;
+    cursor: pointer;
+    user-select: none;
+    font-family: sans;
+    width: 50px;
+
+}
+.furiganaize_button:active {
+    background: #cccccc;
+}
+#furiganaize_buttons_container.busy .furiganaize_button {
+    background: #cccccc;
+    pointer-events: none;
+}
+#furiganaize_buttons_container.busy .furiganaize_button span,
+#furiganaize_buttons_container.busy .led_indicator {
+    animation: furiganaize_blinking 0.5s linear infinite;
+}
+#furiganaize_transpose_button {
+    text-align: center;
+    font-size: 12px;
+}
+
+@keyframes furiganaize_blinking {
+    50% { opacity: 0.2; }
+}

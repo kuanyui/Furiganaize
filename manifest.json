@@ -21,6 +21,7 @@
 	},
 	"content_scripts": [ {
 		"js": ["kanji_content_detect.js"],
+		"css": ["content.css"],
 		"matches": ["<all_urls>"],
 		"all_frames": true,
 		"match_about_blank": true   // For empty iframe
