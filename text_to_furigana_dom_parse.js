@@ -141,7 +141,7 @@ console.log('dom_parse executed!')
  * Called by kanji_content_detect.
  * When user clicks browserAction, this function would be invoked.
  */
-function toggleFurigana() {
+function toggleFurigana(toggledVia) {
     const pageIsProcessed = document.body.hasAttribute("fiprocessed")
     console.log('PERSISTENT_MODE  ==', PERSISTENT_MODE)
     console.log('Original CROSS_TABS_FURIGANA_ENABLED ==', CROSS_TABS_FURIGANA_ENABLED)
@@ -157,6 +157,9 @@ function toggleFurigana() {
         }
         autoSetBrowserActionIcon()
         return
+    }
+    if (toggledVia === 'FLOAT_BUTTON') {   // this is from content script, so should notify other frames.
+        browser.runtime.sendMessage({ message: 'request_other_frames_to_toggle_furigana' })
     }
     if (pageIsProcessed) {
         disableFurigana()

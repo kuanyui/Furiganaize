@@ -129,13 +129,14 @@ function fiRemoveFloatingIcon() {
     const el = fiFloatingIconIsExist()
     if (el) { el.remove() }
 }
+
 /** If {@link toggleFurigana()} function is unloaded (e.g. after browser navigating back/next), force load it again. */
-async function safeToggleFurigana() {
+async function safeToggleFurigana(toggledVia) {
     if ((typeof toggleFurigana) !== 'function') {
         await browser.runtime.sendMessage({ message: "force_load_dom_parser" })
     }
     fiRemoveNoScriptTags()
-    toggleFurigana()  // In `text_to_furigana_dom_parse.js`
+    toggleFurigana(toggledVia)  // In `text_to_furigana_dom_parse.js`
 }
 function transposeFloatButton() {
     const el = document.querySelector('#furiganaize_buttons_container')
@@ -175,7 +176,7 @@ function fiAddFloatingIcon() {
     // div.ondrag = function (ev) {
     //     console.log(ev)
     // }
-    triggerBtn.onclick = function () { safeToggleFurigana() }
+    triggerBtn.onclick = function () { safeToggleFurigana('FLOAT_BUTTON') }
     transposeBtn.onclick = function () { transposeFloatButton() }
     const styleEl = document.createElement('style')
     styleEl.innerText = `

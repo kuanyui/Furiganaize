@@ -56,5 +56,5 @@
             "description": "Toggle furigana"
         }
     },
-	"permissions": ["http://*/*", "https://*/*", "file://*/*", "<all_urls>", "activeTab", "tabs", "storage"]
+	"permissions": ["http://*/*", "https://*/*", "file://*/*", "<all_urls>", "activeTab", "tabs", "storage", "webNavigation"]
 }

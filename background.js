@@ -273,6 +273,13 @@ browser.runtime.onMessage.addListener(
         } else if (request.message === 'set_cross_tabs_furigana_enabled') {
             console.log('set CROSS_TABS_FURIGANA_ENABLED', request.value)
             CROSS_TABS_FURIGANA_ENABLED = request.value
+        } else if (request.message === 'request_other_frames_to_toggle_furigana') {
+            browser.webNavigation.getAllFrames({ tabId: sender.tab.id }).then((tabAllFrames) => {
+                for (const otherFrame of tabAllFrames) {
+                    if (otherFrame.frameId === sender.frameId) { continue; }
+                    browser.tabs.executeScript(sender.tab.id, { code: "safeToggleFurigana();", frameId: otherFrame.frameId, matchAboutBlank: true });
+                }
+            })
         } else {
             console.log("Programming error: a request with the unexpected \"message\" value \"" + request.message + "\" was received in the background page.");
         }
