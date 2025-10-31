@@ -12,9 +12,9 @@ async function rerenderSample(tmpVal?: {
     tmpVal = tmpVal || {}
     const root = await configStorageManager.getRoot()
     const $sampleEl = $(".style_sample")
-    const fontSizeUnit = tmpVal.fontSizeUnit || root.yomi_size_unit
-    const fontSizeValue = tmpVal.fontSizeValue || root.yomi_size_value
-    const color = tmpVal.color || root.yomi_color
+    const fontSizeUnit = tmpVal.fontSizeUnit || root.settings.yomi_size_unit
+    const fontSizeValue = tmpVal.fontSizeValue || root.settings.yomi_size_value
+    const color = tmpVal.color || root.settings.yomi_color
     const fontSize = fontSizeUnit === '__unset__' ? '' : fontSizeValue + fontSizeUnit
     for (const el of $sampleEl) {
         el.style.fontSize = fontSize
@@ -46,6 +46,7 @@ function selectAllFormElement() {
 async function reloadDataFromLocalStorageToOptionUi() {
     try {
         const root = await configStorageManager.getRoot()
+        console.warn('root =============>', root)
         const form = selectAllFormElement()
         form.include_link_text[0].checked = root.settings.include_link_text;
         form.furigana_display.val(root.settings.furigana_display);
@@ -63,7 +64,7 @@ async function reloadDataFromLocalStorageToOptionUi() {
             onChange: function (hsb, hex, rgb, el, bySetColor) {
                 const colorCode = '#' + hex
                 if (!bySetColor) {
-                    configStorageManager.setRootSubsetPartially({ settings: { yomi_color: colorCode } })
+                    configStorageManager.deepMergeToRoot({ settings: { yomi_color: colorCode } })
                     rerenderSample({ color: colorCode })
                 }
             }
@@ -83,51 +84,51 @@ function bindUiEvents() {
 		});
 		formEls.include_link_text.bind("change", function() {
 			var inclLinks = this.checked;
-			configStorageManager.setRootSubsetPartially({include_link_text: inclLinks});	//N.B. saves in JSON format, i.e. the _strings_ "true" or "false", so use JSON.parse() when retrieving the value from localStorage
+            configStorageManager.deepMergeToRoot({ settings: { include_link_text: inclLinks } });	//N.B. saves in JSON format, i.e. the _strings_ "true" or "false", so use JSON.parse() when retrieving the value from localStora ge
 			$("#link_sample").find("RT").each(function() {
 				$(this).css({visibility: inclLinks ? "visible" : "hidden"});
 			});
 		});
 		formEls.furigana_display.bind("change", function() {
 			var furiganaDisplay = this.value;
-			configStorageManager.setRootSubsetPartially({furigana_display: furiganaDisplay as furigana_type_t})
+			configStorageManager.deepMergeToRoot({ settings: { furigana_display: furiganaDisplay as furigana_type_t } })
 		});
 		formEls.filter_okurigana.bind("change", function() {
 			var filterOkurigana = this.checked;
-			configStorageManager.setRootSubsetPartially({filter_okurigana: filterOkurigana})
+			configStorageManager.deepMergeToRoot({ settings: { filter_okurigana: filterOkurigana } })
 		});
 		formEls.watch_page_change.bind("change", function() {
 			var watchPageChange = this.checked;
-			configStorageManager.setRootSubsetPartially({watch_page_change: watchPageChange})
+			configStorageManager.deepMergeToRoot({ settings: { watch_page_change: watchPageChange } })
 		});
         formEls.use_mobile_floating_button.bind("change", function() {
             var useMobileFloatingButton = this.checked;
-            configStorageManager.setRootSubsetPartially({use_mobile_floating_button: useMobileFloatingButton})
+            configStorageManager.deepMergeToRoot({ settings: { use_mobile_floating_button: useMobileFloatingButton } })
             if (!useMobileFloatingButton) {
-                configStorageManager.setRootSubsetPartially({ 'globally_show_mobile_floating_button': false })
+                configStorageManager.deepMergeToRoot({ state: { globally_show_mobile_floating_button: false } })
             }
         });
 		formEls.persistent_mode.bind("change", function() {
 			var persistentMode = this.checked;
-			configStorageManager.setRootSubsetPartially({persistent_mode: persistentMode})
+			configStorageManager.deepMergeToRoot({ settings: { persistent_mode: persistentMode } })
 			// if (!persistentMode) {
-			// 	configStorageManager.setRootSubsetPartially({auto_start: false})
+			// 	configStorageManager.setRootSubsetPartially({ settings: { auto_start: false } })
 			// 	$("#auto_start").prop('checked', false);
 			// }
 		});
 		formEls.auto_start.bind("change", function() {
 			var autoStart = this.checked;
-			configStorageManager.setRootSubsetPartially({auto_start: autoStart})
+			configStorageManager.deepMergeToRoot({ settings: { auto_start: autoStart } })
 			if (autoStart) {
-				configStorageManager.setRootSubsetPartially({persistent_mode: autoStart})
+				configStorageManager.deepMergeToRoot({ settings: { persistent_mode: autoStart } })
 				$("#persistent_mode").prop('checked', autoStart);
 			}
 		});
 		formEls.prevent_splitting_consecutive_kanjis.bind("change", function() {
 			var preventSplittingConsecutiveKanjis = this.checked;
-			configStorageManager.setRootSubsetPartially({prevent_splitting_consecutive_kanjis: preventSplittingConsecutiveKanjis})
+			configStorageManager.deepMergeToRoot({ settings: { prevent_splitting_consecutive_kanjis: preventSplittingConsecutiveKanjis } })
 			if (preventSplittingConsecutiveKanjis) {
-				configStorageManager.setRootSubsetPartially({prevent_splitting_consecutive_kanjis: preventSplittingConsecutiveKanjis})
+				configStorageManager.deepMergeToRoot({ settings: { prevent_splitting_consecutive_kanjis: preventSplittingConsecutiveKanjis } })
 				$("#prevent_splitting_consecutive_kanjis").prop('checked', preventSplittingConsecutiveKanjis);
 			}
         });
@@ -145,20 +146,20 @@ function bindUiEvents() {
             const inputEl = formEls.yomi_size_value[0]
             inputEl.value = (~~inputEl.value + 1) + ''
             fixFontSizeValue(inputEl)
-            configStorageManager.setRootSubsetPartially({yomi_size_value: inputEl.value})
+            configStorageManager.deepMergeToRoot({ settings: { yomi_size_value: inputEl.value } })
             rerenderSample({ fontSizeValue: inputEl.value })
         })
         formEls._yomi_size_value__dec.bind("click", function (_ev) {
             const inputEl = formEls.yomi_size_value[0]
             inputEl.value = (~~inputEl.value - 1) + ''
             fixFontSizeValue(inputEl)
-            configStorageManager.setRootSubsetPartially({yomi_size_value: inputEl.value})
+            configStorageManager.deepMergeToRoot({ settings: { yomi_size_value: inputEl.value } })
             rerenderSample({ fontSizeValue: inputEl.value  })
         })
         formEls.yomi_size_value
         .bind("input", function () {
             fixFontSizeValue(this)
-            configStorageManager.setRootSubsetPartially({yomi_size_value: this.value})
+            configStorageManager.deepMergeToRoot({ settings: { yomi_size_value: this.value } })
             rerenderSample({ fontSizeValue: this.value })
         })
         .bind("keydown", function (_ev) {
@@ -176,33 +177,35 @@ function bindUiEvents() {
             }
             this.value = (~~this.value + delta) + ''
             fixFontSizeValue(this)
-            configStorageManager.setRootSubsetPartially({ yomi_size_value: this.value })
-            // configStorageManager.setRootSubsetPartially({yomi_size_value: sizeValue})
+            configStorageManager.deepMergeToRoot({ settings: { yomi_size_value: this.value } })
+            // configStorageManager.setRootSubsetPartially({ settings: { yomi_size_value: sizeValue } })
             rerenderSample({ fontSizeValue: this.value })
         });
 		formEls.yomi_size_unit.bind("change", function() {
             var sizeUnit = this.value;
-            configStorageManager.setRootSubsetPartially({yomi_size_unit: sizeUnit})
+            configStorageManager.deepMergeToRoot({ settings: { yomi_size_unit: sizeUnit } })
             rerenderSample({ fontSizeUnit: sizeUnit })
         });
         formEls._yomi_size_reset.bind("click", function() {
-            configStorageManager.setRootSubsetPartially({
-                yomi_size_value: DEFAULT_LOCAL_STORAGE_ROOT.yomi_size_value,
-                yomi_size_unit: DEFAULT_LOCAL_STORAGE_ROOT.yomi_size_unit,
+            configStorageManager.deepMergeToRoot({
+                settings: {
+                    yomi_size_value: DEFAULT_LOCAL_STORAGE_ROOT.settings.yomi_size_value,
+                    yomi_size_unit: DEFAULT_LOCAL_STORAGE_ROOT.settings.yomi_size_unit,
+                }
             }).then(() => {
                 rerenderSample()
             })
-            formEls.yomi_size_value.val(DEFAULT_LOCAL_STORAGE_ROOT.yomi_size_value);
-            formEls.yomi_size_unit.val(DEFAULT_LOCAL_STORAGE_ROOT.yomi_size_unit);
+            formEls.yomi_size_value.val(DEFAULT_LOCAL_STORAGE_ROOT.settings.yomi_size_value);
+            formEls.yomi_size_unit.val(DEFAULT_LOCAL_STORAGE_ROOT.settings.yomi_size_unit);
         });
         formEls._yomi_color_reset.bind("click", function() {
             console.log('resetting color')
-            configStorageManager.setRootSubsetPartially({ yomi_color: '' });
+            configStorageManager.deepMergeToRoot({ settings: {  yomi_color: '' } });
 			$("#yomi_color").colpickSetColor('');
             rerenderSample()
 		});
         formEls._reset_all.bind("click", function () {
-            configStorageManager.setRootSubsetPartially(DEFAULT_LOCAL_STORAGE_ROOT).then(() => {
+            configStorageManager.deepMergeToRoot(DEFAULT_LOCAL_STORAGE_ROOT).then(() => {
                 reloadDataFromLocalStorageToOptionUi()
             })
 		});

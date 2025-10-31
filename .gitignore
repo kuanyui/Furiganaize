@@ -12,4 +12,7 @@ org-clock-save.el
 emacs-config.el
 node_modules/
 /js/
+/tsc_out/
+/bundle
+jsconfig.json
 .directory

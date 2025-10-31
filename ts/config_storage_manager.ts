@@ -82,26 +82,26 @@ class ConfigStorageManager {
         this.area = browser.storage.local
         this.initAndGetRoot()
     }
-    getDefaultRoot(): MyStorageRoot {
+    public getDefaultRoot(): MyStorageRoot {
         return Object.assign({}, DEFAULT_LOCAL_STORAGE_ROOT)
     }
-    setRootSubsetPartially(subset: DeepPartial<MyStorageRoot>): Promise<void> {
+    public deepMergeToRoot(subset: DeepPartial<MyStorageRoot>): Promise<void> {
         return this.getRoot().then((existingRoot) => {
-            Object.assign(existingRoot, subset)
+            deepMergeSubset(existingRoot, subset)
             this.area.set(existingRoot as any)
         })
     }
-    setRootArbitrary(newRoot: MyStorageRoot) {
+    private setRootArbitrary(newRoot: MyStorageRoot) {
         this.area.set(newRoot as any)
     }
-    setRootSafely(newRoot: MyStorageRoot) {
+    private setRootSafely(newRoot: MyStorageRoot) {
         return this.getRoot().then((existingRoot) => {
             deepObjectShaper(newRoot, existingRoot)
             this.area.set(newRoot as any)
         })
     }
     /** Without migrations */
-    initAndGetRoot(): Promise<MyStorageRoot> {
+    private initAndGetRoot(): Promise<MyStorageRoot> {
         return this.area.get().then((_ori) => {
             /** may be malformed */
             const DEFAULT_ROOT = this.getDefaultRoot()
@@ -121,9 +121,13 @@ class ConfigStorageManager {
         })
     }
     /** Get data object from LocalStorage */
-    getRoot(): Promise<MyStorageRoot> {
-        return this.area.get().then((root) => {
-            return root as unknown as MyStorageRoot
+    public getRoot(): Promise<MyStorageRoot> {
+        return this.area.get().then((_root) => {
+            const root = _root as MyStorageRoot
+            if (!root.settings) {  // if empty
+                return this.initAndGetRoot()
+            }
+            return root
         }).catch((err) => {
             console.error('Error when getting settings from browser.storage:', err)
             return this.initAndGetRoot()

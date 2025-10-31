@@ -9,16 +9,18 @@
 	},
 	"background": {
 		"scripts": [
-			"js/config_storage_manager.js",
-			"js/background.js"]
-		},
-		"content_scripts": [ {
+			"bundle/js/background.js"
+		]
+	},
+	"content_scripts": [
+		{
 			"js": [
-			"js/content_preload.js"
-		],
-		"matches": ["http://*/*", "https://*/*", "file://*/*"],
-		"all_frames": true
-	} ],
+				"bundle/js/content_preload.js"
+			],
+			"matches": ["http://*/*", "https://*/*", "file://*/*"],
+			"all_frames": true
+		}
+	],
 	"default_locale": "en",
 	"description": "__MSG_manifestExtDescription__",
 	"icons": { "512": "img/icon_black.svg"  },

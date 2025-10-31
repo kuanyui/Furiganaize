@@ -18,6 +18,7 @@ function autoSetBrowserActionIcon() {
 }
 
 browser.runtime.sendMessage({ message: "config_values_request" }).then(function (response) {
+    console.error('response', response)
     const alreadyEnabled = autoSetBrowserActionIcon() === 'INSERTED' // TODO: Use MutationObserver to auto call this function?
     if (alreadyEnabled) {
         // REFACTORING: May needn't because never happened after adding document.onunload ...?
