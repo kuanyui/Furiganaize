@@ -1,17 +1,9 @@
-﻿var INCLUDE_LINK_TEXT: boolean
+﻿/** For read synchronously in content script. */
+var STORAGE: MyStorageRoot;
+
 var KANJI_TEXT_NODES: Record<number, Text> = {}
 var SUBMITTED_KANJI_TEXT_NODES: Record<string, Text> = {}
-// May re-declare
-var PERSISTENT_MODE: boolean
-/**
- * - Current **"(cross-tab) keep on/off"** status.
- * - NOT stored in settings.
- * - For PERSISTENT_MODE only.
- **/
-var CROSS_TABS_FURIGANA_ENABLED: boolean
-var AUTO_START: boolean
-// For dynamic Nodes (dynamically inserted / changed Nodes)
-var WATCH_PAGE_CHANGE: boolean;
+
 var MUTATION_OBSERVER_FOR_INSERTING_FURIGANA: MutationObserver | null = null
 var DYNAMICALLY_CHANGED_NODES: Node[] = []
 
@@ -25,19 +17,14 @@ function getNextUid() {
 }
 
 // fetch stored configuration values from the background script
-browser.runtime.sendMessage({ message: "config_values_request" }).then(function (response) {
-    console.log('bg.crossTabsFuriganaEnabled', JSON.parse(response.crossTabsFuriganaEnabled))
-    INCLUDE_LINK_TEXT = JSON.parse(response.includeLinkText);
-    WATCH_PAGE_CHANGE = JSON.parse(response.watchPageChange);
+browser.runtime.sendMessage({ message: "request_storage_root" }).then(function (_root) {
+    STORAGE = _root
 
-    PERSISTENT_MODE = !!JSON.parse(response.persistentMode);
-    CROSS_TABS_FURIGANA_ENABLED = JSON.parse(response.crossTabsFuriganaEnabled);
-    AUTO_START = JSON.parse(response.autoStart);
     //Parse for kanji and insert furigana immediately if persistent mode is enabled
-    if (PERSISTENT_MODE && CROSS_TABS_FURIGANA_ENABLED) {
+    if (STORAGE.settings.persistent_mode && STORAGE.state.persistent_mode__all_tabs_show_furigana) {
         enableFurigana();
     }
-    if (PERSISTENT_MODE && AUTO_START){   // FIXME: Remove AUTO_START?
+    if (STORAGE.settings.persistent_mode && STORAGE.settings.auto_start){   // FIXME: Remove AUTO_START?
         //waiting for dictionary to load
         setTimeout(enableFurigana, 1000);
     }
@@ -66,7 +53,7 @@ function scanForKanjiTextNodes(contextNode?: Node): Record<number, Text> {
         // But this syntax cannot be interpreted by Firefox correctly...
         // 'not(ancestor-or-self::*[attribute::contenteditable eq "true"])'
     ]
-    if (!INCLUDE_LINK_TEXT) {
+    if (!STORAGE.settings.include_link_text) {
         _xPathAnd.push('not(ancestor-or-self::a)')
     }
     //Scan all text for /[\u3400-\u9FBF]/, then add each text node that isn't made up only of kanji only in the user's simple kanji list
@@ -155,15 +142,15 @@ console.log('dom_parse executed!')
 // autoSetBrowserActionIcon()
 
 /**
- * Called by kanji_content_detect.
+ * Called by content_preload.
  * When user clicks browserAction, this function would be invoked.
  */
 function toggleFurigana() {
     const pageIsProcessed = document.body.hasAttribute("fiprocessed")
-    console.log('PERSISTENT_MODE  ==', PERSISTENT_MODE)
-    console.log('Original CROSS_TABS_FURIGANA_ENABLED ==', CROSS_TABS_FURIGANA_ENABLED)
-    if (PERSISTENT_MODE) {
-        if (CROSS_TABS_FURIGANA_ENABLED) {
+    console.log('STORAGE.settings.persistent_mode  ==', STORAGE.settings.persistent_mode)
+    console.log('Original STORAGE.state.persistent_mode__all_tabs_show_furigana ==', STORAGE.state.persistent_mode__all_tabs_show_furigana)
+    if (STORAGE.settings.persistent_mode) {
+        if (STORAGE.state.persistent_mode__all_tabs_show_furigana) {
             if (pageIsProcessed) {
                 disableFurigana()
             }
@@ -187,26 +174,26 @@ function enableFurigana() {
     console.log('enableFurigana()')
     if (document.body.hasAttribute("fiprocessed")) {  // If already enabled (this may happened when using back/next of browser)  // REFACTORING: May needn't because never happened after adding document.onunload ...?
         console.log('============ has already processed before, skip.')
-        if (WATCH_PAGE_CHANGE) {
+        if (STORAGE.settings.watch_page_change) {
             startWatcher()
         }
         return
     }
     KANJI_TEXT_NODES = scanForKanjiTextNodes();
-    if (!isEmptyObject(KANJI_TEXT_NODES) || PERSISTENT_MODE) {
+    if (!isEmptyObject(KANJI_TEXT_NODES) || STORAGE.settings.persistent_mode) {
         document.body.setAttribute("fiprocessed", "true");
         //The background page will respond with data including a "furiganizedTextNodes" member, see below.
         submitKanjiTextNodes();
     } else {
         // alert("No text with kanji found. Sorry, false alarm!");
     }
-    if (WATCH_PAGE_CHANGE) {
+    if (STORAGE.settings.watch_page_change) {
         startWatcher()
     }
-    if (PERSISTENT_MODE) {
+    if (STORAGE.settings.persistent_mode) {
         browser.runtime.sendMessage({ message: 'set_cross_tabs_furigana_enabled', value: true })
     }
-    CROSS_TABS_FURIGANA_ENABLED = true
+    STORAGE.state.persistent_mode__all_tabs_show_furigana = true
     document.FURIGANAIZE_ENABLED = true
 }
 
@@ -218,15 +205,15 @@ function disableFurigana() {
     }
     revertRubies();
     autoSetBrowserActionIcon()
-    if (WATCH_PAGE_CHANGE) {
+    if (STORAGE.settings.watch_page_change) {
         stopWatcher()
     }
     KANJI_TEXT_NODES = {};
     document.body.removeAttribute("fiprocessed");
-    if (PERSISTENT_MODE) {
+    if (STORAGE.settings.persistent_mode) {
         browser.runtime.sendMessage({ message: 'set_cross_tabs_furigana_enabled', value: false })
     }
-    CROSS_TABS_FURIGANA_ENABLED = false
+    STORAGE.state.persistent_mode__all_tabs_show_furigana = false
     document.FURIGANAIZE_ENABLED = false
 }
 
@@ -240,7 +227,7 @@ browser.runtime.onMessage.addListener((_msg: any, sender: browser.runtime.Messag
             fiSetFloatingButtonState('UNTOUCHED')
             return
         }
-        if (WATCH_PAGE_CHANGE) { stopWatcher() }  // 1. pause watcher when inserting <ruby> (to prevent infinite loop of mutation)
+        if (STORAGE.settings.watch_page_change) { stopWatcher() }  // 1. pause watcher when inserting <ruby> (to prevent infinite loop of mutation)
         for (const key in msg.furiganizedTextNodes) {
             if (SUBMITTED_KANJI_TEXT_NODES[key]) {
                 var tempDocFrag = document.createDocumentFragment();
@@ -256,7 +243,7 @@ browser.runtime.onMessage.addListener((_msg: any, sender: browser.runtime.Messag
                 delete SUBMITTED_KANJI_TEXT_NODES[key];
             }
         }
-        if (WATCH_PAGE_CHANGE) { startWatcher() } // 2. resume watcher after the insertion of <ruby> finished
+        if (STORAGE.settings.watch_page_change) { startWatcher() } // 2. resume watcher after the insertion of <ruby> finished
         if (!isEmptyObject(KANJI_TEXT_NODES)) {
             submitKanjiTextNodes();
         } else {

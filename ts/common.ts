@@ -46,7 +46,7 @@ function deepMergeSubset<T>(originalRoot: T, subsetRoot: DeepPartial<T>): void {
             deepMergeSubset(originalRoot[k], subsetRoot[k])
         } else {
             // @ts-ignore
-            originalRoot[k] = subsetRoot[k]
+            originalRoot[k] = deepCopy(subsetRoot[k])
         }
     }
     return

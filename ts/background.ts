@@ -1,18 +1,12 @@
 var a = 0;
 var EXCEPTIONS = null;
-/**
- * - Current **"(cross-tab) keep on/off"** status.
- * - NOT stored in settings.
- * - For PERSISTENT_MODE only.
- **/
-var CROSS_TABS_FURIGANA_ENABLED = false;
 /** For read synchronously. To write, please use configStorageManager */
 var STORAGE: MyStorageRoot = configStorageManager.getDefaultRoot()
 
 configStorageManager.getRoot().then((obj) => {
     Object.assign(STORAGE, obj)
-  })
-  configStorageManager.onOptionsChanged((newRoot, changes) => {
+})
+configStorageManager.onRootChanged((newRoot, changes) => {
     console.log('[background] storage changed!', changes)
     Object.assign(STORAGE, newRoot)
 })
@@ -33,7 +27,7 @@ if (browser.commands) {  // NOTE: Android does not support browser.commands
         if (cmd === 'toggle-furigana') {
             doInCurrentTab(function (curTab) {
                 if (STORAGE.settings.use_mobile_floating_button) {
-                    if (STORAGE.state.globally_show_mobile_floating_button) {
+                    if (STORAGE.state.mobile_floating_button__show_button_in_all_tabs) {
                         browser.tabs.query({}).then(function (tabs) {
                             for (const tab of tabs) {
                                 if (tab.id === undefined) { continue }
@@ -48,7 +42,12 @@ if (browser.commands) {  // NOTE: Android does not support browser.commands
                             }
                         }).catch((err) => { console.error('[To Developer] Error when tab.query()' , err) })
                     }
-                    STORAGE.state.globally_show_mobile_floating_button = !STORAGE.state.globally_show_mobile_floating_button
+                    STORAGE.state.mobile_floating_button__show_button_in_all_tabs = !STORAGE.state.mobile_floating_button__show_button_in_all_tabs
+                    configStorageManager.deepMergeToRoot({
+                        state: {
+                            mobile_floating_button__show_button_in_all_tabs: !STORAGE.state.mobile_floating_button__show_button_in_all_tabs
+                        }
+                    })
                     setupBrowserActionIcon('UNTOUCHED', undefined)  // FIXME: Don't sure wtf is this.
                 } else {
                     if (curTab.id === undefined) { return }
@@ -68,7 +67,7 @@ browser.browserAction.onClicked.addListener(function (curTab) {    // if (STORAG
     // }
     console.warn('click on browserAction')
     if (STORAGE.settings.use_mobile_floating_button) {
-        if (STORAGE.state.globally_show_mobile_floating_button) {
+        if (STORAGE.state.mobile_floating_button__show_button_in_all_tabs) {
             browser.tabs.query({}).then(function (tabs) {
                 for (const tab of tabs) {
                     if (tab.id === undefined) { continue }
@@ -85,7 +84,12 @@ browser.browserAction.onClicked.addListener(function (curTab) {    // if (STORAG
                 }
             }).catch((err) => { console.error('[To Developer] Error when tab.query()' , err) })
         }
-        STORAGE.state.globally_show_mobile_floating_button = !STORAGE.state.globally_show_mobile_floating_button
+        STORAGE.state.mobile_floating_button__show_button_in_all_tabs = !STORAGE.state.mobile_floating_button__show_button_in_all_tabs
+        configStorageManager.deepMergeToRoot({
+            state: {
+                mobile_floating_button__show_button_in_all_tabs: !STORAGE.state.mobile_floating_button__show_button_in_all_tabs
+             }
+        })
         setupBrowserActionIcon('UNTOUCHED', undefined)  // FIXME: Don't sure wtf is this.
     } else {
         if (curTab.id === undefined) { return }
@@ -115,7 +119,7 @@ function setupBrowserActionIcon(state: furiganaize_state_t, tabId: number | unde
     window.clearTimeout(blinkTimeoutId)
     if (STORAGE.settings.use_mobile_floating_button) {
         // TODO: Set different title or color for mobile floating icon
-        if (STORAGE.state.globally_show_mobile_floating_button) {
+        if (STORAGE.state.mobile_floating_button__show_button_in_all_tabs) {
             browser.browserAction.setTitle({ tabId: undefined, title: "フローティングアイコンを隠す", });
             browser.browserAction.setBadgeBackgroundColor({ tabId: undefined, color: "#2fafff", });
             browser.browserAction.setBadgeText({ tabId: undefined, text: "ｱｲｺﾝｵﾝ", });
@@ -163,14 +167,6 @@ function setupBrowserActionIcon(state: furiganaize_state_t, tabId: number | unde
     }
 }
 
-//prepare a tab for furigana injection
-function enableTabForFI(tab: browser.tabs.Tab) {
-    // setupBrowserActionIcon(false, tab.id)
-    if (tab.id === undefined) { return }
-    return browser.tabs.executeScript(tab.id, {
-        file: "/bundle/js/content_full.js"
-    });
-}
 
 function getYomiStyle() {
     let style = ''
@@ -234,22 +230,16 @@ browser.runtime.onMessage.addListener(
             return
         }
         const senderTabId = sender.tab!.id!
-        if (msg.message == "config_values_request") {
-            sendResponseCallback({
-                // userKanjiList: STORAGE.user_kanji_list,  // DEPRECATED
-                includeLinkText: STORAGE.settings.include_link_text,
-                use_mobile_floating_button: STORAGE.settings.use_mobile_floating_button,
-                globally_show_mobile_floating_button: STORAGE.state.globally_show_mobile_floating_button,  // TODO: shit
-                watchPageChange: STORAGE.settings.watch_page_change,
-                persistentMode: STORAGE.settings.persistent_mode,
-                autoStart: STORAGE.settings.auto_start,
-                crossTabsFuriganaEnabled: CROSS_TABS_FURIGANA_ENABLED
-            });
+        if (msg.message == "request_storage_root") {
+            sendResponseCallback(STORAGE);
         //prepare tab for injection
-        } else if (msg.message == "init_dom_parser_for_tab") {
+        } else if (msg.message == "load_full_content_script_for_tab") {
             // prepare tab for injection
-            enableTabForFI(sender.tab)
-        } else if (msg.message == 'force_load_dom_parser') {
+            // setupBrowserActionIcon(false, sender.tab.id)
+            return browser.tabs.executeScript(senderTabId, {
+                file: "/bundle/js/content_full.js"
+            });
+        } else if (msg.message == 'force_load_full_content_script_for_tab') {
             //sometime loaded `content_full` unloaded by unknown reason (ex: Idle for too long on Android?), reload it.
             return browser.tabs.executeScript(senderTabId, {
                 file: "/bundle/js/content_full.js"
@@ -270,7 +260,7 @@ browser.runtime.onMessage.addListener(
             }, 200)
         } else if (msg.message === 'set_cross_tabs_furigana_enabled') {
             console.log('set CROSS_TABS_FURIGANA_ENABLED', msg.value)
-            CROSS_TABS_FURIGANA_ENABLED = msg.value
+            STORAGE.state.persistent_mode__all_tabs_show_furigana = msg.value
         } else {
             console.log("Programming error: a request with the unexpected \"message\" value \"" + msg + "\" was received in the background page.");
         }

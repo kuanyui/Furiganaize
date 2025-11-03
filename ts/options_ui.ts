@@ -46,7 +46,7 @@ function selectAllFormElement() {
 async function reloadDataFromLocalStorageToOptionUi() {
     try {
         const root = await configStorageManager.getRoot()
-        console.warn('root =============>', root)
+        console.log('[options_ui] reload root from storage =============>', root)
         const form = selectAllFormElement()
         form.include_link_text[0].checked = root.settings.include_link_text;
         form.furigana_display.val(root.settings.furigana_display);
@@ -105,7 +105,7 @@ function bindUiEvents() {
             var useMobileFloatingButton = this.checked;
             configStorageManager.deepMergeToRoot({ settings: { use_mobile_floating_button: useMobileFloatingButton } })
             if (!useMobileFloatingButton) {
-                configStorageManager.deepMergeToRoot({ state: { globally_show_mobile_floating_button: false } })
+                configStorageManager.deepMergeToRoot({ state: { mobile_floating_button__show_button_in_all_tabs: false } })
             }
         });
 		formEls.persistent_mode.bind("change", function() {

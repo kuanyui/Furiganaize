@@ -1,11 +1,11 @@
 ﻿/***************************************************************
  *	This script set to run_at document load. See manifest.json.
  ***************************************************************/
-var INCLUDE_LINK_TEXT = false;
 var INSERTED_NODES_TO_CHECK: Node[] = [];
 var INSERTED_NODE_CHECK_TIMEOUT_ID = -1;
 var MUTATION_OBSERVER: MutationObserver | null = null
-var PERSISTENT_MODE: boolean
+/** For read synchronously in content script. */
+var STORAGE: MyStorageRoot;
 
 // Add an empty onunload function to force run this content_script even when back/forward
 // https://stackoverflow.com/questions/2638292/after-travelling-back-in-firefox-history-javascript-wont-run
@@ -17,28 +17,25 @@ function autoSetBrowserActionIcon() {
     return state
 }
 
-browser.runtime.sendMessage({ message: "config_values_request" }).then(function (response) {
-    console.error('response', response)
+browser.runtime.sendMessage({ message: "request_storage_root" }).then(function (_root) {
+    STORAGE = _root
+    console.log("STORAGE ===", STORAGE)
     const alreadyEnabled = autoSetBrowserActionIcon() === 'INSERTED' // TODO: Use MutationObserver to auto call this function?
     if (alreadyEnabled) {
         // REFACTORING: May needn't because never happened after adding document.onunload ...?
         // If already enabled, just init dom_parser directly without detecting kanji again.
         // This situation may happened when using back/next of browser
-        browser.runtime.sendMessage({ message: "init_dom_parser_for_tab" });
+        browser.runtime.sendMessage({ message: "load_full_content_script_for_tab" });
         return
     }
-	INCLUDE_LINK_TEXT = JSON.parse(response.includeLinkText);
-	PERSISTENT_MODE = JSON.parse(response.persistentMode);
-	let useMobileFloatingButton = JSON.parse(response.useMobileFloatingButton);
-    let globallyShowMobileFloatingButton = JSON.parse(response.globallyShowMobileFloatingButton);
-    if (globallyShowMobileFloatingButton) {
+    if (STORAGE.state.mobile_floating_button__show_button_in_all_tabs) {
         fiAddFloatingIcon()
     }
 	// Having received the config data, start searching for relevant kanji
 	// If none find, do nothing for now except start a listener for node insertions
 	// If persistent mode enabled - enable furigana right away
-	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || PERSISTENT_MODE || globallyShowMobileFloatingButton) {
-		browser.runtime.sendMessage({message: "init_dom_parser_for_tab"});
+	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || STORAGE.settings.persistent_mode || STORAGE.state.mobile_floating_button__show_button_in_all_tabs) {
+		browser.runtime.sendMessage({message: "load_full_content_script_for_tab"});
     } else {
         MUTATION_OBSERVER = new MutationObserver(DOMNodeInsertedHandler);
         MUTATION_OBSERVER.observe(document, { childList: true, subtree: true });
@@ -94,7 +91,7 @@ function processChangedNodes() {
     for (const node of INSERTED_NODES_TO_CHECK) {
         if (!node.textContent) { continue }
         if (node.textContent.match(/[\u3400-\u9FBF]/)) {
-            browser.runtime.sendMessage({ message: "init_dom_parser_for_tab" })
+            browser.runtime.sendMessage({ message: "load_full_content_script_for_tab" })
             if (MUTATION_OBSERVER) {
                 MUTATION_OBSERVER.disconnect()
                 MUTATION_OBSERVER = null
@@ -127,10 +124,10 @@ function fiRemoveFloatingIcon() {
 
 async function safeToggleFurigana() {
     if ((typeof toggleFurigana) !== 'function') {
-        await browser.runtime.sendMessage({ message: "force_load_dom_parser" })
+        await browser.runtime.sendMessage({ message: "force_load_full_content_script_for_tab" })
     }
     fiRemoveNoScriptTags()
-    toggleFurigana()  // In `text_to_furigana_dom_parse.js`
+    toggleFurigana()  // In `content_full.ts`
 }
 function transposeFloatButton() {
     const el = document.querySelector('#furiganaize_buttons_container')

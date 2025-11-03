@@ -38,7 +38,10 @@ interface MyStorageSettings {
     watch_page_change: boolean
     /** Keep Furigana on/off status across tabs and pages. NOT RECOMMENDED. */
     persistent_mode: boolean
-    /** Auto-start always. NOT RECOMMENDED. */
+    /** Auto-start always. NOT RECOMMENDED.
+     * FIXME: Remove AUTO_START?
+     * @depreacted
+     */
     auto_start: boolean
     /** Always prefer to choose the longer segmentations when analyzing a
      * sentence, to prevent some wrong splitting of consecutive Kanji characters
@@ -47,8 +50,22 @@ interface MyStorageSettings {
 }
 
 interface MyStorageState {
-    /** Used for internal state, shared across tab */
-    globally_show_mobile_floating_button: boolean
+    /**
+     * - Used for internal state, shared across tabs.
+     * - Only usable when {@link MyStorageSettings.use_mobile_floating_button} is true
+     * REFACTOR: rename: `mobile_floating_button__toggled`
+     **/
+    mobile_floating_button__show_button_in_all_tabs: boolean
+    /**
+     * - `true` means the float button is toggled (furigana is visible).
+     */
+    // mobile_floating_button__button_is_toggled: boolean
+    /**
+     * - Current **"show furigana"** status, shared across tabs.
+     * - Only usable when {@link MyStorageSettings.persistent_mode} is true
+     * REFACTOR: rename: `persistent_mode__toggled`
+     **/
+    persistent_mode__all_tabs_show_furigana: boolean
 }
 
 //initialize local storage
@@ -67,7 +84,8 @@ var DEFAULT_LOCAL_STORAGE_ROOT: MyStorageRoot = {
         prevent_splitting_consecutive_kanjis: true,
     },
     state: {
-        globally_show_mobile_floating_button: false,
+        mobile_floating_button__show_button_in_all_tabs: false,
+        persistent_mode__all_tabs_show_furigana: false,
     }
 } as const
 
@@ -138,9 +156,10 @@ class ConfigStorageManager {
     //         return root[category]
     //     })
     // }
-    onOptionsChanged(cb: (newOptions: MyStorageRoot, changes: TypedChangeDict<MyStorageRoot>) => void) {
+    onRootChanged(cb: (newOptions: MyStorageRoot, changes: TypedChangeDict<MyStorageRoot>) => void) {
         browser.storage.onChanged.addListener((_changes, areaName) => {
             const changes = _changes as TypedChangeDict<MyStorageRoot>
+            console.warn('[ConfigStorageManager] browser.storage.onChanged', changes)
             if (areaName === 'sync' || areaName === 'local') {
                 if (changes) {
                     this.getRoot().then((newRoot) => {

@@ -1,8 +1,8 @@
 type MsgTab2Bg =
     { message: "text_to_furiganize", textMapNeedFuriganaize: Record<number, string> } |
-    { message: "config_values_request" } |
-    { message: "init_dom_parser_for_tab" } |
-    { message: "force_load_dom_parser" } |
+    { message: "request_storage_root" } |
+    { message: "load_full_content_script_for_tab" } |
+    { message: "force_load_full_content_script_for_tab" } |
     { message: "set_page_action_icon_status", value: furiganaize_state_t } |
     { message: "set_cross_tabs_furigana_enabled", value: boolean }
 
