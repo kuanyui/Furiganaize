@@ -7,7 +7,6 @@
  */
 function deepObjectShaper<T, U>(originalRoot: T, wishedShape: U): boolean {
     let modified = false
-    wishedShape = deepCopy(wishedShape)
     for (const k in originalRoot) {
         // @ts-expect-error
         if (!Object.keys(wishedShape).includes(k)) {

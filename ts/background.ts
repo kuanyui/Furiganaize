@@ -7,7 +7,7 @@ configStorageManager.getRoot().then((obj) => {
     Object.assign(STORAGE, obj)
 })
 configStorageManager.onRootChanged((newRoot, changes) => {
-    console.log('[background] storage changed!', changes)
+    console.log('[background] storage changed!', newRoot, changes)
     Object.assign(STORAGE, newRoot)
 })
 
@@ -45,7 +45,7 @@ if (browser.commands) {  // NOTE: Android does not support browser.commands
                     STORAGE.state.mobile_floating_button__show_button_in_all_tabs = !STORAGE.state.mobile_floating_button__show_button_in_all_tabs
                     configStorageManager.deepMergeToRoot({
                         state: {
-                            mobile_floating_button__show_button_in_all_tabs: !STORAGE.state.mobile_floating_button__show_button_in_all_tabs
+                            mobile_floating_button__show_button_in_all_tabs: STORAGE.state.mobile_floating_button__show_button_in_all_tabs
                         }
                     })
                     setupBrowserActionIcon('UNTOUCHED', undefined)  // FIXME: Don't sure wtf is this.
@@ -87,7 +87,7 @@ browser.browserAction.onClicked.addListener(function (curTab) {    // if (STORAG
         STORAGE.state.mobile_floating_button__show_button_in_all_tabs = !STORAGE.state.mobile_floating_button__show_button_in_all_tabs
         configStorageManager.deepMergeToRoot({
             state: {
-                mobile_floating_button__show_button_in_all_tabs: !STORAGE.state.mobile_floating_button__show_button_in_all_tabs
+                mobile_floating_button__show_button_in_all_tabs: STORAGE.state.mobile_floating_button__show_button_in_all_tabs
              }
         })
         setupBrowserActionIcon('UNTOUCHED', undefined)  // FIXME: Don't sure wtf is this.

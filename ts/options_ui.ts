@@ -101,9 +101,11 @@ function bindUiEvents() {
 			var watchPageChange = this.checked;
 			configStorageManager.deepMergeToRoot({ settings: { watch_page_change: watchPageChange } })
 		});
-        formEls.use_mobile_floating_button.bind("change", function() {
+        formEls.use_mobile_floating_button.bind("change", async function() {
             var useMobileFloatingButton = this.checked;
-            configStorageManager.deepMergeToRoot({ settings: { use_mobile_floating_button: useMobileFloatingButton } })
+            // Set setting
+            await configStorageManager.deepMergeToRoot({ settings: { use_mobile_floating_button: useMobileFloatingButton } })
+            // Set state
             if (!useMobileFloatingButton) {
                 configStorageManager.deepMergeToRoot({ state: { mobile_floating_button__show_button_in_all_tabs: false } })
             }
@@ -116,17 +118,17 @@ function bindUiEvents() {
 			// 	$("#auto_start").prop('checked', false);
 			// }
 		});
-		formEls.auto_start.bind("change", function() {
+		formEls.auto_start.bind("change", async function() {
 			var autoStart = this.checked;
-			configStorageManager.deepMergeToRoot({ settings: { auto_start: autoStart } })
+			await configStorageManager.deepMergeToRoot({ settings: { auto_start: autoStart } })
 			if (autoStart) {
-				configStorageManager.deepMergeToRoot({ settings: { persistent_mode: autoStart } })
+				await configStorageManager.deepMergeToRoot({ settings: { persistent_mode: autoStart } })
 				$("#persistent_mode").prop('checked', autoStart);
 			}
 		});
-		formEls.prevent_splitting_consecutive_kanjis.bind("change", function() {
+		formEls.prevent_splitting_consecutive_kanjis.bind("change", async function() {
 			var preventSplittingConsecutiveKanjis = this.checked;
-			configStorageManager.deepMergeToRoot({ settings: { prevent_splitting_consecutive_kanjis: preventSplittingConsecutiveKanjis } })
+			await configStorageManager.deepMergeToRoot({ settings: { prevent_splitting_consecutive_kanjis: preventSplittingConsecutiveKanjis } })
 			if (preventSplittingConsecutiveKanjis) {
 				configStorageManager.deepMergeToRoot({ settings: { prevent_splitting_consecutive_kanjis: preventSplittingConsecutiveKanjis } })
 				$("#prevent_splitting_consecutive_kanjis").prop('checked', preventSplittingConsecutiveKanjis);

@@ -134,7 +134,6 @@ function isEmptyObject(obj: object) {
     return true;
 }
 
-console.log('dom_parse executed!')
 // function autoSetBrowserActionIcon() {
 //     const enabled = document.body.hasAttribute("fiprocessed")
 //     browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: enabled });

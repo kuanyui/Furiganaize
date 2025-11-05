@@ -105,35 +105,39 @@ class ConfigStorageManager {
     }
     public deepMergeToRoot(subset: DeepPartial<MyStorageRoot>): Promise<void> {
         return this.getRoot().then((existingRoot) => {
+            console.warn('deepMergeToRoot before', deepCopy(existingRoot.settings.use_mobile_floating_button), deepCopy(subset))
             deepMergeSubset(existingRoot, subset)
-            this.area.set(existingRoot as any)
+            this.area.set(existingRoot)
+            console.warn('deepMergeToRoot after', deepCopy(existingRoot.settings.use_mobile_floating_button))
         })
     }
+    /** @deprecated Semantic is too hard to understand */
     private setRootArbitrary(newRoot: MyStorageRoot) {
-        this.area.set(newRoot as any)
+        this.area.set(newRoot)
     }
+    /** @deprecated Semantic is too hard to understand */
     private setRootSafely(newRoot: MyStorageRoot) {
         return this.getRoot().then((existingRoot) => {
             deepObjectShaper(newRoot, existingRoot)
-            this.area.set(newRoot as any)
+            this.area.set(newRoot)
         })
     }
     /** Without migrations */
     private initAndGetRoot(): Promise<MyStorageRoot> {
-        return this.area.get().then((_ori) => {
+        return this.area.get().then((_oriRoot) => {
             /** may be malformed */
             const DEFAULT_ROOT = this.getDefaultRoot()
-            let modified: boolean
-            let root = _ori as unknown as MyStorageRoot
+            let rootModified: boolean
+            let root = _oriRoot as unknown as MyStorageRoot
             if (!root) {
                 root = DEFAULT_ROOT
-                modified = true
+                rootModified = true
             } else {
-                modified = deepObjectShaper(root, DEFAULT_ROOT)
+                rootModified = deepObjectShaper(root, DEFAULT_ROOT)
             }
             console.log('[GET] browser.storage.sync.get() ORIGINAL', deepCopy(root))
-            if (modified) {
-                this.setRootSafely(root)
+            if (rootModified) {
+                this.area.set(root)
             }
             return root
         })
@@ -159,7 +163,7 @@ class ConfigStorageManager {
     onRootChanged(cb: (newOptions: MyStorageRoot, changes: TypedChangeDict<MyStorageRoot>) => void) {
         browser.storage.onChanged.addListener((_changes, areaName) => {
             const changes = _changes as TypedChangeDict<MyStorageRoot>
-            console.warn('[ConfigStorageManager] browser.storage.onChanged', changes)
+            // console.log('[ConfigStorageManager] browser.storage.onChanged', changes)
             if (areaName === 'sync' || areaName === 'local') {
                 if (changes) {
                     this.getRoot().then((newRoot) => {
