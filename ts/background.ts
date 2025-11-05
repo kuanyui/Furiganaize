@@ -7,7 +7,7 @@ configStorageManager.getRoot().then((obj) => {
     Object.assign(STORAGE, obj)
 })
 configStorageManager.onRootChanged((newRoot, changes) => {
-    console.log('[background] storage changed!', newRoot, changes)
+    console.warn('[DEBUG][background] storage changed!', newRoot, changes)
     Object.assign(STORAGE, newRoot)
 })
 
@@ -42,6 +42,7 @@ if (browser.commands) {  // NOTE: Android does not support browser.commands
                             }
                         }).catch((err) => { console.error('[To Developer] Error when tab.query()' , err) })
                     }
+                    // sync & async set
                     STORAGE.state.mobile_floating_button__show_button_in_all_tabs = !STORAGE.state.mobile_floating_button__show_button_in_all_tabs
                     configStorageManager.deepMergeToRoot({
                         state: {
@@ -84,6 +85,7 @@ browser.browserAction.onClicked.addListener(function (curTab) {    // if (STORAG
                 }
             }).catch((err) => { console.error('[To Developer] Error when tab.query()' , err) })
         }
+        // sync & async set
         STORAGE.state.mobile_floating_button__show_button_in_all_tabs = !STORAGE.state.mobile_floating_button__show_button_in_all_tabs
         configStorageManager.deepMergeToRoot({
             state: {
@@ -261,6 +263,11 @@ browser.runtime.onMessage.addListener(
         } else if (msg.message === 'set_cross_tabs_furigana_enabled') {
             console.log('set CROSS_TABS_FURIGANA_ENABLED', msg.value)
             STORAGE.state.persistent_mode__all_tabs_show_furigana = msg.value
+            configStorageManager.deepMergeToRoot({
+                state: {
+                    persistent_mode__all_tabs_show_furigana: msg.value
+                }
+            })
         } else {
             console.log("Programming error: a request with the unexpected \"message\" value \"" + msg + "\" was received in the background page.");
         }

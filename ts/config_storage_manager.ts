@@ -105,10 +105,10 @@ class ConfigStorageManager {
     }
     public deepMergeToRoot(subset: DeepPartial<MyStorageRoot>): Promise<void> {
         return this.getRoot().then((existingRoot) => {
-            console.warn('deepMergeToRoot before', deepCopy(existingRoot.settings.use_mobile_floating_button), deepCopy(subset))
+            // console.warn('[DEBUG] deepMergeToRoot before', deepCopy(existingRoot.settings.use_mobile_floating_button), deepCopy(subset))
             deepMergeSubset(existingRoot, subset)
             this.area.set(existingRoot)
-            console.warn('deepMergeToRoot after', deepCopy(existingRoot.settings.use_mobile_floating_button))
+            // console.warn('[DEBUG] deepMergeToRoot after', deepCopy(existingRoot.settings.use_mobile_floating_button))
         })
     }
     /** @deprecated Semantic is too hard to understand */
