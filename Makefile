@@ -26,12 +26,14 @@ build:
 
 	# Background
 	cat "tsc_out/common.js" \
+	    "tsc_out/msg_manager.js" \
 	    "tsc_out/config_storage_manager.js" \
 	    "tsc_out/background.js" \
 	    > "bundle/js/background.js"
 
 	# Content Script (content_preload, inject via manifest.json)
 	cat "tsc_out/common.js" \
+	    "tsc_out/msg_manager.js" \
 	    "tsc_out/config_storage_manager.js" \
 	    "tsc_out/content_preload.js" \
 	    > "bundle/js/content_preload.js"

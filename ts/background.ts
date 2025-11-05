@@ -186,7 +186,7 @@ function getYomiStyle() {
 
 class WorkerManager {
     _reqId: number
-    _promiseResolverMap: Record<number, (map: Record<number, string>) => void>
+    _promiseResolverMap: Record<number, (igoWorkerResult: Promise<MsgIgoWorker2Bg>) => void>
     _worker: Worker
     constructor() {
         this._reqId = 0
@@ -199,7 +199,7 @@ class WorkerManager {
             resolver(msg.furiganaizedTextMap)
         }
     }
-    runIgo(textMapNeedsFuriganaize: Record<number, string>) {
+    runIgo(textMapNeedsFuriganaize: Record<number, string>): Promise<MsgIgoWorker2Bg> {
         const yomiStyle = getYomiStyle()
         const preferLongerKanjiSegments = STORAGE.settings.prevent_splitting_consecutive_kanjis
         const filterOkurigana = STORAGE.settings.filter_okurigana
@@ -212,7 +212,7 @@ class WorkerManager {
             }
         }
         console.log('runIgo!')
-        const prom = new Promise((resolve, reject) => {
+        const prom = new Promise<MsgIgoWorker2Bg>((resolve, reject) => {
             this._worker.postMessage(req)
             this._promiseResolverMap[req.reqId] = resolve
         })
@@ -251,7 +251,7 @@ browser.runtime.onMessage.addListener(
             setupBrowserActionIcon('PROCESSING', senderTabId)
             workerMan.runIgo(msg.textMapNeedFuriganaize).then((furiganaized) => {
                 //send processed DOM nodes back to the tab content script
-                browser.tabs.sendMessage(senderTabId, {
+                msgManager.bgSendToTab2(senderTabId, {
                     furiganizedTextNodes: furiganaized
                 });
             })

@@ -13,11 +13,11 @@ window.addEventListener('unload', function () { })
 
 function autoSetBrowserActionIcon() {
     const state = document.body.hasAttribute("fiprocessed") ? 'INSERTED' : 'UNTOUCHED'
-    browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: state });
+    msgManager.tabSendToBg2({ message: "set_page_action_icon_status", value: state });
     return state
 }
 
-browser.runtime.sendMessage({ message: "request_storage_root" }).then(function (_root) {
+msgManager.tabSendToBg2({ message: "request_storage_root" }).then(function (_root) {
     STORAGE = _root
     console.log("STORAGE ===", STORAGE)
     const alreadyEnabled = autoSetBrowserActionIcon() === 'INSERTED' // TODO: Use MutationObserver to auto call this function?
@@ -25,7 +25,7 @@ browser.runtime.sendMessage({ message: "request_storage_root" }).then(function (
         // REFACTORING: May needn't because never happened after adding document.onunload ...?
         // If already enabled, just init dom_parser directly without detecting kanji again.
         // This situation may happened when using back/next of browser
-        browser.runtime.sendMessage({ message: "load_full_content_script_for_tab" });
+        msgManager.tabSendToBg2({ message: "load_full_content_script_for_tab" });
         return
     }
     if (STORAGE.state.mobile_floating_button__show_button_in_all_tabs) {
@@ -35,7 +35,7 @@ browser.runtime.sendMessage({ message: "request_storage_root" }).then(function (
 	// If none find, do nothing for now except start a listener for node insertions
 	// If persistent mode enabled - enable furigana right away
 	if (document.body.innerText.match(/[\u3400-\u9FBF]/) || STORAGE.settings.persistent_mode || STORAGE.state.mobile_floating_button__show_button_in_all_tabs) {
-		browser.runtime.sendMessage({message: "load_full_content_script_for_tab"});
+		msgManager.tabSendToBg2({message: "load_full_content_script_for_tab"});
     } else {
         MUTATION_OBSERVER = new MutationObserver(DOMNodeInsertedHandler);
         MUTATION_OBSERVER.observe(document, { childList: true, subtree: true });
@@ -91,7 +91,7 @@ function processChangedNodes() {
     for (const node of INSERTED_NODES_TO_CHECK) {
         if (!node.textContent) { continue }
         if (node.textContent.match(/[\u3400-\u9FBF]/)) {
-            browser.runtime.sendMessage({ message: "load_full_content_script_for_tab" })
+            msgManager.tabSendToBg2({ message: "load_full_content_script_for_tab" })
             if (MUTATION_OBSERVER) {
                 MUTATION_OBSERVER.disconnect()
                 MUTATION_OBSERVER = null
@@ -124,7 +124,7 @@ function fiRemoveFloatingIcon() {
 
 async function safeToggleFurigana() {
     if ((typeof toggleFurigana) !== 'function') {
-        await browser.runtime.sendMessage({ message: "force_load_full_content_script_for_tab" })
+        await msgManager.tabSendToBg2({ message: "force_load_full_content_script_for_tab" })
     }
     fiRemoveNoScriptTags()
     toggleFurigana()  // In `content_full.ts`

@@ -17,7 +17,7 @@ function getNextUid() {
 }
 
 // fetch stored configuration values from the background script
-browser.runtime.sendMessage({ message: "request_storage_root" }).then(function (_root) {
+msgManager.tabSendToBg2({ message: "request_storage_root" }).then(function (_root) {
     STORAGE = _root
 
     //Parse for kanji and insert furigana immediately if persistent mode is enabled
@@ -77,7 +77,7 @@ function scanForKanjiTextNodes(contextNode?: Node): Record<number, Text> {
 
 function submitKanjiTextNodes() {
     fiSetFloatingButtonState('PROCESSING')
-    browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: 'PROCESSING' });
+    msgManager.tabSendToBg2({ message: "set_page_action_icon_status", value: 'PROCESSING' });
     const msgData: MsgTab2Bg = {
         message: "text_to_furiganize",
         textMapNeedFuriganaize: {}
@@ -92,11 +92,11 @@ function submitKanjiTextNodes() {
         //unset each member as done.
         delete KANJI_TEXT_NODES[key];
     }
-    browser.runtime.sendMessage(msgData)
+    msgManager.tabSendToBg2(msgData)
 }
 
 function revertRubies() {
-    browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: 'PROCESSING' });
+    msgManager.tabSendToBg2({ message: "set_page_action_icon_status", value: 'PROCESSING' });
     document.querySelectorAll("rp,rt").forEach(x=>x.remove())
     var rubies = document.getElementsByTagName("RUBY");
     const parentElMap = new Map()
@@ -122,7 +122,7 @@ function revertRubies() {
         }
     }
     document.body.removeAttribute("fiprocessed");
-    browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: 'UNTOUCHED' });
+    msgManager.tabSendToBg2({ message: "set_page_action_icon_status", value: 'UNTOUCHED' });
     fiSetFloatingButtonState('UNTOUCHED')
 }
 
@@ -136,7 +136,7 @@ function isEmptyObject(obj: object) {
 
 // function autoSetBrowserActionIcon() {
 //     const enabled = document.body.hasAttribute("fiprocessed")
-//     browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: enabled });
+//     msgManager.tabSendToBg2({ message: "set_page_action_icon_status", value: enabled });
 // }
 // autoSetBrowserActionIcon()
 
@@ -190,7 +190,7 @@ function enableFurigana() {
         startWatcher()
     }
     if (STORAGE.settings.persistent_mode) {
-        browser.runtime.sendMessage({ message: 'set_cross_tabs_furigana_enabled', value: true })
+        msgManager.tabSendToBg2({ message: 'set_cross_tabs_furigana_enabled', value: true })
     }
     STORAGE.state.persistent_mode__all_tabs_show_furigana = true
     document.FURIGANAIZE_ENABLED = true
@@ -210,19 +210,18 @@ function disableFurigana() {
     KANJI_TEXT_NODES = {};
     document.body.removeAttribute("fiprocessed");
     if (STORAGE.settings.persistent_mode) {
-        browser.runtime.sendMessage({ message: 'set_cross_tabs_furigana_enabled', value: false })
+        msgManager.tabSendToBg2({ message: 'set_cross_tabs_furigana_enabled', value: false })
     }
     STORAGE.state.persistent_mode__all_tabs_show_furigana = false
     document.FURIGANAIZE_ENABLED = false
 }
 
 /*** Events ***/
-browser.runtime.onMessage.addListener((_msg: any, sender: browser.runtime.MessageSender) => {
-    const msg: MsgBg2Tab = _msg
+browser.runtime.onMessage.addListener((msg: MsgTab2Bg_Resp, sender: browser.runtime.MessageSender) => {
     if (msg.furiganizedTextNodes) {
         // NOTE: When furiganaize has been disabled, this request should be ignored. Because a debounce is existed, this request may come after disabling Furiganaize.
         if (!document.FURIGANAIZE_ENABLED) {
-            browser.runtime.sendMessage({ message: "set_page_action_icon_status", value: 'UNTOUCHED' });
+            msgManager.tabSendToBg2({ message: "set_page_action_icon_status", value: 'UNTOUCHED' });
             fiSetFloatingButtonState('UNTOUCHED')
             return
         }
